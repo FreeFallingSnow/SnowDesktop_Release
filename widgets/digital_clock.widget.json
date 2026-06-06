@@ -1,0 +1,7 @@
+{
+  "name": "数字时钟",
+  "version": "1.0.0",
+  "description": "显示当前时间、日期和星期。",
+  "defaultSize": { "columns": 1, "rows": 1 },
+  "permissions": ["ui.input"]
+}

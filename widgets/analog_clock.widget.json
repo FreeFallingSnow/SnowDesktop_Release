@@ -1,0 +1,7 @@
+{
+  "name": "指针时钟",
+  "version": "1.0.0",
+  "description": "显示自适应大小的指针时钟。",
+  "defaultSize": { "columns": 1, "rows": 1 },
+  "permissions": []
+}

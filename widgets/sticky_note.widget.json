@@ -1,0 +1,7 @@
+{
+  "name": "便签",
+  "version": "1.0.0",
+  "description": "可编辑的桌面便签。",
+  "defaultSize": { "columns": 2, "rows": 1 },
+  "permissions": ["ui.input", "ui.contextMenu"]
+}
