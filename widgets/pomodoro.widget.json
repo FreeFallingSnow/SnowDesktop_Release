@@ -1,0 +1,8 @@
+{
+  "name": "番茄钟",
+  "version": "1.0.0",
+  "description": "番茄工作法计时器，支持专注/休息循环、暂停续播、自定义时长与颜色。",
+  "defaultSize": { "columns": 2, "rows": 2 },
+  "minSize": { "columns": 2, "rows": 2 },
+  "permissions": ["ui.input", "ui.contextMenu"]
+}

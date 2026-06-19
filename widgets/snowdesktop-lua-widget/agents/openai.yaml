@@ -1,0 +1,4 @@
+interface:
+  display_name: "SnowDesktop Lua 组件"
+  short_description: "编写、调试和打包 SnowDesktop Lua 桌面组件"
+  default_prompt: "Use $snowdesktop-lua-widget to create a SnowDesktop Lua widget from my requirements."

@@ -60,8 +60,8 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = "清空便签" },
-        { id = 2, label = "恢复便签默认样式" },
+        { id = 1, label = "清空便签", icon = "" },
+        { id = 2, label = "恢复便签默认样式", icon = "" },
     }
 end
 

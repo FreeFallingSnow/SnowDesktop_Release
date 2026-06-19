@@ -167,10 +167,10 @@ end
 
 function getContextMenu()
     return {
-        { id = 4, label = "编辑搜索词" },
-        { id = 1, label = "打开当前匹配项" },
-        { id = 2, label = "定位当前匹配项" },
-        { id = 3, label = "刷新桌面" },
+        { id = 4, label = "编辑搜索词", icon = "" },
+        { id = 1, label = "打开当前匹配项", icon = "" },
+        { id = 2, label = "定位当前匹配项", icon = "" },
+        { id = 3, label = "刷新桌面", icon = "" },
     }
 end
 

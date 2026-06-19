@@ -1,0 +1,8 @@
+{
+  "name": "系统监控",
+  "version": "1.0.0",
+  "description": "显示 CPU、内存、网络和电池状态。",
+  "defaultSize": { "columns": 2, "rows": 2 },
+  "minSize": { "columns": 2, "rows": 1 },
+  "permissions": ["system.read", "ui.input", "ui.contextMenu"]
+}

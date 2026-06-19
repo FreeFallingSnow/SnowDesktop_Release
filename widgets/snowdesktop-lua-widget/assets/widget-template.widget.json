@@ -1,0 +1,7 @@
+{
+  "name": "示例组件",
+  "version": "1.0.0",
+  "description": "SnowDesktop Lua 组件起始模板。",
+  "defaultSize": { "columns": 2, "rows": 1 },
+  "permissions": ["ui.input", "ui.contextMenu"]
+}

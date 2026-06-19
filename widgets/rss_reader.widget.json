@@ -1,0 +1,9 @@
+{
+  "name": "RSS 阅读器",
+  "version": "2.0.0",
+  "description": "订阅 RSS/Atom 源，列表浏览标题与日期，双击打开原文。",
+  "defaultSize": { "columns": 3, "rows": 2 },
+  "minSize": { "columns": 2, "rows": 2 },
+  "permissions": ["network.http", "ui.input", "desktop.action", "ui.contextMenu"],
+  "networkDomains": ["*"]
+}
