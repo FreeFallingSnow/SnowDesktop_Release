@@ -8,6 +8,7 @@ alpha = 0.0
 
 showWeekday = true
 showDate = true
+showSeconds = true
 textColor = 0xFFFFFF
 
 function loadConfig()
@@ -17,6 +18,7 @@ function loadConfig()
     gradientEndA = tonumber(storage.get("gradientEndA")) or gradientEndA
     showWeekday = storage.get("showWeekday") ~= "0"
     showDate = storage.get("showDate") ~= "0"
+    showSeconds = storage.get("showSeconds") ~= "0"
     textColor = tonumber(storage.get("textColor")) or textColor
 end
 
@@ -31,12 +33,14 @@ function resetDefaults()
     gradientEndA = 0.0
     showWeekday = true
     showDate = true
+    showSeconds = true
     textColor = 0xFFFFFF
     storage.set("bg", tostring(bg))
     storage.set("alpha", tostring(alpha))
     storage.set("gradientEndA", tostring(gradientEndA))
     saveBool("showWeekday", showWeekday)
     saveBool("showDate", showDate)
+    saveBool("showSeconds", showSeconds)
     storage.set("textColor", tostring(textColor))
 end
 
@@ -46,7 +50,12 @@ function render()
     local t = sys.getTime()
     local w = layout.width()
     local h = layout.height()
-    local timeStr = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
+    local timeStr
+    if showSeconds then
+        timeStr = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
+    else
+        timeStr = string.format("%02d:%02d", t.hour, t.min)
+    end
     local dateStr = string.format("%d年%02d月%02d日", t.year, t.month, t.day)
     local weekDays = { "日", "一", "二", "三", "四", "五", "六" }
     local weekdayStr = "星期" .. weekDays[t.wday or 1]
@@ -114,6 +123,9 @@ function imguiRender()
 
     local newShowDate = imgui.checkbox("显示日期", showDate)
     if newShowDate ~= showDate then showDate = newShowDate; saveBool("showDate", showDate) end
+
+    local newShowSeconds = imgui.checkbox("显示秒", showSeconds)
+    if newShowSeconds ~= showSeconds then showSeconds = newShowSeconds; saveBool("showSeconds", showSeconds) end
 
     imgui.text("文字颜色")
     local newTextColor = imgui.colorEdit3("##textColor", textColor)
