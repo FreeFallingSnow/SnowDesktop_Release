@@ -27,3 +27,6 @@
 
 退出 SnowDesktop → 替换 `SnowDesktop.exe` 和 `widgets` 目录 → 重新启动即可，不影响已有布局数据。
 
+## 开源
+
+[源码仓库](https://github.com/FreeFallingSnow/SnowDesktop)
