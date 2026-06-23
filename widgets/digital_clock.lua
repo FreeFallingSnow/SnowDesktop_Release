@@ -11,6 +11,10 @@ showDate = true
 showSeconds = true
 textColor = 0xFFFFFF
 
+function onVisible()
+    loadConfig()
+end
+
 function loadConfig()
     bg = tonumber(storage.get("bg")) or bg
     border = bg
@@ -125,7 +129,10 @@ function imguiRender()
     if newShowDate ~= showDate then showDate = newShowDate; saveBool("showDate", showDate) end
 
     local newShowSeconds = imgui.checkbox("显示秒", showSeconds)
-    if newShowSeconds ~= showSeconds then showSeconds = newShowSeconds; saveBool("showSeconds", showSeconds) end
+    if newShowSeconds ~= showSeconds then
+        showSeconds = newShowSeconds
+        saveBool("showSeconds", showSeconds)
+    end
 
     imgui.text("文字颜色")
     local newTextColor = imgui.colorEdit3("##textColor", textColor)

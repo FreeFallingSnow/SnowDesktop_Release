@@ -16,6 +16,27 @@ local TXT_DARK   = 0x333333
 local TXT_MUTED  = 0x888888
 local BTN_PAUSE  = 0xFFB347
 
+function updateTickTimer()
+    local state = storage.get("state") or "idle"
+    if state == "work" or state == "break" then
+        widget.setTimer("tick", 1000, true)
+    else
+        widget.cancelTimer("tick")
+    end
+end
+
+function onVisible()
+    updateTickTimer()
+end
+
+function onHidden()
+    widget.cancelTimer("tick")
+end
+
+function onTimer(name)
+    -- 宿主会在定时器回调后自动刷新当前组件。
+end
+
 function loadConfig()
     workMin           = tonumber(storage.get("workMin"))           or 25
     breakMin          = tonumber(storage.get("breakMin"))          or 5
@@ -108,6 +129,7 @@ function checkTransition()
         widget.setTitle("番茄钟")
         sys.notify("番茄钟", "休息结束，准备下一轮专注")
     end
+    updateTickTimer()
 end
 
 -- ---- actions ----
@@ -117,6 +139,7 @@ function actionStart()
     storage.set("startTime", tostring(timeNow()))
     storage.set("pausedRemaining", "0")
     widget.setTitle("番茄钟 - 专注")
+    updateTickTimer()
 end
 
 function actionPause()
@@ -124,6 +147,7 @@ function actionPause()
     storage.set("pausedRemaining", tostring(remainingSeconds()))
     storage.set("state", "paused")
     widget.setTitle("番茄钟 - 暂停")
+    updateTickTimer()
 end
 
 function actionResume()
@@ -139,6 +163,7 @@ function actionResume()
     else
         widget.setTitle("番茄钟 - 休息")
     end
+    updateTickTimer()
 end
 
 function actionStop()
@@ -147,6 +172,7 @@ function actionStop()
     storage.set("pausedRemaining", "0")
     storage.set("prevState", "")
     widget.setTitle("番茄钟")
+    updateTickTimer()
 end
 
 function actionSkip()
@@ -166,6 +192,7 @@ function actionSkip()
         widget.setTitle("番茄钟 - 专注")
         sys.notify("番茄钟", "已跳过休息，开始下一轮专注")
     end
+    updateTickTimer()
 end
 
 function actionReset()
@@ -175,6 +202,7 @@ function actionReset()
     storage.set("sessions", "0")
     storage.set("prevState", "")
     widget.setTitle("番茄钟")
+    updateTickTimer()
 end
 
 -- ---- drawing ----

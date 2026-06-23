@@ -1,7 +1,8 @@
 {
   "name": "数字时钟",
   "version": "1.0.0",
-  "description": "显示当前时间、日期和星期。",
+  "description": "显示自适应大小的数字时钟，含日期与星期。",
   "defaultSize": { "columns": 1, "rows": 1 },
-  "permissions": ["ui.input"]
+  "refreshIntervalMs": 1000,
+  "permissions": []
 }
