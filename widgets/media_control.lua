@@ -42,15 +42,15 @@ function render()
     end
 
     local titleY = artist ~= "" and h * 0.18 or h * 0.30
-    draw.text(18, titleY, title, 14, 0xFFFFFF, w - 36, true, true)
+    draw.text(layout.cu(18), titleY, title, layout.fontCu(14), 0xFFFFFF, w - layout.cu(36), true, true)
     if artist ~= "" then
-        draw.text(18, titleY + 22, artist, 12, 0x94A3B8, w - 36, true, true)
+        draw.text(layout.cu(18), titleY + layout.cu(22), artist, layout.fontCu(12), 0x94A3B8, w - layout.cu(36), true, true)
     end
 
-    local btnSz = 40
-    local btnGap = 12
+    local btnSz = layout.cu(40)
+    local btnGap = layout.cu(12)
     local total = btnSz * 3 + btnGap * 2
-    local btnY = h - btnSz - 12
+    local btnY = h - btnSz - layout.cu(12)
     local bx = (w - total) / 2
 
     drawBtn("previous", "", bx, btnY, btnSz, available and current.canPrevious)

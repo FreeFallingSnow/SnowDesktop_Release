@@ -22,10 +22,10 @@ function setTopIndex(value)
 end
 
 function listMetrics()
-    local y = 82
-    local rowH = 30
+    local y = layout.cu(82)
+    local rowH = layout.cu(30)
     local h = layout.height()
-    local maxRows = math.max(1, math.floor((h - y - 8) / rowH))
+    local maxRows = math.max(1, math.floor((h - y - layout.cu(8)) / rowH))
     return y, rowH, maxRows
 end
 
@@ -66,18 +66,18 @@ end
 function render()
     local w = layout.width()
     local h = layout.height()
-    local pad = 12
+    local pad = layout.cu(12)
     local query = currentQuery()
     local items = matches()
     local top, selected, listY, rowH, maxRows = clampViewport(#items)
     local theme = currentTheme()
 
-    draw.text(pad, pad, "快速启动", 18, 0xFFFFFF, w - pad * 2, true, true)
-    draw.rect(pad, 42, w - pad * 2, 28, theme.bg, 6, math.min(0.55, theme.alpha + 0.18))
-    draw.strokeRect(pad, 42, w - pad * 2, 28, theme.border, 6, 1.2, math.min(0.95, theme.alpha + 0.35))
+    draw.text(pad, pad, "快速启动", layout.fontCu(18), 0xFFFFFF, w - pad * 2, true, true)
+    draw.rect(pad, layout.cu(42), w - pad * 2, layout.cu(28), theme.bg, layout.cu(6), math.min(0.55, theme.alpha + 0.18))
+    draw.strokeRect(pad, layout.cu(42), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), layout.cu(1.2), math.min(0.95, theme.alpha + 0.35))
     local shownQuery = query
     if shownQuery == "" then shownQuery = "单击输入搜索关键字" end
-    draw.text(pad + 10, 48, shownQuery, 12, 0xD7FFFA, w - pad * 2 - 20, false, true)
+    draw.text(pad + layout.cu(10), layout.cu(48), shownQuery, layout.fontCu(12), 0xD7FFFA, w - pad * 2 - layout.cu(20), false, true)
 
     local y = listY
     for row = 0, math.min(#items - top + 1, maxRows) - 1 do
@@ -85,20 +85,20 @@ function render()
         local item = items[i]
         local isSelected = i == selected
         if isSelected then
-            draw.rect(pad, y - 2, w - pad * 2, 28, theme.border, 6, 0.28)
-            draw.strokeRect(pad, y - 2, w - pad * 2, 28, theme.border, 6, 1.0, 0.65)
+            draw.rect(pad, y - layout.cu(2), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), 0.28)
+            draw.strokeRect(pad, y - layout.cu(2), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), layout.cu(1.0), 0.65)
         end
-        draw.icon(item, pad + 4, y, 22)
-        draw.text(pad + 34, y + 3, item.title or "(未命名)", 12, 0xFFFFFF, w - pad * 2 - 40, false, true)
+        draw.icon(item, pad + layout.cu(4), y, layout.cu(22))
+        draw.text(pad + layout.cu(34), y + layout.cu(3), item.title or "(未命名)", layout.fontCu(12), 0xFFFFFF, w - pad * 2 - layout.cu(40), false, true)
         y = y + rowH
     end
 
     if #items == 0 then
-        draw.text(pad, y, "没有匹配项目", 12, 0x8FA3B8, w - pad * 2, false, true)
+        draw.text(pad, y, "没有匹配项目", layout.fontCu(12), 0x8FA3B8, w - pad * 2, false, true)
     elseif #items > maxRows then
-        local barH = math.max(12, math.floor((maxRows / #items) * (maxRows * rowH)))
+        local barH = math.max(layout.cu(12), math.floor((maxRows / #items) * (maxRows * rowH)))
         local barY = listY + math.floor(((top - 1) / math.max(1, #items - maxRows)) * (maxRows * rowH - barH))
-        draw.rect(w - pad - 4, barY, 3, barH, 0xFFFFFF, 2, 0.82)
+        draw.rect(w - pad - layout.cu(4), barY, layout.cu(3), barH, 0xFFFFFF, layout.cu(2), 0.82)
     end
 end
 
@@ -142,8 +142,10 @@ end
 
 function onClick(x, y)
     local w = layout.width()
-    if y >= 42 and y <= 70 then
-        widget.editText("query", 12, 42, w - 24, 28, false, currentQuery(), true, 0xD7FFFA)
+    local searchTop = layout.cu(42)
+    local searchBottom = layout.cu(70)
+    if y >= searchTop and y <= searchBottom then
+        widget.editText("query", layout.cu(12), searchTop, w - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
         return
     end
     local idx = itemIndexAtPoint(x, y)
@@ -154,8 +156,10 @@ end
 
 function onDoubleClick(x, y)
     local w = layout.width()
-    if y >= 42 and y <= 70 then
-        widget.editText("query", 12, 42, w - 24, 28, false, currentQuery(), true, 0xD7FFFA)
+    local searchTop = layout.cu(42)
+    local searchBottom = layout.cu(70)
+    if y >= searchTop and y <= searchBottom then
+        widget.editText("query", layout.cu(12), searchTop, w - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
     else
         local idx = itemIndexAtPoint(x, y)
         if idx then
@@ -176,7 +180,7 @@ end
 
 function onMenu(id)
     if id == 4 then
-        widget.editText("query", 12, 42, layout.width() - 24, 28, false, currentQuery(), true, 0xD7FFFA)
+        widget.editText("query", layout.cu(12), layout.cu(42), layout.width() - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
     elseif id == 1 then
         openSelected(false)
     elseif id == 2 then

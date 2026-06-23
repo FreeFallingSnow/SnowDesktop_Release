@@ -182,10 +182,10 @@ end
 local btnHit = {}
 
 function drawBtn(x, y, w, h, label, btnColor, txtColor, id)
-    draw.rect(x, y, w, h, btnColor, 6, 0.88)
-    draw.strokeRect(x, y, w, h, txtColor, 6, 1.0, 0.12)
-    local m = draw.measureText(label, 13, 0, true)
-    draw.text(x + (w - m.width) / 2, y + (h - m.height) / 2 + 1, label, 13, txtColor, 0, true)
+    draw.rect(x, y, w, h, btnColor, layout.cu(6), 0.88)
+    draw.strokeRect(x, y, w, h, txtColor, layout.cu(6), layout.cu(1.0), 0.12)
+    local m = draw.measureText(label, layout.fontCu(13), 0, true)
+    draw.text(x + (w - m.width) / 2, y + (h - m.height) / 2 + layout.cu(1), label, layout.fontCu(13), txtColor, 0, true)
     btnHit[#btnHit + 1] = { id = id, x = x, y = y, w = w, h = h }
 end
 
@@ -210,20 +210,20 @@ function drawProgressArc(cx, cy, r, prog, thickness, color, alpha)
             cy + math.sin(a) * innerR,
             cx + math.cos(a) * outerR,
             cy + math.sin(a) * outerR,
-            1.6, color, alpha)
+             layout.cu(1.6), color, alpha)
     end
 end
 
 function drawDots(cx, cy, filled, total, color, alpha)
-    local dotR = 5
-    local gap = 16
+    local dotR = layout.cu(5)
+    local gap = layout.cu(16)
     local startX = cx - (total - 1) * gap / 2
     for i = 1, total do
         local dx = startX + (i - 1) * gap
         if i <= filled then
             draw.circle(dx, cy, dotR, color, alpha)
         else
-            draw.strokeRect(dx - dotR, cy - dotR, dotR * 2, dotR * 2, color, dotR, 1.2, alpha * 0.25)
+            draw.strokeRect(dx - dotR, cy - dotR, dotR * 2, dotR * 2, color, dotR, layout.cu(1.2), alpha * 0.25)
         end
     end
 end
@@ -258,37 +258,37 @@ function render()
     local label = stateLabelText()
     local inSet = sessionsInSet()
 
-    local btnW = 78
-    local btnH = 28
-    local btnGap = 12
-    local bottomReserved = 24
-    local btnY = h - btnH - bottomReserved - 4
+    local btnW = layout.cu(78)
+    local btnH = layout.cu(28)
+    local btnGap = layout.cu(12)
+    local bottomReserved = layout.cu(24)
+    local btnY = h - btnH - bottomReserved - layout.cu(4)
 
     local ringR     = math.min(w, h) * 0.26
-    local ringThick = math.max(5, ringR * 0.14)
+    local ringThick = math.max(layout.cu(5), ringR * 0.14)
 
     drawTrackRing(cx, ringCY, ringR, ringThick, trackColor, 0.5)
     if prog > 0.002 then
         drawProgressArc(cx, ringCY, ringR, prog, ringThick, accent, 1.0)
     end
 
-    local fontSize = math.max(18, math.floor(ringR * 0.5))
+    local fontSize = math.max(layout.fontCu(18), math.floor(ringR * 0.5))
     local timeStr  = formatTime(rem)
     local tm = draw.measureText(timeStr, fontSize, 0, true)
     draw.text(cx - tm.width / 2, ringCY - tm.height / 2, timeStr, fontSize, TXT_DARK, 0, true)
 
-    local labelY = ringCY + ringR + ringThick + 8
+    local labelY = ringCY + ringR + ringThick + layout.cu(8)
     local sub = ""
     if s == "work" then
         sub = " · 第" .. (inSet + 1) .. "/" .. longBreakInterval .. "轮"
     elseif s == "break" then
         sub = " · 已完成" .. inSet .. "/" .. longBreakInterval .. "轮"
     end
-    local lm = draw.measureText(label .. sub, 12)
-    draw.text(cx - lm.width / 2, labelY, label .. sub, 12, TXT_MUTED)
+    local lm = draw.measureText(label .. sub, layout.fontCu(12))
+    draw.text(cx - lm.width / 2, labelY, label .. sub, layout.fontCu(12), TXT_MUTED)
 
-    local dotsY = math.min(labelY + 28, btnY - 12)
-    if s ~= "paused" and dotsY >= labelY + 16 then
+    local dotsY = math.min(labelY + layout.cu(28), btnY - layout.cu(12))
+    if s ~= "paused" and dotsY >= labelY + layout.cu(16) then
         drawDots(cx, dotsY, inSet, longBreakInterval, accent, 1.0)
     end
 

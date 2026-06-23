@@ -122,38 +122,38 @@ function render()
     widget.setTitle(feedTitle ~= "" and feedTitle or "RSS 阅读器")
     local w = layout.width()
     local h = layout.height()
-    local padX = 14
-    local headerTop = 11
-    local headerHeight = 24
-    local listTop = 43
-    local listBottom = h - 16
-    local itemH = 48
-    local numberW = 20
-    local textX = padX + numberW + 5
-    local textW = math.max(40, w - textX - padX)
+    local padX = layout.cu(14)
+    local headerTop = layout.cu(11)
+    local headerHeight = layout.cu(24)
+    local listTop = layout.cu(43)
+    local listBottom = h - layout.cu(16)
+    local itemH = layout.cu(48)
+    local numberW = layout.cu(20)
+    local textX = padX + numberW + layout.cu(5)
+    local textW = math.max(layout.cu(40), w - textX - padX)
 
     if loading and #articles == 0 then
-        draw.text(padX, h * 0.34, "正在获取订阅…", 13, 0x94A3B8,
+        draw.text(padX, h * 0.34, "正在获取订阅…", layout.fontCu(13), 0x94A3B8,
             w - padX * 2, true, true)
         return
     end
     if lastError ~= "" and #articles == 0 then
-        draw.text(padX, h * 0.27, lastError, 12, 0xFF8B8B,
+        draw.text(padX, h * 0.27, lastError, layout.fontCu(12), 0xFF8B8B,
             w - padX * 2, false, false)
-        draw.text(padX, h * 0.27 + 34, "可在“详细设置”中修改 RSS 地址",
-            11, 0x94A3B8, w - padX * 2, false, true)
+        draw.text(padX, h * 0.27 + layout.cu(34), "可在“详细设置”中修改 RSS 地址",
+            layout.fontCu(11), 0x94A3B8, w - padX * 2, false, true)
         return
     end
 
-    local countW = 52
+    local countW = layout.cu(52)
     local countText = tostring(#articles) .. " 篇"
-    local countMetrics = draw.measureText(countText, 10, countW, false)
+    local countMetrics = draw.measureText(countText, layout.fontCu(10), countW, false)
     draw.text(padX, headerTop, feedTitle ~= "" and feedTitle or "RSS",
-        14, 0xF8FAFC, w - padX * 2 - countW, false, true)
-    draw.text(w - 14 - countMetrics.width, headerTop + 2, countText,
-        10, 0x8291A3, countMetrics.width + 1, false, true)
+        layout.fontCu(14), 0xF8FAFC, w - padX * 2 - countW, false, true)
+    draw.text(w - layout.cu(14) - countMetrics.width, headerTop + layout.cu(2), countText,
+        layout.fontCu(10), 0x8291A3, countMetrics.width + 1, false, true)
     draw.line(padX, headerTop + headerHeight, w - padX,
-        headerTop + headerHeight, 1, 0xFFFFFF, 0.10)
+        headerTop + headerHeight, layout.cu(1), 0xFFFFFF, 0.10)
 
     local visible = ui.virtualList("articles", padX, listTop,
         w - padX * 2, math.max(1, listBottom - listTop), itemH, #articles)
@@ -165,33 +165,33 @@ function render()
         if a then
             local y = listTop + (i - 1) * itemH - visible.offset
             local numberText = tostring(i)
-            local numberMetrics = draw.measureText(numberText, 13, numberW, true)
+            local numberMetrics = draw.measureText(numberText, layout.fontCu(13), numberW, true)
             draw.text(padX + (numberW - numberMetrics.width) / 2,
                 y + (itemH - numberMetrics.height) / 2,
-                numberText, 13, 0xFFFFFF, numberW, true, true)
-            draw.text(textX, y + 4, a.title, 12, 0xF1F5F9,
+                numberText, layout.fontCu(13), 0xFFFFFF, numberW, true, true)
+            draw.text(textX, y + layout.cu(4), a.title, layout.fontCu(12), 0xF1F5F9,
                 textW, false, true)
             local dateShort = a.date:match("(%d%d? .%l%l%l? %d%d%d%d)") or a.date:sub(1, 16)
             if dateShort == "" then dateShort = a.date:sub(1, 10) end
-            draw.text(textX, y + 25,
+            draw.text(textX, y + layout.cu(25),
                 dateShort ~= "" and dateShort or a.link:sub(1, 36),
-                10, 0x7E8C9D, textW, false, true)
-            draw.line(textX, y + itemH - 1, w - padX,
-                y + itemH - 1, 1, 0xFFFFFF, 0.07)
+                layout.fontCu(10), 0x7E8C9D, textW, false, true)
+            draw.line(textX, y + itemH - layout.cu(1), w - padX,
+                y + itemH - layout.cu(1), layout.cu(1), 0xFFFFFF, 0.07)
         end
     end
     draw.popClip()
 
     if #articles == 0 then
-        draw.text(padX, listTop + 22, "暂无文章，等待刷新…",
-            12, 0x94A3B8, w - padX * 2, true, true)
+        draw.text(padX, listTop + layout.cu(22), "暂无文章，等待刷新…",
+            layout.fontCu(12), 0x94A3B8, w - padX * 2, true, true)
     end
 end
 
 function onDoubleClick(x, y)
-    local itemH = 48
-    local listTop = 43
-    local listBottom = layout.height() - 16
+    local itemH = layout.cu(48)
+    local listTop = layout.cu(43)
+    local listBottom = layout.height() - layout.cu(16)
 
     if y < listTop or y >= listBottom then return end
     for i = visibleRange.first, visibleRange.last do

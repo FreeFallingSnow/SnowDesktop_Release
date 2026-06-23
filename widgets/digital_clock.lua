@@ -60,10 +60,10 @@ function render()
     local weekDays = { "日", "一", "二", "三", "四", "五", "六" }
     local weekdayStr = "星期" .. weekDays[t.wday or 1]
 
-    local timeBaseSize = 28
-    local secondaryBaseSize = 9
-    local innerWidth = math.max(80, w - 24)
-    local gap = math.max(2, math.floor(h * 0.015))
+    local timeBaseSize = layout.fontCu(28)
+    local secondaryBaseSize = layout.fontCu(9)
+    local innerWidth = math.max(layout.cu(80), w - layout.cu(24))
+    local gap = math.max(layout.cu(2), math.floor(h * 0.015))
     local lines = {
         { text = timeStr, size = timeBaseSize },
     }
@@ -83,7 +83,7 @@ function render()
         totalBaseHeight = totalBaseHeight + lines[i].probe.height
     end
 
-    local innerHeight = math.max(40, h - 24)
+    local innerHeight = math.max(layout.cu(40), h - layout.cu(24))
     local widthScale = innerWidth / math.max(1, widest)
     local heightScale = (innerHeight - gap * math.max(0, #lines - 1)) / math.max(1, totalBaseHeight)
     local scale = math.max(0.7, math.min(widthScale, heightScale))
@@ -101,7 +101,7 @@ function render()
 
     local top = (h - blockH) * 0.5
     local y = top
-    local secondaryGap = math.max(1, math.floor(gap * 0.35))
+    local secondaryGap = math.max(layout.cu(1), math.floor(gap * 0.35))
 
     for i = 1, #lines do
         local line = lines[i]

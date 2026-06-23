@@ -227,11 +227,17 @@ local sizeClass = layout.sizeClass() -- small, medium, large
 local cellW = layout.cellWidth()     -- grid cell width (DPI-aware, px)
 local cellH = layout.cellHeight()    -- grid cell height (DPI-aware, px)
 local gapY = layout.cellGap()        -- grid vertical gap (DPI-aware, px)
+local scale = layout.cellScale()     -- min(cellW / 92, cellH / 116)
+local fontSize = layout.cu(14)       -- 14 design units converted to px
 ```
 
 `cellWidth` and `cellHeight` return the current monitor's DPI-scaled grid cell
 dimensions — the same values used to size desktop icons and collection items.
 `cellGap` returns the vertical grid gap in DPI-scaled pixels.
+`cellScale` returns the component scale relative to the standard `92 x 116`
+grid cell. `cu(value)` converts a design value to current pixels. Existing
+`draw.text` sizes remain pixel values, so use `draw.text(..., layout.cu(14))`
+when a widget should scale with its grid cell.
 
 Cached system snapshots require `system.read`:
 
@@ -312,7 +318,9 @@ end
 ```
 
 Buttons and toggles use host hit-testing. Scroll areas and virtual lists consume
-the mouse wheel while the pointer is inside their bounds.
+the mouse wheel while the pointer is inside their bounds. The host automatically
+draws a scrollbar at the right edge of the widget frame when the content height
+exceeds the viewport height.
 
 ## Storage
 

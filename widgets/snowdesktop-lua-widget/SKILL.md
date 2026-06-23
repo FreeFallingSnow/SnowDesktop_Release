@@ -37,7 +37,8 @@ name = "组件名称"
 
 function render()
     local w = layout.width()
-    draw.text(12, 12, "Hello", 14, 0xFFFFFF, w - 24)
+    local pad = layout.cu(12)
+    draw.text(pad, pad, "Hello", layout.cu(14), 0xFFFFFF, w - pad * 2)
 end
 ```
 
@@ -85,6 +86,9 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 
 ## Implementation rules
 
+- SnowDesktop uses a **design unit** system where `layout.cu(14)` converts grid-cell-relative
+  design values to DPI-scaled pixels. Prefer `layout.cu()` over hardcoded pixel values so widgets
+  scale correctly across monitors and DPI settings. See [references/api.md](references/api.md) for the full layout API.
 - Treat `render()` as a hot path. Do not write storage or perform desktop queries repeatedly unless necessary.
 - Use `storage.set` only when a value changes; it persists immediately to disk.
 - Use `draw.measureText` for centering or fitting text.

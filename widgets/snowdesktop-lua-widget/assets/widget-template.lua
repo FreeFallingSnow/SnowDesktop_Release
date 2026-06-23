@@ -18,16 +18,16 @@ function render()
     local config = readConfig()
     local w = layout.width()
     local h = layout.height()
-    local pad = 12
+    local pad = layout.cu(12)
 
-    draw.text(pad, pad, config.message, 14, config.color, w - pad * 2, true)
-    draw.text(pad, h - 24, "双击编辑", 11, 0xAFC2D6, w - pad * 2, false, true)
+    draw.text(pad, pad, config.message, layout.fontCu(14), config.color, w - pad * 2, true)
+    draw.text(pad, h - layout.cu(24), "双击编辑", layout.fontCu(11), 0xAFC2D6, w - pad * 2, false, true)
 end
 
 function onDoubleClick(x, y)
     local config = readConfig()
-    widget.editText("message", 10, 10, layout.width() - 20,
-        layout.height() - 20, true, config.message, true, config.color)
+    widget.editText("message", layout.cu(10), layout.cu(10), layout.width() - layout.cu(20),
+        layout.height() - layout.cu(20), true, config.message, true, config.color)
 end
 
 function getContextMenu()

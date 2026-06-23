@@ -60,21 +60,21 @@ local function splitWrap(text, fontSize, maxWidth)
 end
 
 local function drawCard(x, y, w, h, info, theme, cfg)
-    draw.rect(x, y, w, h, cfg.cardBgColor, 10, cfg.cardBgAlpha)
-    draw.strokeRect(x, y, w, h, cfg.cardBdColor, 10, 1.0, cfg.cardBdAlpha)
+    draw.rect(x, y, w, h, cfg.cardBgColor, layout.cu(10), cfg.cardBgAlpha)
+    draw.strokeRect(x, y, w, h, cfg.cardBdColor, layout.cu(10), layout.cu(1.0), cfg.cardBdAlpha)
 
-    local ipad = 8
-    draw.text(x + ipad, y + 6, info.title, 11, cfg.cardSubColor, w - ipad * 2, true, true)
+    local ipad = layout.cu(8)
+    draw.text(x + ipad, y + layout.cu(6), info.title, layout.fontCu(11), cfg.cardSubColor, w - ipad * 2, true, true)
 
     if info.lines then
         local lineY = y + h * 0.32
-        local lineH = math.max(12, math.floor(h * 0.11))
+        local lineH = math.max(layout.cu(12), math.floor(h * 0.11))
         for _, line in ipairs(info.lines) do
             draw.text(x + ipad, lineY, line.text, lineH, line.color or cfg.cardTextColor, w - ipad * 2, false, true)
-            lineY = lineY + lineH + 2
+            lineY = lineY + lineH + layout.cu(2)
         end
     else
-        local valFont = math.max(14, math.min(24, math.floor(h * 0.18)))
+        local valFont = math.max(layout.fontCu(14), math.min(layout.fontCu(24), math.floor(h * 0.18)))
         local vm = draw.measureText(info.value, valFont, 0, true)
         local vx = x + (w - vm.width) / 2
         local vy = y + h * 0.42 - vm.height / 2
@@ -82,30 +82,30 @@ local function drawCard(x, y, w, h, info, theme, cfg)
     end
 
     if info.progress then
-        local barPad = 8
-        local barH = 4
-        local barY = y + h - 16
-        draw.rect(x + barPad, barY, w - barPad * 2, barH, 0x1E293B, 2, 1.0)
-        draw.rect(x + barPad, barY, (w - barPad * 2) * info.progress, barH, info.color, 2, 1.0)
+        local barPad = layout.cu(8)
+        local barH = layout.cu(4)
+        local barY = y + h - layout.cu(16)
+        draw.rect(x + barPad, barY, w - barPad * 2, barH, 0x1E293B, layout.cu(2), 1.0)
+        draw.rect(x + barPad, barY, (w - barPad * 2) * info.progress, barH, info.color, layout.cu(2), 1.0)
     end
 
     if info.sub then
-        local subY = info.progress and (y + h - 30) or (y + h - 16)
+        local subY = info.progress and (y + h - layout.cu(30)) or (y + h - layout.cu(16))
         if info.rotateLines then
-            local subW = w - 16
+            local subW = w - layout.cu(16)
             local cacheKey = info.sub .. "\n" .. tostring(subW)
             local lines = wrappedLineCache[cacheKey]
             if not lines then
-                lines = splitWrap(info.sub, 10, subW)
+                lines = splitWrap(info.sub, layout.fontCu(10), subW)
                 wrappedLineCache[cacheKey] = lines
             end
             if #lines > 1 then
                 local line = lines[(subLineIdx % #lines) + 1]
-                draw.text(x + 8, subY, line, 10, cfg.cardSubColor, subW, false, true)
+                draw.text(x + layout.cu(8), subY, line, layout.fontCu(10), cfg.cardSubColor, subW, false, true)
                 return
             end
         end
-        draw.text(x + 8, subY, info.sub, 10, cfg.cardSubColor, w - 16, false, false)
+        draw.text(x + layout.cu(8), subY, info.sub, layout.fontCu(10), cfg.cardSubColor, w - layout.cu(16), false, false)
     end
 end
 
@@ -205,13 +205,13 @@ function render()
     local cols = math.max(1, layout.columns())
     local rows = #cards > 0 and math.ceil(#cards / cols) or 0
     if rows == 0 then
-        draw.text(10, 10, "无可见卡片", 12, 0x94A3B8)
+        draw.text(layout.cu(10), layout.cu(10), "无可见卡片", layout.fontCu(12), 0x94A3B8)
         return
     end
 
-    local inset = 4
-    local hGap = 4
-    local vGap = 4
+    local inset = layout.cu(4)
+    local hGap = layout.cu(4)
+    local vGap = layout.cu(4)
     local availW = w - inset * 2
     local cardW = math.floor((availW - hGap * (cols - 1)) / cols)
     local cardH = layout.cellHeight()

@@ -1,6 +1,8 @@
 -- sticky_note.lua - 便签组件
 name = "便签"
 useCustomStyle = true
+showTitle = true
+bottomBarHover = false
 
 -- 默认值
 bg = 0xFFF7D1
@@ -33,19 +35,27 @@ end
 
 function render()
     loadConfig()
+    widget.setTitle("便签")
+
     local w = layout.width()
     local h = layout.height()
     local saved = storage.get("text") or ""
-    local pad = 14
+    local pad = layout.cu(14)
+    local fontSize = layout.fontCu(15)
+    local maxWidth = w - pad * 2
+    local bottomBarH = layout.cu(40)
+    local viewportH = h - pad - bottomBarH
+    if viewportH <= 0 then viewportH = 1 end
 
-    if saved ~= "" then
-        draw.text(pad, pad, saved, 15, textColor, w - pad * 2)
-    else
-        draw.text(pad, pad, "双击编辑...", 15, textColor, w - pad * 2)
-    end
+    local textContent = saved ~= "" and saved or "双击编辑..."
+    local textMeasured = draw.measureText(textContent, fontSize, maxWidth)
+    local contentH = math.ceil(textMeasured.height) + pad * 2
 
-    local t = sys.getTime()
-    draw.text(pad, h - 16, string.format("便签 | %02d:%02d", t.hour, t.min), 10, textColor)
+    local scrollOffset = ui.scrollArea("text", pad, pad, maxWidth, viewportH, contentH)
+
+    draw.pushClip(pad, pad, maxWidth, viewportH)
+    draw.text(pad, pad - scrollOffset, textContent, fontSize, textColor, maxWidth)
+    draw.popClip()
 end
 
 function onClick(x, y)
@@ -55,7 +65,10 @@ function onDoubleClick(x, y)
     local w = layout.width()
     local h = layout.height()
     loadConfig()
-    widget.editText("text", 12, 12, w - 24, h - 36, true, storage.get("text") or "", false, textColor)
+    local pad = layout.cu(14)
+    local bottomBarH = layout.cu(40)
+    local viewportH = h - pad - bottomBarH
+    widget.editText("text", pad, pad, w - pad * 2, viewportH, true, storage.get("text") or "", false, textColor)
 end
 
 function getContextMenu()
