@@ -4,5 +4,5 @@
   "description": "显示自适应大小的数字时钟，含日期与星期。",
   "defaultSize": { "columns": 1, "rows": 1 },
   "refreshIntervalMs": 1000,
-  "permissions": []
+  "permissions": ["ui.input"]
 }

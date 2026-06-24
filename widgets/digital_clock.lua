@@ -5,6 +5,7 @@ useCustomStyle = true
 bg = 0x000000
 border = 0x000000
 alpha = 0.0
+gradientEndA = 0.0
 
 showWeekday = true
 showDate = true
@@ -13,6 +14,14 @@ textColor = 0xFFFFFF
 
 function onVisible()
     loadConfig()
+end
+
+function autoTextColor(hex)
+    local r = (hex >> 16) & 0xFF
+    local g = (hex >> 8) & 0xFF
+    local b = hex & 0xFF
+    local lum = 0.299 * r + 0.587 * g + 0.114 * b
+    return lum > 140 and 0x000000 or 0xFFFFFF
 end
 
 function loadConfig()
@@ -24,6 +33,13 @@ function loadConfig()
     showDate = storage.get("showDate") ~= "0"
     showSeconds = storage.get("showSeconds") ~= "0"
     textColor = tonumber(storage.get("textColor")) or textColor
+    followPersonalization = storage.get("followPersonalization") == "1"
+    if followPersonalization then
+        local theme = widget.theme()
+        if theme and theme.bg then
+            textColor = autoTextColor(theme.bg)
+        end
+    end
 end
 
 function saveBool(key, value)
@@ -46,6 +62,8 @@ function resetDefaults()
     saveBool("showDate", showDate)
     saveBool("showSeconds", showSeconds)
     storage.set("textColor", tostring(textColor))
+    storage.set("followPersonalization", "0")
+    followPersonalization = false
 end
 
 
@@ -132,6 +150,12 @@ function imguiRender()
     if newShowSeconds ~= showSeconds then
         showSeconds = newShowSeconds
         saveBool("showSeconds", showSeconds)
+    end
+
+    local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
+    if newFp ~= followPersonalization then
+        followPersonalization = newFp
+        storage.set("followPersonalization", followPersonalization and "1" or "0")
     end
 
     imgui.text("文字颜色")

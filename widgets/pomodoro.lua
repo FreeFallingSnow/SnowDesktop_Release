@@ -50,6 +50,7 @@ function loadConfig()
     if savedBg then bg = savedBg end
     local savedBorder = tonumber(storage.get("borderColor"))
     if savedBorder then border = savedBorder end
+    followPersonalization = storage.get("followPersonalization") == "1"
 end
 
 function timeNow()
@@ -435,6 +436,12 @@ function imguiRender()
     end
 
     if imgui.collapsingHeader("颜色设置") then
+        local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
+        if newFp ~= followPersonalization then
+            followPersonalization = newFp
+            storage.set("followPersonalization", followPersonalization and "1" or "0")
+        end
+
         local wc = imgui.colorEdit3("专注颜色", workColor)
         if wc ~= workColor then workColor = wc; storage.set("workColor", tostring(workColor)) end
 
@@ -447,8 +454,9 @@ function imguiRender()
 
     if imgui.button("恢复默认设置") then
         for _, k in ipairs({ "workMin", "breakMin", "longBreakMin", "longBreakInterval",
-                             "workColor", "breakColor", "trackColor", "bgColor", "borderColor" }) do
+                             "workColor", "breakColor", "trackColor", "bgColor", "borderColor", "followPersonalization" }) do
             storage.remove(k)
         end
+        followPersonalization = false
     end
 end

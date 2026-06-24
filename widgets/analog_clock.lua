@@ -46,3 +46,36 @@ function render()
     local sa = t.sec * math.pi / 30 - math.pi / 2
     draw.line(cx, cy, cx + math.cos(sa) * r * 0.78, cy + math.sin(sa) * r * 0.78, layout.cu(1), 0xFF3333)
 end
+
+function loadConfig()
+    bg = tonumber(storage.get("bg")) or bg
+    alpha = tonumber(storage.get("alpha")) or alpha
+    followPersonalization = storage.get("followPersonalization") == "1"
+end
+
+function resetDefaults()
+    bg = 0x000000
+    alpha = 0
+    storage.set("bg", tostring(bg))
+    storage.set("alpha", tostring(alpha))
+    storage.set("followPersonalization", "0")
+    followPersonalization = false
+end
+
+function imguiRender()
+    loadConfig()
+    local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
+    if newFp ~= followPersonalization then
+        followPersonalization = newFp
+        storage.set("followPersonalization", followPersonalization and "1" or "0")
+    end
+
+    imgui.text("背景颜色")
+    local newBg = imgui.colorEdit3("##bg", bg)
+    if newBg ~= bg then bg = newBg; storage.set("bg", tostring(bg)) end
+
+    local newAlpha = imgui.sliderFloat("透明度", alpha, 0.0, 1.0)
+    if newAlpha ~= alpha then alpha = newAlpha; storage.set("alpha", tostring(alpha)) end
+
+    if imgui.button("恢复默认设置") then resetDefaults() end
+end

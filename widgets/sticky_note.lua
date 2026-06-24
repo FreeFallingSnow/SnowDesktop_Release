@@ -12,12 +12,27 @@ gradientEndA = 0.0
 textColor = 0x000000
 
 -- 从 storage 加载已保存的值覆盖默认
+function autoTextColor(hex)
+    local r = (hex >> 16) & 0xFF
+    local g = (hex >> 8) & 0xFF
+    local b = hex & 0xFF
+    local lum = 0.299 * r + 0.587 * g + 0.114 * b
+    return lum > 140 and 0x000000 or 0xFFFFFF
+end
+
 function loadConfig()
     bg = tonumber(storage.get("bg")) or bg
     border = tonumber(storage.get("border")) or border
     alpha = tonumber(storage.get("alpha")) or alpha
     gradientEndA = tonumber(storage.get("gradientEndA")) or gradientEndA
     textColor = tonumber(storage.get("textColor")) or textColor
+    followPersonalization = storage.get("followPersonalization") == "1"
+    if followPersonalization then
+        local theme = widget.theme()
+        if theme and theme.bg then
+            textColor = autoTextColor(theme.bg)
+        end
+    end
 end
 
 function resetDefaults()
@@ -31,6 +46,8 @@ function resetDefaults()
     storage.set("alpha", tostring(alpha))
     storage.set("gradientEndA", tostring(gradientEndA))
     storage.set("textColor", tostring(textColor))
+    storage.set("followPersonalization", "0")
+    followPersonalization = false
 end
 
 function render()
@@ -96,6 +113,12 @@ function imguiRender()
     end
 
     if imgui.collapsingHeader("便签设置") then
+        local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
+        if newFp ~= followPersonalization then
+            followPersonalization = newFp
+            storage.set("followPersonalization", followPersonalization and "1" or "0")
+        end
+
         imgui.text("背景色")
         local newBg = imgui.colorEdit3("##bg", bg)
         if newBg ~= bg then bg = newBg; storage.set("bg", tostring(bg)) end
