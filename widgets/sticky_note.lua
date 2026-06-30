@@ -60,7 +60,7 @@ function render()
     local pad = layout.cu(14)
     local fontSize = layout.fontCu(15)
     local maxWidth = w - pad * 2
-    local bottomBarH = layout.cu(40)
+    local bottomBarH = layout.cu(layout.barHeight())
     local viewportH = h - pad - bottomBarH
     if viewportH <= 0 then viewportH = 1 end
 
@@ -83,7 +83,7 @@ function onDoubleClick(x, y)
     local h = layout.height()
     loadConfig()
     local pad = layout.cu(14)
-    local bottomBarH = layout.cu(40)
+    local bottomBarH = layout.cu(layout.barHeight())
     local viewportH = h - pad - bottomBarH
     widget.editText("text", pad, pad, w - pad * 2, viewportH, true, storage.get("text") or "", false, textColor)
 end

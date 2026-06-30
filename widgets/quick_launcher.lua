@@ -47,12 +47,49 @@ function clampViewport(count)
     return top, selected, listY, rowH, maxRows
 end
 
+function matchRank(item, query)
+    local q = string.lower(query or "")
+    if q == "" then return 0 end
+    local title = string.lower(item.title or "")
+    if title == q then return 0 end
+    local stem = title:gsub("%.[^%.]+$", "")
+    if stem == q then return 0 end
+    if string.sub(title, 1, #q) == q or string.sub(stem, 1, #q) == q then return 1 end
+    if string.find(title, q, 1, true) then return 2 end
+    return 3
+end
+
+function sortMatches(results, query)
+    table.sort(results, function(a, b)
+        local ar = matchRank(a, query)
+        local br = matchRank(b, query)
+        if ar ~= br then return ar < br end
+        return string.lower(a.title or "") < string.lower(b.title or "")
+    end)
+end
+
 function matches()
     local query = currentQuery()
     if query == "" then
         return desktop.items()
     end
-    return desktop.find(query)
+    local results = desktop.find(query)
+    if everything and everything.search then
+        local extra = everything.search(query, 40)
+        local seen = {}
+        for _, item in ipairs(results) do
+            seen[string.lower(item.path or item.id or "")] = true
+        end
+        for _, item in ipairs(extra) do
+            local key = string.lower(item.path or item.id or "")
+            if key ~= "" and not seen[key] then
+                table.insert(results, item)
+                seen[key] = true
+            end
+        end
+    end
+    sortMatches(results, query)
+    return results
 end
 
 function currentTheme()

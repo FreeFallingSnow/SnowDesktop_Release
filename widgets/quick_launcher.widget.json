@@ -3,5 +3,5 @@
   "version": "1.0.0",
   "description": "搜索 SnowDesktop 桌面项目并快速打开或定位。",
   "defaultSize": { "columns": 2, "rows": 2 },
-  "permissions": ["desktop.read", "desktop.action", "ui.contextMenu", "ui.input"]
+  "permissions": ["desktop.read", "desktop.action", "everything.search", "ui.contextMenu", "ui.input"]
 }

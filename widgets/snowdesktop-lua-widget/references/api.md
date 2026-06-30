@@ -8,6 +8,7 @@
 - [Widget and system](#widget-and-system)
 - [Storage](#storage)
 - [Desktop integration](#desktop-integration)
+- [Everything search](#everything-search)
 - [Settings UI](#settings-ui)
 - [Manifest and permissions](#manifest-and-permissions)
 - [Troubleshooting](#troubleshooting)
@@ -18,8 +19,8 @@ Scripts run in a sandbox containing:
 
 - Base functions: `assert`, `error`, `ipairs`, `next`, `pairs`, `pcall`, `select`, `tonumber`, `tostring`, `type`, `xpcall`.
 - Libraries: `string`, `table`, `math`, `utf8`.
-- Host APIs: `draw`, `sys`, `layout`, `storage`, `widget`, `desktop`, `media`,
-  `http`, and `ui`.
+- Host APIs: `draw`, `sys`, `layout`, `storage`, `widget`, `desktop`,
+  `everything`, `media`, `http`, and `ui`.
 - `imgui` only when the manifest declares `ui.input`.
 - `widgetId`, a unique string for the current component instance.
 
@@ -227,6 +228,7 @@ local sizeClass = layout.sizeClass() -- small, medium, large
 local cellW = layout.cellWidth()     -- grid cell width (DPI-aware, px)
 local cellH = layout.cellHeight()    -- grid cell height (DPI-aware, px)
 local gapY = layout.cellGap()        -- grid vertical gap (DPI-aware, px)
+local barH = layout.barHeight()      -- bottom bar height in cu (default 24, range 16-48)
 local scale = layout.cellScale()     -- min(cellW / 92, cellH / 116)
 local fontSize = layout.cu(14)       -- 14 design units converted to px
 ```
@@ -234,6 +236,9 @@ local fontSize = layout.cu(14)       -- 14 design units converted to px
 `cellWidth` and `cellHeight` return the current monitor's DPI-scaled grid cell
 dimensions — the same values used to size desktop icons and collection items.
 `cellGap` returns the vertical grid gap in DPI-scaled pixels.
+`barHeight` returns the bottom bar height in design units (cu), configurable
+between 16 and 48 in settings. Use `layout.cu(layout.barHeight())` to get the
+pixel height for layout calculations.
 `cellScale` returns the component scale relative to the standard `92 x 116`
 grid cell. `cu(value)` converts a design value to current pixels. Existing
 `draw.text` sizes remain pixel values, so use `draw.text(..., layout.cu(14))`
@@ -351,6 +356,10 @@ local selected = desktop.selection()
 local matches = desktop.find("query")
 ```
 
+`desktop.find` matches item titles by normal text, pinyin initials, and compact
+full pinyin for Chinese titles. For example, `"wx"` and `"weixin"` can match
+`"微信"`.
+
 Each item contains:
 
 ```lua
@@ -373,6 +382,19 @@ desktop.refresh()
 ```
 
 `desktop.open` and `desktop.reveal` return booleans.
+
+## Everything search
+
+Everything search is separate from `desktop.find` and requires
+`everything.search`:
+
+```lua
+local results = everything.search("query", 40)
+```
+
+The optional second argument is the maximum number of results, clamped by the
+host. Returned items use the same shape as desktop items; `source` is
+`"Everything"`, and `path` contains the full filesystem path.
 
 ## Settings UI
 
@@ -442,6 +464,7 @@ restoring saved layouts, and reacting to grid changes.
 | `ui.contextMenu` | `getContextMenu()`, `onMenu(id)` |
 | `desktop.read` | `desktop.items`, `selection`, `find`, `draw.icon`, desktop-change callback |
 | `desktop.action` | `desktop.open`, `reveal`, `refresh` |
+| `everything.search` | `everything.search(query, maxResults)` |
 | `system.read` | `sys.cpu`, `memory`, `battery`, `network`, `gpu` |
 | `media.read` | `media.current` |
 | `media.action` | Media playback controls |
