@@ -12,10 +12,55 @@ showDate = true
 showSeconds = true
 textColor = 0xFFFFFF
 
+settings = {
+    presets = {
+        {
+            id = "transparent",
+            label = "默认透明",
+            default = true,
+            values = {
+                bg = 0x000000,
+                border = 0x000000,
+                alpha = 0.0,
+                borderAlpha = 0.0,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = true,
+                textColor = 0xFFFFFF,
+            }
+        },
+        {
+            id = "frosted",
+            label = "磨砂时间",
+            values = {
+                bg = 0x111827,
+                border = 0xFFFFFF,
+                alpha = 0.24,
+                borderAlpha = 0.18,
+                gradientEndA = 0.28,
+                shadowAlpha = 0.12,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.018,
+                followPersonalization = false,
+                textColor = 0xFFFFFF,
+            }
+        }
+    },
+    fields = {
+        { key = "showWeekday", label = "显示星期", type = "bool", default = true },
+        { key = "showDate", label = "显示日期", type = "bool", default = true },
+        { key = "showSeconds", label = "显示秒", type = "bool", default = true },
+        { key = "textColor", label = "文字颜色", type = "color", default = 0xFFFFFF },
+    }
+}
+
 function onVisible()
     loadConfig()
 end
-
 function autoTextColor(hex)
     local r = (hex >> 16) & 0xFF
     local g = (hex >> 8) & 0xFF
@@ -62,8 +107,8 @@ function resetDefaults()
     saveBool("showDate", showDate)
     saveBool("showSeconds", showSeconds)
     storage.set("textColor", tostring(textColor))
-    storage.set("followPersonalization", "0")
-    followPersonalization = false
+    storage.set("followPersonalization", "1")
+    followPersonalization = true
 end
 
 
@@ -135,40 +180,4 @@ function render()
             y = y + line.metrics.height + gap
         end
     end
-end
-
-function imguiRender()
-    loadConfig()
-    imgui.text("显示设置")
-    local newShowWeekday = imgui.checkbox("显示星期", showWeekday)
-    if newShowWeekday ~= showWeekday then showWeekday = newShowWeekday; saveBool("showWeekday", showWeekday) end
-
-    local newShowDate = imgui.checkbox("显示日期", showDate)
-    if newShowDate ~= showDate then showDate = newShowDate; saveBool("showDate", showDate) end
-
-    local newShowSeconds = imgui.checkbox("显示秒", showSeconds)
-    if newShowSeconds ~= showSeconds then
-        showSeconds = newShowSeconds
-        saveBool("showSeconds", showSeconds)
-    end
-
-    local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
-    if newFp ~= followPersonalization then
-        followPersonalization = newFp
-        storage.set("followPersonalization", followPersonalization and "1" or "0")
-    end
-
-    imgui.text("文字颜色")
-    local newTextColor = imgui.colorEdit3("##textColor", textColor)
-    if newTextColor ~= textColor then textColor = newTextColor; storage.set("textColor", tostring(textColor)) end
-
-    imgui.text("背景颜色")
-    local newBg = imgui.colorEdit3("##bg", bg)
-    if newBg ~= bg then bg = newBg; border = bg; storage.set("bg", tostring(bg)) end
-
-    local newAlpha = imgui.sliderFloat("透明度", alpha, 0.0, 1.0)
-    if newAlpha ~= alpha then alpha = newAlpha; storage.set("alpha", tostring(alpha)) end
-
-    if imgui.button("恢复默认设置") then resetDefaults() end
-
 end

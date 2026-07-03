@@ -1,11 +1,88 @@
 name = "RSS 阅读器"
+useCustomStyle = true
 bottomBarHover = false
+
+bg = 0x0F172A
+border = 0xFFFFFF
+alpha = 0.38
+borderAlpha = 0.16
+gradientEndA = 0.28
+shadowAlpha = 0.12
+shadowBlur = 16
+shadowOffsetY = 5
+highlightAlpha = 0.10
+noiseAlpha = 0.014
 
 local articles = {}
 local feedTitle = ""
 local loading = false
 local lastError = ""
 local visibleRange = { first = 0, last = 0, offset = 0 }
+local lastUrl = nil
+local lastInterval = nil
+local lastMaxItems = nil
+
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认外观",
+            default = true,
+            values = {
+                bg = 0x0F172A,
+                border = 0xFFFFFF,
+                alpha = 0.38,
+                borderAlpha = 0.16,
+                gradientEndA = 0.28,
+                shadowAlpha = 0.12,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.10,
+                noiseAlpha = 0.014,
+                followPersonalization = true,
+            }
+        },
+        {
+            id = "clear",
+            label = "清透列表",
+            values = {
+                bg = 0x111827,
+                border = 0xFFFFFF,
+                alpha = 0.28,
+                borderAlpha = 0.14,
+                gradientEndA = 0.30,
+                shadowAlpha = 0.10,
+                shadowBlur = 18,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.016,
+                followPersonalization = false,
+            }
+        },
+        {
+            id = "solid",
+            label = "深色列表",
+            values = {
+                bg = 0x0B1020,
+                border = 0xFFFFFF,
+                alpha = 0.50,
+                borderAlpha = 0.14,
+                gradientEndA = 0.18,
+                shadowAlpha = 0.10,
+                shadowBlur = 14,
+                shadowOffsetY = 4,
+                highlightAlpha = 0.06,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+            }
+        }
+    },
+    fields = {
+        { key = "url", label = "RSS 地址", type = "text", default = "https://www.ithome.com/rss/" },
+        { key = "interval", label = "刷新间隔（秒）", type = "int", default = 1800, min = 60, max = 3600 },
+        { key = "maxItems", label = "最大条目数", type = "int", default = 30, min = 10, max = 100 },
+    }
+}
 
 local function readConfig()
     return {
@@ -13,6 +90,13 @@ local function readConfig()
         interval = tonumber(storage.get("interval")) or 1800,
         maxItems = tonumber(storage.get("maxItems")) or 30,
     }
+end
+
+local function clearCache()
+    articles = {}
+    feedTitle = ""
+    lastError = ""
+    visibleRange = { first = 0, last = 0, offset = 0 }
 end
 
 local function parseItem(itemXml)
@@ -62,9 +146,32 @@ local function fetch()
     end
 end
 
-function onVisible()
+local function syncConfig(startTimer)
     local cfg = readConfig()
-    widget.setTimer("rss-refresh", cfg.interval * 1000, true)
+    local hadConfig = lastUrl ~= nil
+    local urlChanged = hadConfig and cfg.url ~= lastUrl
+    local intervalChanged = hadConfig and cfg.interval ~= lastInterval
+    local maxItemsChanged = hadConfig and cfg.maxItems ~= lastMaxItems
+
+    lastUrl = cfg.url
+    lastInterval = cfg.interval
+    lastMaxItems = cfg.maxItems
+
+    if startTimer or intervalChanged then
+        widget.cancelTimer("rss-refresh")
+        widget.setTimer("rss-refresh", cfg.interval * 1000, true)
+    end
+
+    if urlChanged or maxItemsChanged then
+        clearCache()
+        fetch()
+    end
+
+    return cfg
+end
+
+function onVisible()
+    syncConfig(true)
     if #articles == 0 then fetch() end
 end
 
@@ -119,6 +226,7 @@ function onHttpResponse(id, response)
 end
 
 function render()
+    syncConfig(false)
     widget.setTitle(feedTitle ~= "" and feedTitle or "RSS 阅读器")
     local w = layout.width()
     local h = layout.height()
@@ -207,36 +315,12 @@ function onDoubleClick(x, y)
 end
 
 function imguiRender()
-    local cfg = readConfig()
-
-    local url = imgui.inputText("RSS 地址", cfg.url)
-    if url ~= cfg.url then
-        storage.set("url", url)
-        articles = {}
-        feedTitle = ""
-        lastError = ""
-    end
-
-    local interval = imgui.sliderInt("刷新间隔（秒）", cfg.interval, 60, 3600)
-    if interval ~= cfg.interval then
-        storage.set("interval", tostring(interval))
-        widget.cancelTimer("rss-refresh")
-        widget.setTimer("rss-refresh", interval * 1000, true)
-    end
-
-    local maxItems = imgui.sliderInt("最大条目数", cfg.maxItems, 10, 100)
-    if maxItems ~= cfg.maxItems then
-        storage.set("maxItems", tostring(maxItems))
-    end
-
-    imgui.spacing()
+    syncConfig(false)
     if imgui.button("立即刷新") then fetch() end
 
     imgui.sameLine()
     if imgui.button("清除缓存") then
-        articles = {}
-        feedTitle = ""
-        lastError = ""
+        clearCache()
         fetch()
     end
 end
@@ -252,7 +336,7 @@ end
 
 function onMenu(id)
     if id == 1 then fetch()
-    elseif id == 2 then articles = {}; feedTitle = ""; lastError = ""; fetch()
+    elseif id == 2 then clearCache(); fetch()
     elseif id == 3 then
         local cfg = readConfig()
         if cfg.url ~= "" then desktop.open(cfg.url) end

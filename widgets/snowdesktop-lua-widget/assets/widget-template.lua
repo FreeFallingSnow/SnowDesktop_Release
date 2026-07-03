@@ -7,6 +7,31 @@ border = 0x5F7691
 alpha = 0.92
 gradientEndA = 0.0
 
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认",
+            default = true,
+            values = {
+                bg = 0x18202A,
+                border = 0x5F7691,
+                alpha = 0.92,
+                borderAlpha = 0.80,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = true,
+                color = 0xFFFFFF,
+            }
+        }
+    },
+    fields = {
+        { key = "color", label = "文字颜色", type = "color", default = 0xFFFFFF },
+    }
+}
+
 local function readConfig()
     return {
         message = storage.get("message") or "Hello, SnowDesktop!",
@@ -50,8 +75,4 @@ function imguiRender()
         storage.set("message", message)
     end
 
-    local color = imgui.colorEdit3("文字颜色", config.color)
-    if color ~= config.color then
-        storage.set("color", tostring(color))
-    end
 end

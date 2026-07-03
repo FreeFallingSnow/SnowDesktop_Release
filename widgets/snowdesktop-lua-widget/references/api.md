@@ -26,17 +26,36 @@ Scripts run in a sandbox containing:
 
 Coordinates passed to drawing and mouse callbacks are local to the component. The origin is its upper-left corner.
 
-Coordinates passed to drawing and mouse callbacks are local to the component. The origin is its upper-left corner.
-
 ### Script-level flags
 
 ```lua
 showTitle = true        -- display widget.setTitle() value in the bottom bar
 bottomBarHover = true   -- show the bottom bar only while hovering (default: true)
-useCustomStyle = true   -- read bg/border/alpha/gradientEndA globals instead of personalization
+useCustomStyle = true   -- enable Lua custom background style and the unified appearance panel
 ```
 
 The host reads these from the script globals before each render. `showTitle` defaults to `false`.
+When `useCustomStyle` is true, the host reads these optional appearance globals
+as script defaults:
+
+```lua
+bg = 0x18202A
+border = 0xFFFFFF
+alpha = 0.92
+borderAlpha = 0.18
+gradientEndA = 0.28
+shadowAlpha = 0.12
+shadowBlur = 16
+shadowOffsetY = 4
+highlightAlpha = 0.12
+noiseAlpha = 0.014
+```
+
+`bg` and `border` use `0xRRGGBB`. The alpha fields use `0.0` through `1.0`.
+`shadowBlur` and `shadowOffsetY` are design-unit values scaled by the host.
+The per-instance storage values with the same keys override script defaults.
+Set `followPersonalization` to `"1"`/`true` in storage or a default preset to
+use the global personalization colors and effects instead of the widget style.
 
 The host checks the script timestamp and hot-reloads it while rendering. Persistent storage is scoped by component instance ID, so two instances of the same script keep separate values.
 
@@ -182,7 +201,9 @@ widget.invalidate()
 widget.log("info", "message")
 
 local theme = widget.theme()
--- theme.bg, theme.border, theme.alpha, theme.gradientEndA
+-- theme.bg, theme.border, theme.alpha, theme.borderAlpha, theme.gradientEndA
+-- theme.cornerRadius, theme.shadowAlpha, theme.shadowBlur, theme.shadowOffsetY
+-- theme.highlightAlpha, theme.noiseAlpha
 
 widget.editText(key, x, y, width, height, multiline,
     initialText?, selectAll?, textColor?)
@@ -193,8 +214,6 @@ widget.openSettings()
 `widget.openSettings` opens the host settings panel for the current widget
 instance. Call this from `onDoubleClick` or `onMenu` to let the user configure
 the widget without using the right-click menu.
-
-`widget.editText` opens a host edit control and saves the result to `storage` under `key`. Defaults:
 
 `widget.editText` opens a host edit control and saves the result to `storage` under `key`. Defaults:
 
@@ -444,13 +463,89 @@ The manifest filename is derived by replacing `.lua` with `.widget.json`.
   "publisher": "Example",
   "minHostVersion": "0.1.2",
   "entry": "example.lua",
+  "presets": [
+    {
+      "id": "default",
+      "label": "默认",
+      "default": true,
+      "values": {
+        "bg": 1581098,
+        "border": 16777215,
+        "alpha": 0.92,
+        "borderAlpha": 0.18,
+        "gradientEndA": 0.28,
+        "shadowAlpha": 0.12,
+        "shadowBlur": 16,
+        "shadowOffsetY": 4,
+        "highlightAlpha": 0.12,
+        "noiseAlpha": 0.014,
+        "followPersonalization": "1",
+        "color": 16777215
+      }
+    }
+  ],
   "settings": [
     { "key": "enabled", "label": "启用", "type": "bool", "default": "1" },
     { "key": "count", "label": "数量", "type": "int", "default": "5", "min": 1, "max": 20 },
-    { "key": "mode", "label": "模式", "type": "select", "default": "A", "options": ["A", "B"] }
+    { "key": "mode", "label": "模式", "type": "select", "default": "A", "options": ["A", "B"] },
+    { "key": "color", "label": "颜色", "type": "color", "default": "16777215" }
   ]
 }
 ```
+
+Lua scripts can also declare the same settings directly:
+
+```lua
+settings = {
+  presets = {
+    { id = "default", label = "默认", default = true,
+      values = {
+        bg = 0x18202A,
+        border = 0xFFFFFF,
+        alpha = 0.92,
+        borderAlpha = 0.18,
+        gradientEndA = 0.28,
+        shadowAlpha = 0.12,
+        shadowBlur = 16,
+        shadowOffsetY = 4,
+        highlightAlpha = 0.12,
+        noiseAlpha = 0.014,
+        followPersonalization = true,
+        color = 0xFFFFFF
+      } }
+  },
+  fields = {
+    { key = "enabled", label = "启用", type = "bool", default = true },
+    { key = "color", label = "颜色", type = "color", default = 0xFFFFFF }
+  }
+}
+```
+
+For `useCustomStyle = true` widgets, presets appear in the **外观** section
+alongside the host-managed background controls. A preset may set these visual
+keys:
+
+| Key | Meaning |
+|---|---|
+| `bg` | background color, `0xRRGGBB` |
+| `border` | border color, `0xRRGGBB` |
+| `alpha` | background opacity, `0.0` through `1.0` |
+| `borderAlpha` | border opacity, `0.0` through `1.0` |
+| `gradientEndA` | bottom gradient opacity, `0.0` through `1.0` |
+| `shadowAlpha` | shadow opacity, `0.0` through `0.8` |
+| `shadowBlur` | shadow blur radius in design units |
+| `shadowOffsetY` | vertical shadow offset in design units |
+| `highlightAlpha` | top highlight opacity, `0.0` through `0.8` |
+| `noiseAlpha` | frosted noise opacity, `0.0` through `0.18` |
+| `followPersonalization` | `true`, `"1"`, or `"true"` to follow global personalization |
+
+Keep presets appearance-only. Put data URLs, refresh intervals, feature toggles,
+timers, and other behavior into declarative fields so visual presets do not
+silently change how the component works.
+
+`cornerRadius` and `barHeight` are host-owned layout settings. Widgets may read
+the current values through theme/layout APIs for alignment, but declarative
+settings and presets cannot override them.
 
 `minSize` and `maxSize` are optional grid-span constraints. If omitted, the
 component can use any valid grid span from `1 x 1` up to the current page size.
@@ -472,7 +567,7 @@ restoring saved layouts, and reacting to grid changes.
 
 Missing permissions produce a runtime error for guarded APIs. Context menus and desktop-change callbacks are skipped by the host when their permission is absent.
 
-Declarative setting types are `text`, `bool`, `int`, `float`, and `select`.
+Declarative setting types are `text`, `bool`, `int`, `float`, `select`, and `color`.
 Values are stored in the same per-instance string storage used by `storage`.
 
 For local package installation, select a `.widget.json` from

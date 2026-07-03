@@ -42,14 +42,26 @@ function render()
 end
 ```
 
-Use these optional top-level flags:
+Use these optional top-level flags and appearance globals:
 
-- `useCustomStyle = true`: read `bg`, `border`, `alpha`, and `gradientEndA` from the script.
+- `useCustomStyle = true`: enable Lua-controlled background appearance and the
+  host's unified **外观** settings panel for this widget.
 - `showTitle = true`: show the host title and enable host rename actions. When
   false or omitted, the host hides **重命名** and ignores F2 for the widget.
 - `bottomBarHover = false`: keep the bottom bar from using the default hover-only behavior.
 - `bg`, `border`: `0xRRGGBB`.
-- `alpha`, `gradientEndA`: decimal values from `0.0` to `1.0`.
+- `alpha`, `borderAlpha`, `gradientEndA`, `shadowAlpha`, `highlightAlpha`,
+  `noiseAlpha`: decimal values from `0.0` to `1.0`.
+- `shadowBlur`, `shadowOffsetY`: design-unit values converted through the host
+  component scale.
+
+For `useCustomStyle` widgets, prefer declarative `settings.presets` for visual
+presets and `settings.fields` for behavior. Presets should stay appearance-only:
+put colors, alpha, shadow, highlight, noise, and `followPersonalization` there;
+keep data sources, intervals, toggles, durations, and other behavior in fields.
+Set `followPersonalization = true` in the default preset when the widget should
+initially follow global personalization. Keep it `false` for widgets that should
+own their style by default.
 
 ## Manifest
 
@@ -106,7 +118,13 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
   it to the clipboard.
 - Use `imguiRender()` for the host **详细设置** panel.
 - Prefer declarative manifest `settings` for simple text, bool, integer, float,
-  and select fields; keep `imguiRender()` for custom editors.
+  select, and color fields; keep `imguiRender()` for custom editors.
+- Lua scripts may also declare `settings = { presets = {...}, fields = {...} }`
+  directly. The host merges manifest and script declarations into the same
+  settings panel.
+- Do not expose `cornerRadius` or `barHeight` as Lua settings or preset values.
+  They are host-owned layout settings; read them through `widget.theme()` and
+  `layout.barHeight()` only when alignment requires it.
 - Use `widget.setTimer()` instead of frame-count timing. Stop unnecessary timers
   in `onHidden()` and restart them in `onVisible()`.
 - Use `ui.button`, `ui.toggle`, `ui.progress`, `ui.scrollArea`, and

@@ -11,6 +11,127 @@ alpha = 1.0
 gradientEndA = 0.0
 textColor = 0x000000
 
+settings = {
+    presets = {
+        {
+            id = "classic",
+            label = "浅黄",
+            default = true,
+            values = {
+                bg = 0xFFF7D1,
+                border = 0xD0D0D0,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = true,
+                textColor = 0x000000,
+            }
+        },
+        {
+            id = "white",
+            label = "纯白",
+            values = {
+                bg = 0xFFFFFF,
+                border = 0xD6D6D6,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0x000000,
+            }
+        },
+        {
+            id = "pink",
+            label = "浅粉",
+            values = {
+                bg = 0xFFE1EC,
+                border = 0xE8AFC2,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0x2A111A,
+            }
+        },
+        {
+            id = "blue",
+            label = "浅蓝",
+            values = {
+                bg = 0xDCEBFF,
+                border = 0x9DBBE6,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0x102033,
+            }
+        },
+        {
+            id = "green",
+            label = "浅绿",
+            values = {
+                bg = 0xDFF7E7,
+                border = 0x9ACDAA,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0x102818,
+            }
+        },
+        {
+            id = "purple",
+            label = "浅紫",
+            values = {
+                bg = 0xEDE2FF,
+                border = 0xBFA7E8,
+                alpha = 1.0,
+                borderAlpha = 0.85,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0x211330,
+            }
+        },
+        {
+            id = "dark",
+            label = "深色",
+            values = {
+                bg = 0x20242C,
+                border = 0x3E4654,
+                alpha = 1.0,
+                borderAlpha = 0.95,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                textColor = 0xFFFFFF,
+            }
+        }
+    },
+    fields = {
+        { key = "textColor", label = "文字颜色", type = "color", default = 0x000000 },
+    }
+}
+
 -- 从 storage 加载已保存的值覆盖默认
 function autoTextColor(hex)
     local r = (hex >> 16) & 0xFF
@@ -44,10 +165,15 @@ function resetDefaults()
     storage.set("bg", tostring(bg))
     storage.set("border", tostring(border))
     storage.set("alpha", tostring(alpha))
+    storage.set("borderAlpha", "0.85")
     storage.set("gradientEndA", tostring(gradientEndA))
+    storage.set("shadowAlpha", "0.0")
+    storage.set("highlightAlpha", "0.0")
+    storage.set("noiseAlpha", "0.0")
     storage.set("textColor", tostring(textColor))
-    storage.set("followPersonalization", "0")
-    followPersonalization = false
+    storage.set("followPersonalization", "1")
+    storage.set("__preset", "classic")
+    followPersonalization = true
 end
 
 function render()
@@ -110,32 +236,5 @@ function imguiRender()
     local text = imgui.input("##note", storage.get("text") or "")
     if text ~= (storage.get("text") or "") then
         storage.set("text", text)
-    end
-
-    if imgui.collapsingHeader("便签设置") then
-        local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
-        if newFp ~= followPersonalization then
-            followPersonalization = newFp
-            storage.set("followPersonalization", followPersonalization and "1" or "0")
-        end
-
-        imgui.text("背景色")
-        local newBg = imgui.colorEdit3("##bg", bg)
-        if newBg ~= bg then bg = newBg; storage.set("bg", tostring(bg)) end
-
-        imgui.text("边框色")
-        local newBorder = imgui.colorEdit3("##border", border)
-        if newBorder ~= border then border = newBorder; storage.set("border", tostring(border)) end
-
-        imgui.text("文字色")
-        local newTc = imgui.colorEdit3("##tc", textColor)
-        if newTc ~= textColor then textColor = newTc; storage.set("textColor", tostring(textColor)) end
-
-        local newAlpha = imgui.sliderFloat("不透明度", alpha, 0.0, 1.0)
-        if newAlpha ~= alpha then alpha = newAlpha; storage.set("alpha", tostring(alpha)) end
-
-        if imgui.button("恢复默认设置") then
-            resetDefaults()
-        end
     end
 end

@@ -1,6 +1,18 @@
 name = "系统状态"
+useCustomStyle = true
 showTitle = true
 bottomBarHover = true
+
+bg = 0x0F172A
+border = 0xFFFFFF
+alpha = 0.34
+borderAlpha = 0.16
+gradientEndA = 0.30
+shadowAlpha = 0.12
+shadowBlur = 16
+shadowOffsetY = 5
+highlightAlpha = 0.10
+noiseAlpha = 0.014
 
 local prevCols = 0
 local prevRows = 0
@@ -9,6 +21,95 @@ local subLineIdx = 0
 local timerStarted = false
 
 local wrappedLineCache = {}
+
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认卡片",
+            default = true,
+            values = {
+                bg = 0x0F172A,
+                border = 0xFFFFFF,
+                alpha = 0.34,
+                borderAlpha = 0.16,
+                gradientEndA = 0.30,
+                shadowAlpha = 0.12,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.10,
+                noiseAlpha = 0.014,
+                followPersonalization = true,
+                cardBgColor = 0x000000,
+                cardBgAlpha = 0.08,
+                cardBdColor = 0xFFFFFF,
+                cardBdAlpha = 0.10,
+                cardTextColor = 0xFFFFFF,
+                cardSubColor = 0x94A3B8,
+            }
+        },
+        {
+            id = "clean",
+            label = "轻透卡片",
+            values = {
+                bg = 0x111827,
+                border = 0xFFFFFF,
+                alpha = 0.24,
+                borderAlpha = 0.14,
+                gradientEndA = 0.26,
+                shadowAlpha = 0.10,
+                shadowBlur = 18,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.016,
+                followPersonalization = false,
+                cardBgColor = 0xFFFFFF,
+                cardBgAlpha = 0.05,
+                cardBdColor = 0xFFFFFF,
+                cardBdAlpha = 0.08,
+                cardTextColor = 0xFFFFFF,
+                cardSubColor = 0xB8C4D6,
+            }
+        },
+        {
+            id = "solid",
+            label = "深色卡片",
+            values = {
+                bg = 0x0B1020,
+                border = 0xFFFFFF,
+                alpha = 0.62,
+                borderAlpha = 0.14,
+                gradientEndA = 0.12,
+                shadowAlpha = 0.10,
+                shadowBlur = 14,
+                shadowOffsetY = 4,
+                highlightAlpha = 0.06,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                cardBgColor = 0x0F172A,
+                cardBgAlpha = 0.24,
+                cardBdColor = 0xFFFFFF,
+                cardBdAlpha = 0.14,
+                cardTextColor = 0xFFFFFF,
+                cardSubColor = 0xA7B4C7,
+            }
+        }
+    },
+    fields = {
+        { key = "show_cpu", label = "显示 CPU", type = "bool", default = true },
+        { key = "show_memory", label = "显示内存", type = "bool", default = true },
+        { key = "show_gpu", label = "显示 GPU", type = "bool", default = true },
+        { key = "show_vram", label = "显示显存", type = "bool", default = true },
+        { key = "show_network", label = "显示网络", type = "bool", default = true },
+        { key = "show_battery", label = "显示电池", type = "bool", default = true },
+        { key = "cardBgColor", label = "卡片背景色", type = "color", default = 0x000000 },
+        { key = "cardBgAlpha", label = "卡片背景不透明度", type = "float", default = 0.08, min = 0, max = 1 },
+        { key = "cardBdColor", label = "卡片边框色", type = "color", default = 0xFFFFFF },
+        { key = "cardBdAlpha", label = "卡片边框不透明度", type = "float", default = 0.10, min = 0, max = 1 },
+        { key = "cardTextColor", label = "卡片文字色", type = "color", default = 0xFFFFFF },
+        { key = "cardSubColor", label = "卡片副文字色", type = "color", default = 0x94A3B8 },
+    }
+}
 
 local function clamp(v)
     return math.max(0, math.min(100, v or 0))
@@ -277,59 +378,6 @@ function onMenu(id)
     if id == 1 then
         widget.invalidate()
     elseif id == 2 then
-        for _, k in ipairs({ "cardBgColor", "cardBgAlpha", "cardBdColor", "cardBdAlpha", "cardTextColor", "cardSubColor" }) do
-            storage.remove(k)
-        end
-        widget.invalidate()
-    end
-end
-
-function imguiRender()
-    imgui.text("卡片可见性")
-    local function toggleCard(name, label)
-        local val = showCard(name)
-        local nv = imgui.checkbox("##vis_" .. name, val)
-        if nv ~= val then
-            storage.set("show_" .. name, nv and "1" or "0")
-        end
-        imgui.sameLine()
-        imgui.text(label)
-    end
-    toggleCard("cpu", "CPU")
-    toggleCard("memory", "内存")
-    toggleCard("gpu", "GPU")
-    toggleCard("vram", "显存")
-    toggleCard("network", "网络")
-    toggleCard("battery", "电池")
-
-    imgui.spacing()
-    imgui.separator()
-    imgui.spacing()
-    imgui.text("卡片外观")
-
-    local cfg = readConfig()
-    local nv
-
-    nv = imgui.colorEdit3("背景色", cfg.cardBgColor)
-    if nv ~= cfg.cardBgColor then storage.set("cardBgColor", tostring(nv)) end
-
-    nv = imgui.sliderFloat("背景不透明度", cfg.cardBgAlpha, 0, 1)
-    if nv ~= cfg.cardBgAlpha then storage.set("cardBgAlpha", tostring(nv)) end
-
-    nv = imgui.colorEdit3("边框色", cfg.cardBdColor)
-    if nv ~= cfg.cardBdColor then storage.set("cardBdColor", tostring(nv)) end
-
-    nv = imgui.sliderFloat("边框不透明度", cfg.cardBdAlpha, 0, 1)
-    if nv ~= cfg.cardBdAlpha then storage.set("cardBdAlpha", tostring(nv)) end
-
-    nv = imgui.colorEdit3("文字色", cfg.cardTextColor)
-    if nv ~= cfg.cardTextColor then storage.set("cardTextColor", tostring(nv)) end
-
-    nv = imgui.colorEdit3("副文字色", cfg.cardSubColor)
-    if nv ~= cfg.cardSubColor then storage.set("cardSubColor", tostring(nv)) end
-
-    imgui.spacing()
-    if imgui.button("恢复默认样式") then
         for _, k in ipairs({ "cardBgColor", "cardBgAlpha", "cardBdColor", "cardBdAlpha", "cardTextColor", "cardSubColor" }) do
             storage.remove(k)
         end

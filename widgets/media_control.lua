@@ -1,8 +1,63 @@
 name = "媒体控制"
+useCustomStyle = true
 bottomBarHover = true
+
+bg = 0x0F172A
+border = 0xFFFFFF
+alpha = 0.42
+borderAlpha = 0.16
+gradientEndA = 0.30
+shadowAlpha = 0.12
+shadowBlur = 16
+shadowOffsetY = 5
+highlightAlpha = 0.10
+noiseAlpha = 0.014
 
 local btnRects = {}
 local pendState = nil
+
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认外观",
+            default = true,
+            values = {
+                bg = 0x0F172A,
+                border = 0xFFFFFF,
+                alpha = 0.42,
+                borderAlpha = 0.16,
+                gradientEndA = 0.30,
+                shadowAlpha = 0.12,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.10,
+                noiseAlpha = 0.014,
+                followPersonalization = true,
+            }
+        },
+        {
+            id = "clear",
+            label = "清透媒体",
+            values = {
+                bg = 0x111827,
+                border = 0xFFFFFF,
+                alpha = 0.24,
+                borderAlpha = 0.14,
+                gradientEndA = 0.28,
+                shadowAlpha = 0.10,
+                shadowBlur = 18,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.016,
+                followPersonalization = false,
+            }
+        }
+    },
+    fields = {
+        { key = "launcher", label = "无播放时启动项", type = "text", default = "" },
+    }
+}
 
 local function readConfig()
     return {
@@ -92,16 +147,7 @@ end
 
 function imguiRender()
     local cfg = readConfig()
-    imgui.text("无播放时双击打开")
-    imgui.spacing()
-
-    local path = imgui.inputText("##launcher", cfg.launcher)
-    if path ~= cfg.launcher then
-        storage.set("launcher", path)
-    end
-
-    imgui.spacing()
-    imgui.text("或从桌面选择：")
+    imgui.text("从桌面选择启动项")
 
     local items = desktop.items()
     local labels = { "（不设置）" }
@@ -121,11 +167,6 @@ function imguiRender()
                 storage.set("launcher", item.path)
             end
         end
-    end
-
-    imgui.spacing()
-    if imgui.button("清除设置") then
-        storage.remove("launcher")
     end
 end
 

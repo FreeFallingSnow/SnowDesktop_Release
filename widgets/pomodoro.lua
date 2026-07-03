@@ -16,6 +16,79 @@ local TXT_DARK   = 0x333333
 local TXT_MUTED  = 0x888888
 local BTN_PAUSE  = 0xFFB347
 
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认专注",
+            default = true,
+            values = {
+                bg = 0xFFFFFF,
+                border = 0xD0D0D0,
+                alpha = 0.98,
+                borderAlpha = 0.70,
+                gradientEndA = 0.0,
+                shadowAlpha = 0.0,
+                highlightAlpha = 0.0,
+                noiseAlpha = 0.0,
+                followPersonalization = false,
+                workColor = DEFAULT_WORK_COLOR,
+                breakColor = DEFAULT_BREAK_COLOR,
+                trackColor = DEFAULT_TRACK_COLOR,
+            }
+        },
+        {
+            id = "soft",
+            label = "柔光专注",
+            values = {
+                bg = 0xFFF8F3,
+                border = 0xFFB6A3,
+                alpha = 0.86,
+                borderAlpha = 0.28,
+                gradientEndA = 0.16,
+                shadowAlpha = 0.10,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.012,
+                followPersonalization = false,
+                workColor = DEFAULT_WORK_COLOR,
+                breakColor = DEFAULT_BREAK_COLOR,
+                trackColor = 0xF1D7D0,
+            }
+        },
+        {
+            id = "clear",
+            label = "清透卡片",
+            values = {
+                bg = 0xFFFFFF,
+                border = 0xFFFFFF,
+                alpha = 0.28,
+                borderAlpha = 0.18,
+                gradientEndA = 0.24,
+                shadowAlpha = 0.12,
+                shadowBlur = 18,
+                shadowOffsetY = 6,
+                highlightAlpha = 0.14,
+                noiseAlpha = 0.016,
+                followPersonalization = false,
+                workColor = DEFAULT_WORK_COLOR,
+                breakColor = DEFAULT_BREAK_COLOR,
+                trackColor = 0xE8E8E8,
+            }
+        }
+    },
+    fields = {
+        { key = "workMin", label = "专注时长（分钟）", type = "int", default = 25, min = 1, max = 120 },
+        { key = "breakMin", label = "短休息（分钟）", type = "int", default = 5, min = 1, max = 60 },
+        { key = "longBreakMin", label = "长休息（分钟）", type = "int", default = 15, min = 1, max = 120 },
+        { key = "longBreakInterval", label = "长休息间隔（轮）", type = "int", default = 4, min = 1, max = 10 },
+        { key = "workColor", label = "专注颜色", type = "color", default = DEFAULT_WORK_COLOR },
+        { key = "breakColor", label = "休息颜色", type = "color", default = DEFAULT_BREAK_COLOR },
+        { key = "trackColor", label = "进度底色", type = "color", default = DEFAULT_TRACK_COLOR },
+    }
+}
+
 function updateTickTimer()
     local state = storage.get("state") or "idle"
     if state == "work" or state == "break" then
@@ -46,11 +119,22 @@ function loadConfig()
     breakColor        = tonumber(storage.get("breakColor"))        or DEFAULT_BREAK_COLOR
     trackColor        = tonumber(storage.get("trackColor"))        or DEFAULT_TRACK_COLOR
 
-    local savedBg = tonumber(storage.get("bgColor"))
+    local savedBg = tonumber(storage.get("bg")) or tonumber(storage.get("bgColor"))
     if savedBg then bg = savedBg end
-    local savedBorder = tonumber(storage.get("borderColor"))
+    local savedBorder = tonumber(storage.get("border")) or tonumber(storage.get("borderColor"))
     if savedBorder then border = savedBorder end
+    alpha = tonumber(storage.get("alpha")) or alpha
+    gradientEndA = tonumber(storage.get("gradientEndA")) or gradientEndA
     followPersonalization = storage.get("followPersonalization") == "1"
+    if followPersonalization then
+        local theme = widget.theme()
+        if theme and theme.bg then
+            bg = theme.bg
+            border = theme.border or border
+            alpha = theme.alpha or alpha
+            gradientEndA = theme.gradientEndA or gradientEndA
+        end
+    end
 end
 
 function timeNow()
@@ -401,62 +485,5 @@ function onMenu(id)
     elseif id == 3  then actionStop()
     elseif id == 5  then actionSkip()
     elseif id == 10 then actionReset()
-    end
-end
-
--- ---- settings ----
-
-function imguiRender()
-    loadConfig()
-
-    if imgui.collapsingHeader("时长设置") then
-        local wmText = imgui.inputText("专注时长（分钟）", tostring(workMin))
-        local wm = tonumber(wmText)
-        if wm and wm > 0 and wm <= 120 and wm ~= workMin then
-            workMin = wm; storage.set("workMin", tostring(workMin))
-        end
-
-        local bmText = imgui.inputText("短休息（分钟）", tostring(breakMin))
-        local bm = tonumber(bmText)
-        if bm and bm > 0 and bm <= 60 and bm ~= breakMin then
-            breakMin = bm; storage.set("breakMin", tostring(breakMin))
-        end
-
-        local lbText = imgui.inputText("长休息（分钟）", tostring(longBreakMin))
-        local lb = tonumber(lbText)
-        if lb and lb > 0 and lb <= 120 and lb ~= longBreakMin then
-            longBreakMin = lb; storage.set("longBreakMin", tostring(longBreakMin))
-        end
-
-        local lbiText = imgui.inputText("长休息间隔（轮）", tostring(longBreakInterval))
-        local lbi = tonumber(lbiText)
-        if lbi and lbi >= 1 and lbi <= 10 and lbi ~= longBreakInterval then
-            longBreakInterval = lbi; storage.set("longBreakInterval", tostring(longBreakInterval))
-        end
-    end
-
-    if imgui.collapsingHeader("颜色设置") then
-        local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
-        if newFp ~= followPersonalization then
-            followPersonalization = newFp
-            storage.set("followPersonalization", followPersonalization and "1" or "0")
-        end
-
-        local wc = imgui.colorEdit3("专注颜色", workColor)
-        if wc ~= workColor then workColor = wc; storage.set("workColor", tostring(workColor)) end
-
-        local bc = imgui.colorEdit3("休息颜色", breakColor)
-        if bc ~= breakColor then breakColor = bc; storage.set("breakColor", tostring(breakColor)) end
-
-        local bgc = imgui.colorEdit3("背景颜色", bg)
-        if bgc ~= bg then storage.set("bgColor", tostring(bgc)) end
-    end
-
-    if imgui.button("恢复默认设置") then
-        for _, k in ipairs({ "workMin", "breakMin", "longBreakMin", "longBreakInterval",
-                             "workColor", "breakColor", "trackColor", "bgColor", "borderColor", "followPersonalization" }) do
-            storage.remove(k)
-        end
-        followPersonalization = false
     end
 end

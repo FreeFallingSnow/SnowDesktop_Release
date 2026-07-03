@@ -7,46 +7,146 @@ border = 0x000000
 alpha = 0
 gradientEndA = 0
 
+settings = {
+    presets = {
+        {
+            id = "transparent",
+            label = "默认透明",
+            default = true,
+            values = {
+                bg = 0x000000,
+                border = 0x000000,
+                alpha = 0,
+                borderAlpha = 0,
+                gradientEndA = 0,
+                shadowAlpha = 0,
+                highlightAlpha = 0,
+                noiseAlpha = 0,
+                followPersonalization = false,
+            }
+        },
+        {
+            id = "glass",
+            label = "玻璃表盘",
+            values = {
+                bg = 0xFFFFFF,
+                border = 0xFFFFFF,
+                alpha = 0.16,
+                borderAlpha = 0.24,
+                gradientEndA = 0.20,
+                shadowAlpha = 0.10,
+                shadowBlur = 14,
+                shadowOffsetY = 4,
+                highlightAlpha = 0.16,
+                noiseAlpha = 0.012,
+                followPersonalization = false,
+            }
+        }
+    },
+    fields = {
+        { key = "showSecondHand", label = "显示秒针", type = "bool", default = true },
+        { key = "showNumbers", label = "显示数字", type = "bool", default = true },
+    }
+}
+
 function render()
     local t = sys.getTime()
+    local showSecondHand = storage.get("showSecondHand") ~= "0"
+    local showNumbers = storage.get("showNumbers") ~= "0"
     local w = layout.width()
     local h = layout.height()
     local cx = w / 2
     local cy = h / 2
-    local r = math.min(w, h) / 2 - layout.cu(8)
+    local size = math.min(w, h)
+    local minSpan = math.max(1, math.min(layout.columns(), layout.rows()))
 
-    -- 白色不透明表盘
-    draw.circle(cx, cy, r, 0xFFFFFF, 1.0)
-
-    -- 中心点
-    draw.circle(cx, cy, layout.cu(3), 0x333333)
-
-    -- 刻度
-    for i = 0, 59 do
-        local a = i * math.pi / 30 - math.pi / 2
-        local len = (i % 5 == 0) and layout.cu(6) or layout.cu(3)
-        local thick = (i % 5 == 0) and layout.cu(2.5) or layout.cu(0.8)
-        local col = (i % 5 == 0) and 0x333333 or 0xBBBBBB
-        local x1 = cx + math.cos(a) * (r - len)
-        local y1 = cy + math.sin(a) * (r - len)
-        local x2 = cx + math.cos(a) * r
-        local y2 = cy + math.sin(a) * r
-        draw.line(x1, y1, x2, y2, thick, col, 0.9)
+    local function scu(value)
+        return layout.cu(value * minSpan)
     end
 
-    -- 时针
+    local r = size / 2 - scu(10)
+    if r < scu(24) then r = size / 2 - scu(5) end
+    if r <= 0 then return end
+
+    local function su(value, minimum)
+        return math.max(minimum or 1, scu(value))
+    end
+
+    local outerStroke = su(1.4)
+    local innerStroke = su(0.8)
+    local hourTickLen = su(9)
+    local minuteTickLen = su(4)
+    local hourTickWidth = su(1.6)
+    local quarterTickWidth = su(2.2)
+    local minuteTickWidth = su(0.75)
+    local hourHandWidth = su(4.0, 2)
+    local minuteHandWidth = su(2.8, 2)
+    local secondHandWidth = su(1.1)
+
+    local function point(angle, radius)
+        return cx + math.cos(angle) * radius, cy + math.sin(angle) * radius
+    end
+
+    local function hand(angle, front, back, width, color, alpha)
+        local x1, y1 = point(angle + math.pi, back)
+        local x2, y2 = point(angle, front)
+        draw.line(x1, y1, x2, y2, width, color, alpha or 1.0)
+    end
+
+    -- 多层表盘，用填充圆模拟描边，避免依赖额外 stroke API。
+    draw.circle(cx, cy + su(1.5), r + outerStroke + su(1.2), 0x000000, 0.10)
+    draw.circle(cx, cy, r + outerStroke, 0xD7DEE8, 0.95)
+    draw.circle(cx, cy, r, 0xFFFFFF, 1.0)
+    local innerR = math.max(su(8), r - su(5) - innerStroke)
+    draw.circle(cx, cy, innerR + innerStroke, 0xF6F8FB, 0.72)
+    draw.circle(cx, cy, innerR, 0xFFFFFF, 1.0)
+
+    -- 刻度：主刻度更稳，副刻度更轻。
+    for i = 0, 59 do
+        local a = i * math.pi / 30 - math.pi / 2
+        local major = i % 5 == 0
+        local quarter = i % 15 == 0
+        local len = major and hourTickLen or minuteTickLen
+        local thick = quarter and quarterTickWidth or (major and hourTickWidth or minuteTickWidth)
+        local col = major and 0x1F2937 or 0xAEB7C5
+        local alphaTick = major and 0.86 or 0.46
+        local x1, y1 = point(a, r - len)
+        local x2, y2 = point(a, r - su(2))
+        draw.line(x1, y1, x2, y2, thick, col, alphaTick)
+    end
+
+    if showNumbers then
+        local numberFont = math.max(8, layout.fontCu(10.5 * minSpan))
+        local numberRadius = math.max(su(14), r - su(20))
+        for hour = 1, 12 do
+            local a = hour * math.pi / 6 - math.pi / 2
+            local label = tostring(hour)
+            local metrics = draw.measureText(label, numberFont, 0, true)
+            local tx, ty = point(a, numberRadius)
+            draw.text(tx - metrics.width / 2, ty - metrics.height / 2,
+                label, numberFont, 0x1F2937, 0, true, true)
+        end
+    end
+
     local ha = ((t.hour % 12) + t.min / 60) * math.pi / 6 - math.pi / 2
-    draw.line(cx, cy, cx + math.cos(ha) * r * 0.4, cy + math.sin(ha) * r * 0.4, layout.cu(3.5), 0x222222)
-
-    -- 分针
     local ma = (t.min + t.sec / 60) * math.pi / 30 - math.pi / 2
-    draw.line(cx, cy, cx + math.cos(ma) * r * 0.6, cy + math.sin(ma) * r * 0.6, layout.cu(2.5), 0x444444)
 
-    -- 秒针
-    local sa = t.sec * math.pi / 30 - math.pi / 2
-    draw.line(cx, cy, cx + math.cos(sa) * r * 0.78, cy + math.sin(sa) * r * 0.78, layout.cu(1), 0xFF3333)
+    -- 指针和中心帽按跨格缩放单位计算，跨多格时比例保持一致。
+    hand(ha, r * 0.45, su(7), hourHandWidth + su(1.0), 0xFFFFFF, 0.45)
+    hand(ma, r * 0.65, su(8), minuteHandWidth + su(0.8), 0xFFFFFF, 0.35)
+    hand(ha, r * 0.43, su(6), hourHandWidth, 0x111827, 0.96)
+    hand(ma, r * 0.63, su(7), minuteHandWidth, 0x374151, 0.96)
+    if showSecondHand then
+        local sa = t.sec * math.pi / 30 - math.pi / 2
+        hand(sa, r * 0.76, su(13), secondHandWidth, 0xEF4444, 0.96)
+    end
+
+    draw.circle(cx, cy, su(6.4), 0xFFFFFF, 1.0)
+    draw.circle(cx, cy, su(4.8), 0x111827, 0.98)
+    if showSecondHand then
+        draw.circle(cx, cy, su(2.1), 0xEF4444, 1.0)
+    end
 end
-
 function loadConfig()
     bg = tonumber(storage.get("bg")) or bg
     alpha = tonumber(storage.get("alpha")) or alpha
@@ -60,22 +160,4 @@ function resetDefaults()
     storage.set("alpha", tostring(alpha))
     storage.set("followPersonalization", "0")
     followPersonalization = false
-end
-
-function imguiRender()
-    loadConfig()
-    local newFp = imgui.checkbox("跟随个性化设置", followPersonalization)
-    if newFp ~= followPersonalization then
-        followPersonalization = newFp
-        storage.set("followPersonalization", followPersonalization and "1" or "0")
-    end
-
-    imgui.text("背景颜色")
-    local newBg = imgui.colorEdit3("##bg", bg)
-    if newBg ~= bg then bg = newBg; storage.set("bg", tostring(bg)) end
-
-    local newAlpha = imgui.sliderFloat("透明度", alpha, 0.0, 1.0)
-    if newAlpha ~= alpha then alpha = newAlpha; storage.set("alpha", tostring(alpha)) end
-
-    if imgui.button("恢复默认设置") then resetDefaults() end
 end

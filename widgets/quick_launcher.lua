@@ -1,5 +1,62 @@
 name = "快速启动"
+useCustomStyle = true
 bottomBarHover = false
+
+bg = 0x151A21
+border = 0xFFFFFF
+alpha = 0.40
+borderAlpha = 0.22
+gradientEndA = 0.32
+shadowAlpha = 0.12
+shadowBlur = 16
+shadowOffsetY = 5
+highlightAlpha = 0.10
+noiseAlpha = 0.014
+
+local lastQuery = nil
+
+settings = {
+    presets = {
+        {
+            id = "default",
+            label = "默认外观",
+            default = true,
+            values = {
+                bg = 0x151A21,
+                border = 0xFFFFFF,
+                alpha = 0.40,
+                borderAlpha = 0.22,
+                gradientEndA = 0.32,
+                shadowAlpha = 0.12,
+                shadowBlur = 16,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.10,
+                noiseAlpha = 0.014,
+                followPersonalization = true,
+            }
+        },
+        {
+            id = "accent",
+            label = "清透搜索",
+            values = {
+                bg = 0x0B141A,
+                border = 0x67D5B5,
+                alpha = 0.34,
+                borderAlpha = 0.28,
+                gradientEndA = 0.28,
+                shadowAlpha = 0.10,
+                shadowBlur = 18,
+                shadowOffsetY = 5,
+                highlightAlpha = 0.12,
+                noiseAlpha = 0.015,
+                followPersonalization = false,
+            }
+        }
+    },
+    fields = {
+        { key = "query", label = "搜索词", type = "text", default = "" },
+    }
+}
 
 function currentQuery()
     return storage.get("query") or ""
@@ -92,6 +149,19 @@ function matches()
     return results
 end
 
+function syncQueryState()
+    local query = currentQuery()
+    if lastQuery == nil then
+        lastQuery = query
+        return
+    end
+    if query ~= lastQuery then
+        setSelectedIndex(1)
+        setTopIndex(1)
+        lastQuery = query
+    end
+end
+
 function currentTheme()
     local theme = widget.theme()
     theme.bg = theme.bg or 0x151A21
@@ -101,6 +171,7 @@ function currentTheme()
 end
 
 function render()
+    syncQueryState()
     local w = layout.width()
     local h = layout.height()
     local pad = layout.cu(12)
@@ -228,13 +299,7 @@ function onMenu(id)
 end
 
 function imguiRender()
-    imgui.text("搜索")
-    local query = imgui.inputText("##query", currentQuery())
-    if query ~= currentQuery() then
-        storage.set("query", query)
-        setSelectedIndex(1)
-        setTopIndex(1)
-    end
+    syncQueryState()
 
     local items = matches()
     imgui.text("匹配项: " .. tostring(#items))
