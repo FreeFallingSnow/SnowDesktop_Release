@@ -27,7 +27,7 @@ settings = {
                 shadowAlpha = 0.0,
                 highlightAlpha = 0.0,
                 noiseAlpha = 0.0,
-                followPersonalization = true,
+                followPersonalization = false,
                 textColor = 0xFFFFFF,
             }
         },
@@ -107,8 +107,8 @@ function resetDefaults()
     saveBool("showDate", showDate)
     saveBool("showSeconds", showSeconds)
     storage.set("textColor", tostring(textColor))
-    storage.set("followPersonalization", "1")
-    followPersonalization = true
+    storage.set("followPersonalization", "0")
+    followPersonalization = false
 end
 
 

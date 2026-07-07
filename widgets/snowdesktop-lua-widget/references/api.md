@@ -419,6 +419,11 @@ host. Returned items use the same shape as desktop items; `source` is
 
 Declare `ui.input`, then define `imguiRender()`.
 
+The host renders the widget editor inside a scrollable page. When
+`imguiRender()` exists, its output is also wrapped in a scrollable child region,
+so scripts should emit controls directly and should not add an extra full-page
+scroll container only to compensate for editor height.
+
 ```lua
 imgui.text(text)
 imgui.textWrapped(text)
@@ -444,7 +449,17 @@ imgui.beginDisabled(disabled)
 imgui.endDisabled()
 ```
 
-Controls return the new/current value. Persist a value only when it differs from the previous value.
+Controls return the new/current value. Persist a value only when it differs from
+the previous value.
+
+For `useCustomStyle = true` widgets, the host separates reset actions:
+
+- **恢复默认主题** applies only host appearance keys from the default preset.
+- **恢复默认设置** applies declarative field defaults, falling back to matching
+  values from the default preset when a field has no explicit `default`.
+
+Keep custom `imguiRender()` reset buttons consistent with that split when a
+widget exposes both visual style and behavior/data settings.
 
 ## Manifest and permissions
 
@@ -479,8 +494,7 @@ The manifest filename is derived by replacing `.lua` with `.widget.json`.
         "shadowOffsetY": 4,
         "highlightAlpha": 0.12,
         "noiseAlpha": 0.014,
-        "followPersonalization": "1",
-        "color": 16777215
+        "followPersonalization": "1"
       }
     }
   ],
@@ -510,8 +524,7 @@ settings = {
         shadowOffsetY = 4,
         highlightAlpha = 0.12,
         noiseAlpha = 0.014,
-        followPersonalization = true,
-        color = 0xFFFFFF
+        followPersonalization = true
       } }
   },
   fields = {

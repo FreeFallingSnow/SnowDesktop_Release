@@ -119,6 +119,9 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 - Use `imguiRender()` for the host **详细设置** panel.
 - Prefer declarative manifest `settings` for simple text, bool, integer, float,
   select, and color fields; keep `imguiRender()` for custom editors.
+- The host wraps `imguiRender()` in a scrollable editor area. For
+  `useCustomStyle` widgets, **恢复默认主题** only restores appearance keys, while
+  **恢复默认设置** restores declarative fields.
 - Lua scripts may also declare `settings = { presets = {...}, fields = {...} }`
   directly. The host merges manifest and script declarations into the same
   settings panel.

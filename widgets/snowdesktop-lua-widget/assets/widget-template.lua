@@ -23,7 +23,6 @@ settings = {
                 highlightAlpha = 0.0,
                 noiseAlpha = 0.0,
                 followPersonalization = true,
-                color = 0xFFFFFF,
             }
         }
     },

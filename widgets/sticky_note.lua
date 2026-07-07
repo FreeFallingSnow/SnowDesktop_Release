@@ -26,7 +26,7 @@ settings = {
                 shadowAlpha = 0.0,
                 highlightAlpha = 0.0,
                 noiseAlpha = 0.0,
-                followPersonalization = true,
+                followPersonalization = false,
                 textColor = 0x000000,
             }
         },
@@ -171,9 +171,9 @@ function resetDefaults()
     storage.set("highlightAlpha", "0.0")
     storage.set("noiseAlpha", "0.0")
     storage.set("textColor", tostring(textColor))
-    storage.set("followPersonalization", "1")
+    storage.set("followPersonalization", "0")
     storage.set("__preset", "classic")
-    followPersonalization = true
+    followPersonalization = false
 end
 
 function render()

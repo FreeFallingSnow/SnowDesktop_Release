@@ -46,6 +46,7 @@ settings = {
                 cardBdAlpha = 0.10,
                 cardTextColor = 0xFFFFFF,
                 cardSubColor = 0x94A3B8,
+                cardSubFontSize = 12,
             }
         },
         {
@@ -69,6 +70,7 @@ settings = {
                 cardBdAlpha = 0.08,
                 cardTextColor = 0xFFFFFF,
                 cardSubColor = 0xB8C4D6,
+                cardSubFontSize = 12,
             }
         },
         {
@@ -92,6 +94,7 @@ settings = {
                 cardBdAlpha = 0.14,
                 cardTextColor = 0xFFFFFF,
                 cardSubColor = 0xA7B4C7,
+                cardSubFontSize = 12,
             }
         }
     },
@@ -108,6 +111,7 @@ settings = {
         { key = "cardBdAlpha", label = "卡片边框不透明度", type = "float", default = 0.10, min = 0, max = 1 },
         { key = "cardTextColor", label = "卡片文字色", type = "color", default = 0xFFFFFF },
         { key = "cardSubColor", label = "卡片副文字色", type = "color", default = 0x94A3B8 },
+        { key = "cardSubFontSize", label = "卡片副文字字号", type = "int", default = 12, min = 8, max = 18 },
     }
 }
 
@@ -132,6 +136,8 @@ local function showCard(name)
 end
 
 local function readConfig()
+    local subFontSize = tonumber(storage.get("cardSubFontSize")) or 12
+    subFontSize = math.max(8, math.min(18, subFontSize))
     return {
         cardBgColor   = tonumber(storage.get("cardBgColor"))   or 0x000000,
         cardBgAlpha   = tonumber(storage.get("cardBgAlpha"))   or 0.08,
@@ -139,6 +145,7 @@ local function readConfig()
         cardBdAlpha   = tonumber(storage.get("cardBdAlpha"))   or 0.10,
         cardTextColor = tonumber(storage.get("cardTextColor")) or 0xFFFFFF,
         cardSubColor  = tonumber(storage.get("cardSubColor"))  or 0x94A3B8,
+        cardSubFontSize = subFontSize,
     }
 end
 
@@ -165,7 +172,8 @@ local function drawCard(x, y, w, h, info, theme, cfg)
     draw.strokeRect(x, y, w, h, cfg.cardBdColor, layout.cu(10), layout.cu(1.0), cfg.cardBdAlpha)
 
     local ipad = layout.cu(8)
-    draw.text(x + ipad, y + layout.cu(6), info.title, layout.fontCu(11), cfg.cardSubColor, w - ipad * 2, true, true)
+    local subFont = layout.fontCu(cfg.cardSubFontSize)
+    draw.text(x + ipad, y + layout.cu(6), info.title, subFont, cfg.cardSubColor, w - ipad * 2, true, true)
 
     if info.lines then
         local lineY = y + h * 0.32
@@ -182,31 +190,33 @@ local function drawCard(x, y, w, h, info, theme, cfg)
         draw.text(vx, vy, info.value, valFont, cfg.cardTextColor, 0, true)
     end
 
+    local barY = nil
     if info.progress then
         local barPad = layout.cu(8)
         local barH = layout.cu(4)
-        local barY = y + h - layout.cu(16)
+        barY = y + h - layout.cu(16)
         draw.rect(x + barPad, barY, w - barPad * 2, barH, 0x1E293B, layout.cu(2), 1.0)
         draw.rect(x + barPad, barY, (w - barPad * 2) * info.progress, barH, info.color, layout.cu(2), 1.0)
     end
 
     if info.sub then
-        local subY = info.progress and (y + h - layout.cu(30)) or (y + h - layout.cu(16))
+        local subW = w - layout.cu(16)
+        local subText = info.sub
         if info.rotateLines then
-            local subW = w - layout.cu(16)
-            local cacheKey = info.sub .. "\n" .. tostring(subW)
+            local cacheKey = info.sub .. "\n" .. tostring(subW) .. "\n" .. tostring(cfg.cardSubFontSize)
             local lines = wrappedLineCache[cacheKey]
             if not lines then
-                lines = splitWrap(info.sub, layout.fontCu(10), subW)
+                lines = splitWrap(info.sub, subFont, subW)
                 wrappedLineCache[cacheKey] = lines
             end
             if #lines > 1 then
-                local line = lines[(subLineIdx % #lines) + 1]
-                draw.text(x + layout.cu(8), subY, line, layout.fontCu(10), cfg.cardSubColor, subW, false, true)
-                return
+                subText = lines[(subLineIdx % #lines) + 1]
             end
         end
-        draw.text(x + layout.cu(8), subY, info.sub, layout.fontCu(10), cfg.cardSubColor, w - layout.cu(16), false, false)
+        local subMetrics = draw.measureText(subText, subFont, subW, false)
+        local subBottom = barY and (barY - layout.cu(4)) or (y + h - layout.cu(6))
+        local subY = subBottom - subMetrics.height
+        draw.text(x + layout.cu(8), subY, subText, subFont, cfg.cardSubColor, subW, false, info.rotateLines == true)
     end
 end
 
@@ -378,7 +388,7 @@ function onMenu(id)
     if id == 1 then
         widget.invalidate()
     elseif id == 2 then
-        for _, k in ipairs({ "cardBgColor", "cardBgAlpha", "cardBdColor", "cardBdAlpha", "cardTextColor", "cardSubColor" }) do
+        for _, k in ipairs({ "cardBgColor", "cardBgAlpha", "cardBdColor", "cardBdAlpha", "cardTextColor", "cardSubColor", "cardSubFontSize" }) do
             storage.remove(k)
         end
         widget.invalidate()
