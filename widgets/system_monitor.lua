@@ -326,8 +326,10 @@ function render()
     local availW = w - inset * 2
     local cardW = math.floor((availW - hGap * (cols - 1)) / cols)
     local cardH = layout.cellHeight()
-    if rows * (cardH + vGap) - vGap + inset * 2 < h then
-        cardH = math.floor((h - inset * 2 - vGap * (rows - 1)) / rows)
+    local fillCardH = math.floor((h - inset * 2 - vGap * (rows - 1)) / rows)
+    if fillCardH > cardH then
+        local maxCardH = cardH + math.max(1, math.floor(cardH * 0.10))
+        cardH = math.min(fillCardH, maxCardH)
     end
     local totalH = math.ceil(inset + rows * cardH + (rows - 1) * vGap + inset)
 

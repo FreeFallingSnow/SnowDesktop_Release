@@ -130,8 +130,13 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
   `layout.barHeight()` only when alignment requires it.
 - Use `widget.setTimer()` instead of frame-count timing. Stop unnecessary timers
   in `onHidden()` and restart them in `onVisible()`.
-- Use `ui.button`, `ui.toggle`, `ui.progress`, `ui.scrollArea`, and
-  `ui.virtualList` when host-managed interaction or scrolling is sufficient.
+- Use `ui.button`, `ui.toggle`, `ui.textInput`, `ui.progress`, `ui.scrollArea`,
+  and `ui.virtualList` when host-managed interaction or scrolling is sufficient.
+  `ui.textInput` is Direct2D-rendered and transparent like the desktop file
+  search field; do not layer a native text editor over it.
+- Use `onSelected()` when a widget should react as soon as the desktop selects
+  it. For search-oriented widgets, call `ui.focusInput(id)` there so the
+  host-rendered input is ready for typing immediately.
 - Never call `http.request()` unconditionally from `render()`. Start requests
   from lifecycle, timer, menu, or UI callbacks and consume them in
   `onHttpResponse`. Redirect targets must also be declared in `networkDomains`.

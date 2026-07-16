@@ -76,6 +76,7 @@ function onWheel(x, y, button, delta) end
 function onDesktopChanged(reason) end
 function onVisible() end
 function onHidden() end
+function onSelected() end
 function onSizeChanged(columns, rows) end
 function onTimer(name) end
 function onHttpResponse(id, response) end
@@ -85,6 +86,7 @@ function onMenu(id) end
 ```
 
 - Mouse callbacks receive four arguments even if the script only declares `x, y`.
+- `onSelected()` runs when the desktop selects the widget.
 - For wheel handling, use the sign of `delta`.
 - `onDesktopChanged(reason)` requires `desktop.read`.
 - `imguiRender()` requires `ui.input`.
@@ -206,7 +208,7 @@ local theme = widget.theme()
 -- theme.highlightAlpha, theme.noiseAlpha
 
 widget.editText(key, x, y, width, height, multiline,
-    initialText?, selectAll?, textColor?)
+    initialText?, selectAll?, textColor?, fontSize?, backgroundColor?)
 
 widget.openSettings()
 ```
@@ -220,6 +222,8 @@ the widget without using the right-click menu.
 - `initialText`: current stored value.
 - `selectAll`: `true`.
 - `textColor`: `0x000000`.
+- `fontSize`: `15` pixels. Pass `layout.fontCu(...)` to match widget text.
+- `backgroundColor`: `0xFFFFFF`.
 
 Time:
 
@@ -332,6 +336,8 @@ still match `networkDomains`, and `response.ok` is true only for HTTP 2xx.
 ```lua
 ui.button(id, label, x, y, width, height, enabled?)
 ui.toggle(id, label, x, y, width, height, value)
+local value = ui.textInput(id, storageKey, x, y, width, height, options?)
+local focused = ui.focusInput(id)
 ui.progress(x, y, width, height, value0To1, color?)
 local offset = ui.scrollArea(id, x, y, width, height, contentHeight)
 local range = ui.virtualList(id, x, y, width, height, itemHeight, itemCount)
@@ -345,6 +351,20 @@ Buttons and toggles use host hit-testing. Scroll areas and virtual lists consume
 the mouse wheel while the pointer is inside their bounds. The host automatically
 draws a scrollbar at the right edge of the widget frame when the content height
 exceeds the viewport height.
+
+`ui.textInput` draws a persistent, transparent single-line input field entirely
+through Direct2D and saves the edited value under `storageKey`. It uses the
+desktop's hidden keyboard input window, so focusing it never creates an opaque
+native control over the widget. Clicking the field focuses it;
+`ui.focusInput(id)` does the same programmatically. Supported options are
+`placeholder`, `fontSize` (pixels), `textColor`, `placeholderColor`,
+`backgroundColor`, `borderColor`, `focusedBorderColor`, `backgroundAlpha`,
+`focusedBackgroundAlpha`, `borderAlpha`, `focusedBorderAlpha`, `radius`,
+`padding`, `borderThickness`, `selectAll`, and `liveUpdate`. The transparency
+defaults match the desktop file search field: 0.05 at rest and 0.12 while
+focused. Pass `layout.fontCu(...)` as `fontSize` to match other widget text.
+`liveUpdate` defaults to `true`; pressing Escape restores the value from before
+editing.
 
 ## Storage
 

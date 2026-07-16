@@ -129,6 +129,7 @@ settings = {
     },
     fields = {
         { key = "textColor", label = "文字颜色", type = "color", default = 0x000000 },
+        { key = "fontSize", label = "文字字号", type = "int", default = 15, min = 10, max = 24 },
     }
 }
 
@@ -141,19 +142,53 @@ function autoTextColor(hex)
     return lum > 140 and 0x000000 or 0xFFFFFF
 end
 
+function syncFollowTextColor()
+    local follows = storage.get("followPersonalization") == "1"
+        or storage.get("followPersonalization") == "true"
+    local state = follows and "1" or "0"
+    local previous = storage.get("__followPersonalizationState")
+
+    if previous == nil then
+        storage.set("__followPersonalizationState", state)
+        storage.remove("__followTextColorPending")
+        return
+    end
+    if previous ~= state then
+        storage.set("__followPersonalizationState", state)
+        storage.set("__followTextColorPending", state)
+        return
+    end
+    if storage.get("__followTextColorPending") ~= state then return end
+
+    local background = nil
+    if follows then
+        local theme = widget.theme()
+        background = theme and theme.bg or nil
+    else
+        background = tonumber(storage.get("bg"))
+        if background == nil then
+            local theme = widget.theme()
+            background = theme and theme.bg or nil
+        end
+    end
+    if background ~= nil then
+        textColor = autoTextColor(background)
+        storage.set("textColor", tostring(textColor))
+        storage.remove("__followTextColorPending")
+    end
+end
+
 function loadConfig()
     bg = tonumber(storage.get("bg")) or bg
     border = tonumber(storage.get("border")) or border
     alpha = tonumber(storage.get("alpha")) or alpha
     gradientEndA = tonumber(storage.get("gradientEndA")) or gradientEndA
     textColor = tonumber(storage.get("textColor")) or textColor
-    followPersonalization = storage.get("followPersonalization") == "1"
-    if followPersonalization then
-        local theme = widget.theme()
-        if theme and theme.bg then
-            textColor = autoTextColor(theme.bg)
-        end
-    end
+    syncFollowTextColor()
+end
+
+function getFontSize()
+    return math.max(10, math.min(24, tonumber(storage.get("fontSize")) or 15))
 end
 
 function resetDefaults()
@@ -171,9 +206,11 @@ function resetDefaults()
     storage.set("highlightAlpha", "0.0")
     storage.set("noiseAlpha", "0.0")
     storage.set("textColor", tostring(textColor))
+    storage.set("fontSize", "15")
     storage.set("followPersonalization", "0")
+    storage.set("__followPersonalizationState", "0")
+    storage.remove("__followTextColorPending")
     storage.set("__preset", "classic")
-    followPersonalization = false
 end
 
 function render()
@@ -184,7 +221,7 @@ function render()
     local h = layout.height()
     local saved = storage.get("text") or ""
     local pad = layout.cu(14)
-    local fontSize = layout.fontCu(15)
+    local fontSize = layout.fontCu(getFontSize())
     local maxWidth = w - pad * 2
     local bottomBarH = layout.cu(layout.barHeight())
     local viewportH = h - pad - bottomBarH
@@ -211,7 +248,8 @@ function onDoubleClick(x, y)
     local pad = layout.cu(14)
     local bottomBarH = layout.cu(layout.barHeight())
     local viewportH = h - pad - bottomBarH
-    widget.editText("text", pad, pad, w - pad * 2, viewportH, true, storage.get("text") or "", false, textColor)
+    widget.editText("text", pad, pad, w - pad * 2, viewportH, true,
+        storage.get("text") or "", false, textColor, layout.fontCu(getFontSize()))
 end
 
 function getContextMenu()
@@ -230,7 +268,6 @@ function onMenu(id)
 end
 
 function imguiRender()
-    loadConfig()
     imgui.text("便签内容")
 
     local text = imgui.input("##note", storage.get("text") or "")

@@ -81,6 +81,7 @@ settings = {
         { key = "url", label = "RSS 地址", type = "text", default = "https://www.ithome.com/rss/" },
         { key = "interval", label = "刷新间隔（秒）", type = "int", default = 1800, min = 60, max = 3600 },
         { key = "maxItems", label = "最大条目数", type = "int", default = 30, min = 10, max = 100 },
+        { key = "fontSize", label = "文章字号", type = "int", default = 12, min = 10, max = 24 },
     }
 }
 
@@ -89,7 +90,22 @@ local function readConfig()
         url = storage.get("url") or "https://www.ithome.com/rss/",
         interval = tonumber(storage.get("interval")) or 1800,
         maxItems = tonumber(storage.get("maxItems")) or 30,
+        fontSize = math.max(10, math.min(24, tonumber(storage.get("fontSize")) or 12)),
     }
+end
+
+local function articleLayout(fontSize)
+    local secondaryFontSize = math.max(9, fontSize - 2)
+    local secondaryTop = fontSize + 13
+    local itemHeight = math.max(48, secondaryTop + secondaryFontSize + 7)
+    return itemHeight, secondaryFontSize, secondaryTop
+end
+
+local function headerLayout(fontSize)
+    local headerFontSize = math.min(28, fontSize + 2)
+    local headerHeight = math.max(24, headerFontSize + 8)
+    local listTop = 11 + headerHeight + 8
+    return headerFontSize, headerHeight, listTop
 end
 
 local function clearCache()
@@ -226,16 +242,18 @@ function onHttpResponse(id, response)
 end
 
 function render()
-    syncConfig(false)
+    local cfg = syncConfig(false)
     widget.setTitle(feedTitle ~= "" and feedTitle or "RSS 阅读器")
     local w = layout.width()
     local h = layout.height()
     local padX = layout.cu(14)
     local headerTop = layout.cu(11)
-    local headerHeight = layout.cu(24)
-    local listTop = layout.cu(43)
+    local headerFontSize, headerHeightCu, listTopCu = headerLayout(cfg.fontSize)
+    local headerHeight = layout.cu(headerHeightCu)
+    local listTop = layout.cu(listTopCu)
     local listBottom = h - layout.cu(16)
-    local itemH = layout.cu(48)
+    local itemHeightCu, secondaryFontSize, secondaryTopCu = articleLayout(cfg.fontSize)
+    local itemH = layout.cu(itemHeightCu)
     local numberW = layout.cu(20)
     local textX = padX + numberW + layout.cu(5)
     local textW = math.max(layout.cu(40), w - textX - padX)
@@ -253,13 +271,16 @@ function render()
         return
     end
 
-    local countW = layout.cu(52)
     local countText = tostring(#articles) .. " 篇"
-    local countMetrics = draw.measureText(countText, layout.fontCu(10), countW, false)
+    local countFontSize = secondaryFontSize
+    local countMetrics = draw.measureText(countText, layout.fontCu(countFontSize), w, false)
+    local countW = math.max(layout.cu(52), math.ceil(countMetrics.width))
     draw.text(padX, headerTop, feedTitle ~= "" and feedTitle or "RSS",
-        layout.fontCu(14), 0xF8FAFC, w - padX * 2 - countW, false, true)
-    draw.text(w - layout.cu(14) - countMetrics.width, headerTop + layout.cu(2), countText,
-        layout.fontCu(10), 0x8291A3, countMetrics.width + 1, false, true)
+        layout.fontCu(headerFontSize), 0xF8FAFC,
+        w - padX * 2 - countW - layout.cu(6), false, true)
+    local countTop = headerTop + layout.cu(math.max(0, (headerFontSize - countFontSize) / 2))
+    draw.text(w - layout.cu(14) - countMetrics.width, countTop, countText,
+        layout.fontCu(countFontSize), 0x8291A3, countMetrics.width + 1, false, true)
     draw.line(padX, headerTop + headerHeight, w - padX,
         headerTop + headerHeight, layout.cu(1), 0xFFFFFF, 0.10)
 
@@ -277,13 +298,13 @@ function render()
             draw.text(padX + (numberW - numberMetrics.width) / 2,
                 y + (itemH - numberMetrics.height) / 2,
                 numberText, layout.fontCu(13), 0xFFFFFF, numberW, true, true)
-            draw.text(textX, y + layout.cu(4), a.title, layout.fontCu(12), 0xF1F5F9,
+            draw.text(textX, y + layout.cu(4), a.title, layout.fontCu(cfg.fontSize), 0xF1F5F9,
                 textW, false, true)
             local dateShort = a.date:match("(%d%d? .%l%l%l? %d%d%d%d)") or a.date:sub(1, 16)
             if dateShort == "" then dateShort = a.date:sub(1, 10) end
-            draw.text(textX, y + layout.cu(25),
+            draw.text(textX, y + layout.cu(secondaryTopCu),
                 dateShort ~= "" and dateShort or a.link:sub(1, 36),
-                layout.fontCu(10), 0x7E8C9D, textW, false, true)
+                layout.fontCu(secondaryFontSize), 0x7E8C9D, textW, false, true)
             draw.line(textX, y + itemH - layout.cu(1), w - padX,
                 y + itemH - layout.cu(1), layout.cu(1), 0xFFFFFF, 0.07)
         end
@@ -297,8 +318,11 @@ function render()
 end
 
 function onDoubleClick(x, y)
-    local itemH = layout.cu(48)
-    local listTop = layout.cu(43)
+    local cfg = readConfig()
+    local itemHeightCu = articleLayout(cfg.fontSize)
+    local itemH = layout.cu(itemHeightCu)
+    local _, _, listTopCu = headerLayout(cfg.fontSize)
+    local listTop = layout.cu(listTopCu)
     local listBottom = layout.height() - layout.cu(16)
 
     if y < listTop or y >= listBottom then return end

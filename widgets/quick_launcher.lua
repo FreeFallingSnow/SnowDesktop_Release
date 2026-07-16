@@ -1,5 +1,6 @@
 name = "快速启动"
 useCustomStyle = true
+showTitle = true
 bottomBarHover = false
 
 bg = 0x151A21
@@ -55,11 +56,33 @@ settings = {
     },
     fields = {
         { key = "query", label = "搜索词", type = "text", default = "" },
+        { key = "fontSize", label = "字号", type = "int", default = 14, min = 10, max = 24 },
     }
 }
 
 function currentQuery()
     return storage.get("query") or ""
+end
+
+function currentFontSize()
+    return math.max(10, math.min(24, tonumber(storage.get("fontSize")) or 14))
+end
+
+function pageMetrics()
+    local fontSize = currentFontSize()
+    local searchTopCu = 12
+    local searchHeightCu = math.max(28, fontSize + 16)
+    local listTopCu = searchTopCu + searchHeightCu + 12
+    local rowHeightCu = math.max(34, fontSize + 20)
+    return {
+        fontSize = fontSize,
+        searchTop = layout.cu(searchTopCu),
+        searchHeight = layout.cu(searchHeightCu),
+        listTop = layout.cu(listTopCu),
+        rowHeight = layout.cu(rowHeightCu),
+        iconSize = layout.cu(math.max(22, fontSize + 10)),
+        itemTextOffsetY = layout.cu(3 + math.max(0, fontSize - 12) * 0.35),
+    }
 end
 
 function selectedIndex()
@@ -78,16 +101,18 @@ function setTopIndex(value)
     storage.set("topIndex", tostring(math.max(1, value)))
 end
 
-function listMetrics()
-    local y = layout.cu(82)
-    local rowH = layout.cu(30)
+function listMetrics(metrics)
+    metrics = metrics or pageMetrics()
+    local y = metrics.listTop
+    local rowH = metrics.rowHeight
     local h = layout.height()
-    local maxRows = math.max(1, math.floor((h - y - layout.cu(8)) / rowH))
+    local bottomBarH = layout.cu(layout.barHeight())
+    local maxRows = math.max(1, math.floor((h - y - bottomBarH - layout.cu(8)) / rowH))
     return y, rowH, maxRows
 end
 
-function clampViewport(count)
-    local listY, rowH, maxRows = listMetrics()
+function clampViewport(count, metrics)
+    local listY, rowH, maxRows = listMetrics(metrics)
     local maxTop = math.max(1, count - maxRows + 1)
     local top = math.min(topIndex(), maxTop)
     setTopIndex(top)
@@ -172,20 +197,33 @@ end
 
 function render()
     syncQueryState()
+    widget.setTitle("快速启动")
     local w = layout.width()
-    local h = layout.height()
     local pad = layout.cu(12)
-    local query = currentQuery()
+    local metrics = pageMetrics()
     local items = matches()
-    local top, selected, listY, rowH, maxRows = clampViewport(#items)
+    local top, selected, listY, rowH, maxRows = clampViewport(#items, metrics)
     local theme = currentTheme()
 
-    draw.text(pad, pad, "快速启动", layout.fontCu(18), 0xFFFFFF, w - pad * 2, true, true)
-    draw.rect(pad, layout.cu(42), w - pad * 2, layout.cu(28), theme.bg, layout.cu(6), math.min(0.55, theme.alpha + 0.18))
-    draw.strokeRect(pad, layout.cu(42), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), layout.cu(1.2), math.min(0.95, theme.alpha + 0.35))
-    local shownQuery = query
-    if shownQuery == "" then shownQuery = "单击输入搜索关键字" end
-    draw.text(pad + layout.cu(10), layout.cu(48), shownQuery, layout.fontCu(12), 0xD7FFFA, w - pad * 2 - layout.cu(20), false, true)
+    ui.textInput("search", "query", pad, metrics.searchTop,
+        w - pad * 2, metrics.searchHeight, {
+            placeholder = "单击输入搜索关键字",
+            fontSize = layout.fontCu(metrics.fontSize),
+            textColor = 0xD7FFFA,
+            placeholderColor = 0x8FA3B8,
+            backgroundColor = 0xFFFFFF,
+            borderColor = 0xFFFFFF,
+            focusedBorderColor = 0x64A8FF,
+            backgroundAlpha = 0.05,
+            focusedBackgroundAlpha = 0.12,
+            borderAlpha = 0.12,
+            focusedBorderAlpha = 0.70,
+            radius = layout.cu(7),
+            padding = layout.cu(8),
+            borderThickness = layout.cu(1.2),
+            selectAll = false,
+            liveUpdate = true,
+        })
 
     local y = listY
     for row = 0, math.min(#items - top + 1, maxRows) - 1 do
@@ -193,16 +231,23 @@ function render()
         local item = items[i]
         local isSelected = i == selected
         if isSelected then
-            draw.rect(pad, y - layout.cu(2), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), 0.28)
-            draw.strokeRect(pad, y - layout.cu(2), w - pad * 2, layout.cu(28), theme.border, layout.cu(6), layout.cu(1.0), 0.65)
+            draw.rect(pad, y - layout.cu(2), w - pad * 2, rowH - layout.cu(2),
+                theme.border, layout.cu(6), 0.28)
+            draw.strokeRect(pad, y - layout.cu(2), w - pad * 2, rowH - layout.cu(2),
+                theme.border, layout.cu(6), layout.cu(1.0), 0.65)
         end
-        draw.icon(item, pad + layout.cu(4), y, layout.cu(22))
-        draw.text(pad + layout.cu(34), y + layout.cu(3), item.title or "(未命名)", layout.fontCu(12), 0xFFFFFF, w - pad * 2 - layout.cu(40), false, true)
+        draw.icon(item, pad + layout.cu(4),
+            y + math.max(0, (rowH - metrics.iconSize) / 2 - layout.cu(1)), metrics.iconSize)
+        local textX = pad + metrics.iconSize + layout.cu(12)
+        draw.text(textX, y + metrics.itemTextOffsetY, item.title or "(未命名)",
+            layout.fontCu(metrics.fontSize), 0xFFFFFF,
+            w - pad - textX - layout.cu(6), false, true)
         y = y + rowH
     end
 
     if #items == 0 then
-        draw.text(pad, y, "没有匹配项目", layout.fontCu(12), 0x8FA3B8, w - pad * 2, false, true)
+        draw.text(pad, y, "没有匹配项目", layout.fontCu(metrics.fontSize),
+            0x8FA3B8, w - pad * 2, false, true)
     elseif #items > maxRows then
         local barH = math.max(layout.cu(12), math.floor((maxRows / #items) * (maxRows * rowH)))
         local barY = listY + math.floor(((top - 1) / math.max(1, #items - maxRows)) * (maxRows * rowH - barH))
@@ -249,31 +294,21 @@ function itemIndexAtPoint(x, y)
 end
 
 function onClick(x, y)
-    local w = layout.width()
-    local searchTop = layout.cu(42)
-    local searchBottom = layout.cu(70)
-    if y >= searchTop and y <= searchBottom then
-        widget.editText("query", layout.cu(12), searchTop, w - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
-        return
-    end
     local idx = itemIndexAtPoint(x, y)
     if idx then
         setSelectedIndex(idx)
     end
 end
 
+function onSelected()
+    ui.focusInput("search")
+end
+
 function onDoubleClick(x, y)
-    local w = layout.width()
-    local searchTop = layout.cu(42)
-    local searchBottom = layout.cu(70)
-    if y >= searchTop and y <= searchBottom then
-        widget.editText("query", layout.cu(12), searchTop, w - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
-    else
-        local idx = itemIndexAtPoint(x, y)
-        if idx then
-            setSelectedIndex(idx)
-            openSelected(false)
-        end
+    local idx = itemIndexAtPoint(x, y)
+    if idx then
+        setSelectedIndex(idx)
+        openSelected(false)
     end
 end
 
@@ -288,7 +323,7 @@ end
 
 function onMenu(id)
     if id == 4 then
-        widget.editText("query", layout.cu(12), layout.cu(42), layout.width() - layout.cu(24), layout.cu(28), false, currentQuery(), true, 0xD7FFFA)
+        ui.focusInput("search")
     elseif id == 1 then
         openSelected(false)
     elseif id == 2 then

@@ -117,7 +117,7 @@ function render()
 
     if showNumbers then
         local numberFont = math.max(8, layout.fontCu(10.5 * minSpan))
-        local numberRadius = math.max(su(14), r - su(20))
+        local numberRadius = math.max(su(14), r - su(16))
         for hour = 1, 12 do
             local a = hour * math.pi / 6 - math.pi / 2
             local label = tostring(hour)
