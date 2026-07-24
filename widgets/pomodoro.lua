@@ -1,91 +1,70 @@
 -- pomodoro.lua - 番茄钟
-name = "番茄钟"
+name = l10n.tr("lua_widget.pomodoro.name")
 useCustomStyle = true
+followPersonalizationDefault = true
 bottomBarHover = false
 
-bg = 0xFFFFFF
-border = 0xD0D0D0
-alpha = 0.98
-gradientEndA = 0.0
+bg = 0x151A21
+border = 0xFFFFFF
+alpha = 0.42
+gradientEndA = 0.30
 
 local DEFAULT_WORK_COLOR   = 0xFF6347
 local DEFAULT_BREAK_COLOR  = 0x4ECDC4
-local DEFAULT_TRACK_COLOR  = 0xE8E8E8
 
-local TXT_DARK   = 0x333333
-local TXT_MUTED  = 0x888888
-local BTN_PAUSE  = 0xFFB347
+local function getPalette()
+    local theme = widget.theme()
+    if theme and theme.contentTheme == 1 then
+        return {
+            txtDark    = 0x1E293B,
+            txtMuted   = 0x334155,
+            trackColor = 0xE2E8F0,
+            btnBg      = 0xE2E8F0,
+            btnPause   = 0xD97706,
+        }
+    end
+    return {
+        txtDark    = 0xF1F5F9,
+        txtMuted   = 0xF1F5F9,
+        trackColor = 0x1E293B,
+        btnBg      = 0x1E293B,
+        btnPause   = 0xFFB347,
+    }
+end
 
 settings = {
     presets = {
         {
-            id = "default",
-            label = "默认专注",
+            id = "dark",
+            label = l10n.tr("lua_widget.pomodoro.preset_dark"),
             default = true,
+            values = {
+                bg = 0x151A21,
+                border = 0xFFFFFF,
+                alpha = 0.42,
+                borderAlpha = 0.18,
+                gradientEndA = 0.30,
+            }
+        },
+        {
+            id = "light",
+            label = l10n.tr("lua_widget.pomodoro.preset_light"),
             values = {
                 bg = 0xFFFFFF,
                 border = 0xD0D0D0,
                 alpha = 0.98,
                 borderAlpha = 0.70,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                workColor = DEFAULT_WORK_COLOR,
-                breakColor = DEFAULT_BREAK_COLOR,
-                trackColor = DEFAULT_TRACK_COLOR,
             }
         },
-        {
-            id = "soft",
-            label = "柔光专注",
-            values = {
-                bg = 0xFFF8F3,
-                border = 0xFFB6A3,
-                alpha = 0.86,
-                borderAlpha = 0.28,
-                gradientEndA = 0.16,
-                shadowAlpha = 0.10,
-                shadowBlur = 16,
-                shadowOffsetY = 5,
-                highlightAlpha = 0.12,
-                noiseAlpha = 0.012,
-                followPersonalization = false,
-                workColor = DEFAULT_WORK_COLOR,
-                breakColor = DEFAULT_BREAK_COLOR,
-                trackColor = 0xF1D7D0,
-            }
-        },
-        {
-            id = "clear",
-            label = "清透卡片",
-            values = {
-                bg = 0xFFFFFF,
-                border = 0xFFFFFF,
-                alpha = 0.28,
-                borderAlpha = 0.18,
-                gradientEndA = 0.24,
-                shadowAlpha = 0.12,
-                shadowBlur = 18,
-                shadowOffsetY = 6,
-                highlightAlpha = 0.14,
-                noiseAlpha = 0.016,
-                followPersonalization = false,
-                workColor = DEFAULT_WORK_COLOR,
-                breakColor = DEFAULT_BREAK_COLOR,
-                trackColor = 0xE8E8E8,
-            }
-        }
     },
     fields = {
-        { key = "workMin", label = "专注时长（分钟）", type = "int", default = 25, min = 1, max = 120 },
-        { key = "breakMin", label = "短休息（分钟）", type = "int", default = 5, min = 1, max = 60 },
-        { key = "longBreakMin", label = "长休息（分钟）", type = "int", default = 15, min = 1, max = 120 },
-        { key = "longBreakInterval", label = "长休息间隔（轮）", type = "int", default = 4, min = 1, max = 10 },
-        { key = "workColor", label = "专注颜色", type = "color", default = DEFAULT_WORK_COLOR },
-        { key = "breakColor", label = "休息颜色", type = "color", default = DEFAULT_BREAK_COLOR },
-        { key = "trackColor", label = "进度底色", type = "color", default = DEFAULT_TRACK_COLOR },
+        { key = "workMin", label = l10n.tr("lua_widget.pomodoro.work_minutes"), type = "int", default = 25, min = 1, max = 120 },
+        { key = "breakMin", label = l10n.tr("lua_widget.pomodoro.short_break_minutes"), type = "int", default = 5, min = 1, max = 60 },
+        { key = "longBreakMin", label = l10n.tr("lua_widget.pomodoro.long_break_minutes"), type = "int", default = 15, min = 1, max = 120 },
+        { key = "longBreakInterval", label = l10n.tr("lua_widget.pomodoro.long_break_interval"), type = "int", default = 4, min = 1, max = 10 },
+        { key = "workColor", label = l10n.tr("lua_widget.pomodoro.work_color"), type = "color", default = DEFAULT_WORK_COLOR },
+        { key = "breakColor", label = l10n.tr("lua_widget.pomodoro.break_color"), type = "color", default = DEFAULT_BREAK_COLOR },
     }
 }
 
@@ -107,7 +86,6 @@ function onHidden()
 end
 
 function onTimer(name)
-    -- 宿主会在定时器回调后自动刷新当前组件。
 end
 
 function loadConfig()
@@ -117,7 +95,6 @@ function loadConfig()
     longBreakInterval = tonumber(storage.get("longBreakInterval")) or 4
     workColor         = tonumber(storage.get("workColor"))         or DEFAULT_WORK_COLOR
     breakColor        = tonumber(storage.get("breakColor"))        or DEFAULT_BREAK_COLOR
-    trackColor        = tonumber(storage.get("trackColor"))        or DEFAULT_TRACK_COLOR
 
     local savedBg = tonumber(storage.get("bg")) or tonumber(storage.get("bgColor"))
     if savedBg then bg = savedBg end
@@ -193,6 +170,23 @@ end
 
 function sessionsInSet() return getSessions() % longBreakInterval end
 
+function updateTitleForState()
+    local state = getState()
+    if state == "work" then
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_work"))
+    elseif state == "break" then
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_break"))
+    elseif state == "paused" then
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_paused"))
+    else
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.name"))
+    end
+end
+
+function onLanguageChanged()
+    updateTitleForState()
+end
+
 function checkTransition()
     local s = getState()
     if s == "idle" or s == "paused" then return end
@@ -203,16 +197,16 @@ function checkTransition()
         storage.set("sessions", tostring(sessions))
         storage.set("state", "break")
         storage.set("startTime", tostring(timeNow()))
-        widget.setTitle("番茄钟 - 休息")
-        sys.notify("番茄钟", "专注完成！休息一下吧")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_break"))
+        sys.notify(l10n.tr("lua_widget.pomodoro.name"), l10n.tr("lua_widget.pomodoro.work_complete"))
     elseif s == "break" then
         if getSessions() >= longBreakInterval then
             storage.set("sessions", "0")
         end
         storage.set("state", "idle")
         storage.set("startTime", "0")
-        widget.setTitle("番茄钟")
-        sys.notify("番茄钟", "休息结束，准备下一轮专注")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.name"))
+        sys.notify(l10n.tr("lua_widget.pomodoro.name"), l10n.tr("lua_widget.pomodoro.break_complete"))
     end
     updateTickTimer()
 end
@@ -223,7 +217,7 @@ function actionStart()
     storage.set("state", "work")
     storage.set("startTime", tostring(timeNow()))
     storage.set("pausedRemaining", "0")
-    widget.setTitle("番茄钟 - 专注")
+    widget.setTitle(l10n.tr("lua_widget.pomodoro.title_work"))
     updateTickTimer()
 end
 
@@ -231,7 +225,7 @@ function actionPause()
     storage.set("prevState", getState())
     storage.set("pausedRemaining", tostring(remainingSeconds()))
     storage.set("state", "paused")
-    widget.setTitle("番茄钟 - 暂停")
+    widget.setTitle(l10n.tr("lua_widget.pomodoro.title_paused"))
     updateTickTimer()
 end
 
@@ -244,9 +238,9 @@ function actionResume()
     storage.set("pausedRemaining", "0")
     storage.set("prevState", "")
     if prevState == "work" then
-        widget.setTitle("番茄钟 - 专注")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_work"))
     else
-        widget.setTitle("番茄钟 - 休息")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_break"))
     end
     updateTickTimer()
 end
@@ -256,7 +250,7 @@ function actionStop()
     storage.set("startTime", "0")
     storage.set("pausedRemaining", "0")
     storage.set("prevState", "")
-    widget.setTitle("番茄钟")
+    widget.setTitle(l10n.tr("lua_widget.pomodoro.name"))
     updateTickTimer()
 end
 
@@ -266,16 +260,16 @@ function actionSkip()
         storage.set("sessions", tostring(getSessions() + 1))
         storage.set("state", "break")
         storage.set("startTime", tostring(timeNow()))
-        widget.setTitle("番茄钟 - 休息")
-        sys.notify("番茄钟", "已跳过专注，开始休息")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_break"))
+        sys.notify(l10n.tr("lua_widget.pomodoro.name"), l10n.tr("lua_widget.pomodoro.work_skipped"))
     elseif s == "break" then
         if getSessions() >= longBreakInterval then
             storage.set("sessions", "0")
         end
         storage.set("state", "work")
         storage.set("startTime", tostring(timeNow()))
-        widget.setTitle("番茄钟 - 专注")
-        sys.notify("番茄钟", "已跳过休息，开始下一轮专注")
+        widget.setTitle(l10n.tr("lua_widget.pomodoro.title_work"))
+        sys.notify(l10n.tr("lua_widget.pomodoro.name"), l10n.tr("lua_widget.pomodoro.break_skipped"))
     end
     updateTickTimer()
 end
@@ -286,7 +280,7 @@ function actionReset()
     storage.set("pausedRemaining", "0")
     storage.set("sessions", "0")
     storage.set("prevState", "")
-    widget.setTitle("番茄钟")
+    widget.setTitle(l10n.tr("lua_widget.pomodoro.name"))
     updateTickTimer()
 end
 
@@ -294,49 +288,56 @@ end
 
 local btnHit = {}
 
-function drawBtn(x, y, w, h, label, btnColor, txtColor, id)
-    draw.rect(x, y, w, h, btnColor, layout.cu(6), 0.88)
-    draw.strokeRect(x, y, w, h, txtColor, layout.cu(6), layout.cu(1.0), 0.12)
-    local m = draw.measureText(label, layout.fontCu(13), 0, true)
-    draw.text(x + (w - m.width) / 2, y + (h - m.height) / 2 + layout.cu(1), label, layout.fontCu(13), txtColor, 0, true)
-    btnHit[#btnHit + 1] = { id = id, x = x, y = y, w = w, h = h }
+function drawBtn(cx, cy, r, icon, bgColor, iconColor, id)
+    draw.circle(cx, cy, r, bgColor, 0.88)
+    local sz = r * 1.1
+    draw.fa(icon, cx - sz / 2, cy - sz / 2, sz, iconColor)
+    btnHit[#btnHit + 1] = { id = id, x = cx - r, y = cy - r, w = r * 2, h = r * 2 }
 end
 
 function drawTrackRing(cx, cy, r, thickness, color, alpha)
-    local outerR = r + thickness / 2
     local innerR = r - thickness / 2
-    draw.circle(cx, cy, outerR, color, alpha)
-    draw.circle(cx, cy, innerR, bg, alpha)
+    local outerR = r + thickness / 2
+    local step = 2 * math.pi / math.max(360, math.floor(4 * math.pi * r))
+    local i = 0
+    while i < 2 * math.pi do
+        draw.line(
+            cx + math.cos(i) * innerR,
+            cy + math.sin(i) * innerR,
+            cx + math.cos(i) * outerR,
+            cy + math.sin(i) * outerR,
+            thickness, color, alpha)
+        i = i + step
+    end
 end
 
 function drawProgressArc(cx, cy, r, prog, thickness, color, alpha)
     if prog <= 0 then return end
-    local n = math.max(80, math.floor(prog * 360))
-    local sa = -math.pi / 2
-    local sweep = prog * 2 * math.pi
     local innerR = r - thickness / 2
     local outerR = r + thickness / 2
-    for i = 0, n do
-        local a = sa + sweep * i / n
+    local step = 2 * math.pi / math.max(360, math.floor(4 * math.pi * r))
+    local sweep = prog * 2 * math.pi
+    local sa = -math.pi / 2
+    local a = sa
+    while a < sa + sweep do
         draw.line(
             cx + math.cos(a) * innerR,
             cy + math.sin(a) * innerR,
             cx + math.cos(a) * outerR,
             cy + math.sin(a) * outerR,
-             layout.cu(1.6), color, alpha)
+            thickness, color, alpha)
+        a = a + step
     end
 end
 
-function drawDots(cx, cy, filled, total, color, alpha)
-    local dotR = layout.cu(5)
-    local gap = layout.cu(16)
+function drawDots(cx, cy, filled, total, color, alpha, dotR, gap)
     local startX = cx - (total - 1) * gap / 2
     for i = 1, total do
         local dx = startX + (i - 1) * gap
         if i <= filled then
             draw.circle(dx, cy, dotR, color, alpha)
         else
-            draw.strokeRect(dx - dotR, cy - dotR, dotR * 2, dotR * 2, color, dotR, layout.cu(1.2), alpha * 0.25)
+            draw.circle(dx, cy, dotR, 0xFFFFFF, alpha * 0.30)
         end
     end
 end
@@ -348,21 +349,30 @@ end
 
 function stateLabelText()
     local s = getState()
-    if s == "work"   then return "专注中" end
-    if s == "break"  then return "休息"   end
-    if s == "paused" then return "已暂停" end
-    return "就绪"
+    if s == "work"   then return l10n.tr("lua_widget.pomodoro.state_work") end
+    if s == "break"  then return l10n.tr("lua_widget.pomodoro.state_break") end
+    if s == "paused" then return l10n.tr("lua_widget.pomodoro.state_paused") end
+    return l10n.tr("lua_widget.pomodoro.state_idle")
 end
 
 function render()
     loadConfig()
+    updateTitleForState()
     checkTransition()
     btnHit = {}
+    local pal = getPalette()
 
     local w = layout.width()
     local h = layout.height()
     local cx = w / 2
-    local ringCY = h * 0.33
+    local rows = layout.rows()
+
+    local function scu(value, minimum)
+        return math.max(minimum or 0, layout.cu(value * rows))
+    end
+    local function fontCu(value)
+        return layout.fontCu(value * rows)
+    end
 
     local s     = getState()
     local rem   = remainingSeconds()
@@ -371,57 +381,73 @@ function render()
     local label = stateLabelText()
     local inSet = sessionsInSet()
 
-    local btnW = layout.cu(78)
-    local btnH = layout.cu(28)
-    local btnGap = layout.cu(12)
-    local bottomReserved = layout.cu(24)
-    local btnY = h - btnH - bottomReserved - layout.cu(4)
+    local ringThick  = scu(5, layout.cu(7))
+    local labelFont  = fontCu(6)
+    local timeFont   = fontCu(18)
+    local dotR       = scu(2.5)
+    local dotGap     = scu(8)
+    local btnR       = scu(9)
+    local btnGap     = scu(12)
+    local gap        = scu(5)
+    local margin     = scu(6)
+    local ringPad    = scu(18)
 
-    local ringR     = math.min(w, h) * 0.26
-    local ringThick = math.max(layout.cu(5), ringR * 0.14)
+    local sub = ""
+    if s == "work" then
+        sub = l10n.tr("lua_widget.pomodoro.round_current", inSet + 1, longBreakInterval)
+    elseif s == "break" then
+        sub = l10n.tr("lua_widget.pomodoro.round_completed", inSet, longBreakInterval)
+    end
+    local labelStr = label .. sub
+    local lm = draw.measureText(labelStr, labelFont, 0, true)
+    local timeStr = formatTime(rem)
+    local tm = draw.measureText(timeStr, timeFont, 0, true)
 
-    drawTrackRing(cx, ringCY, ringR, ringThick, trackColor, 0.5)
+    local labelH = lm.height
+    local dotsH  = dotR * 2 + gap
+    local btnsH  = btnR * 2 + gap
+    local belowH = labelH + gap + dotsH + gap + btnsH
+
+    local ringR = math.min(w, h - belowH) / 2 - ringPad
+    if ringR < scu(28) then ringR = math.min(w, h - belowH) / 2 - ringPad / 2 end
+    if ringR <= 0 then return end
+
+    local totalH = ringR * 2 + ringThick * 2 + gap + belowH
+    local curY = math.max(margin, (h - totalH) / 2)
+    local ringCY = curY + ringR + ringThick
+
+    drawTrackRing(cx, ringCY, ringR, ringThick, pal.trackColor, 0.5)
     if prog > 0.002 then
         drawProgressArc(cx, ringCY, ringR, prog, ringThick, accent, 1.0)
     end
+    draw.text(cx - tm.width / 2, ringCY - tm.height / 2, timeStr, timeFont, pal.txtDark, 0, true)
 
-    local fontSize = math.max(layout.fontCu(18), math.floor(ringR * 0.5))
-    local timeStr  = formatTime(rem)
-    local tm = draw.measureText(timeStr, fontSize, 0, true)
-    draw.text(cx - tm.width / 2, ringCY - tm.height / 2, timeStr, fontSize, TXT_DARK, 0, true)
+    curY = ringCY + ringR + ringThick + gap
+    draw.text(cx - lm.width / 2, curY, labelStr, labelFont, pal.txtMuted)
 
-    local labelY = ringCY + ringR + ringThick + layout.cu(8)
-    local sub = ""
-    if s == "work" then
-        sub = " · 第" .. (inSet + 1) .. "/" .. longBreakInterval .. "轮"
-    elseif s == "break" then
-        sub = " · 已完成" .. inSet .. "/" .. longBreakInterval .. "轮"
-    end
-    local lm = draw.measureText(label .. sub, layout.fontCu(12))
-    draw.text(cx - lm.width / 2, labelY, label .. sub, layout.fontCu(12), TXT_MUTED)
-
-    local dotsY = math.min(labelY + layout.cu(28), btnY - layout.cu(12))
-    if s ~= "paused" and dotsY >= labelY + layout.cu(16) then
-        drawDots(cx, dotsY, inSet, longBreakInterval, accent, 1.0)
+    curY = curY + labelH + gap
+    if s ~= "paused" then
+        drawDots(cx, curY + dotR, inSet, longBreakInterval, accent, 1.0, dotR, dotGap)
     end
 
-    -- ---- buttons ----
+    curY = curY + dotsH + gap
+    local btnCY = curY + btnR
 
     if s == "idle" then
-        local totalW = btnW * 2 + btnGap
-        local bx = (w - totalW) / 2
-        drawBtn(bx, btnY, btnW, btnH, "开始", workColor, 0xFFFFFF, 1)
-        drawBtn(bx + btnW + btnGap, btnY, btnW, btnH, "重置", 0xE8E8E8, TXT_DARK, 10)
+        local totalW = btnR * 4 + btnGap
+        local bx = cx - totalW / 2 + btnR
+        drawBtn(bx, btnCY, btnR, "", workColor, 0xFFFFFF, 1)
+        drawBtn(bx + btnR * 2 + btnGap, btnCY, btnR, "", pal.btnBg, pal.txtDark, 10)
     elseif s == "paused" then
-        local totalW = btnW * 2 + btnGap
-        local bx = (w - totalW) / 2
-        drawBtn(bx, btnY, btnW, btnH, "继续", workColor, 0xFFFFFF, 2)
-        drawBtn(bx + btnW + btnGap, btnY, btnW, btnH, "停止", 0xE8E8E8, TXT_DARK, 3)
+        local totalW = btnR * 4 + btnGap
+        local bx = cx - totalW / 2 + btnR
+        drawBtn(bx, btnCY, btnR, "", workColor, 0xFFFFFF, 2)
+        drawBtn(bx + btnR * 2 + btnGap, btnCY, btnR, "", pal.btnBg, pal.txtDark, 3)
     else
-        local totalW = btnW * 2 + btnGap
-        local bx = (w - totalW) / 2
-        drawBtn(bx, btnY, btnW, btnH, "暂停", BTN_PAUSE, 0xFFFFFF, 4)
-        drawBtn(bx + btnW + btnGap, btnY, btnW, btnH, "跳过", 0xE8E8E8, TXT_DARK, 5)
+        local totalW = btnR * 4 + btnGap
+        local bx = cx - totalW / 2 + btnR
+        drawBtn(bx, btnCY, btnR, "", pal.btnPause, 0xFFFFFF, 4)
+        drawBtn(bx + btnR * 2 + btnGap, btnCY, btnR, "", pal.btnBg, pal.txtDark, 5)
     end
 end
 
@@ -464,16 +490,16 @@ function getContextMenu()
     local menu = {}
 
     if s == "idle" then
-        menu[#menu + 1] = { id = 1, label = "开始专注", icon = "" }
+        menu[#menu + 1] = { id = 1, label = l10n.tr("lua_widget.pomodoro.start"), icon = "" }
     elseif s == "paused" then
-        menu[#menu + 1] = { id = 2, label = "继续计时", icon = "" }
-        menu[#menu + 1] = { id = 3, label = "停止计时", icon = "" }
+        menu[#menu + 1] = { id = 2, label = l10n.tr("lua_widget.pomodoro.resume"), icon = "" }
+        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = "" }
     else
-        menu[#menu + 1] = { id = 5, label = "跳过当前阶段", icon = "" }
-        menu[#menu + 1] = { id = 3, label = "停止计时", icon = "" }
+        menu[#menu + 1] = { id = 5, label = l10n.tr("lua_widget.pomodoro.skip"), icon = "" }
+        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = "" }
     end
     menu[#menu + 1] = { separator = true }
-    menu[#menu + 1] = { id = 10, label = "重置计数", icon = "" }
+    menu[#menu + 1] = { id = 10, label = l10n.tr("lua_widget.pomodoro.reset_count"), icon = "" }
 
     return menu
 end

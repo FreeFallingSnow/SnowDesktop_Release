@@ -1,5 +1,6 @@
-name = "媒体控制"
+name = l10n.tr("lua_widget.media_control.name")
 useCustomStyle = true
+followPersonalizationDefault = true
 bottomBarHover = true
 
 bg = 0x0F172A
@@ -7,20 +8,53 @@ border = 0xFFFFFF
 alpha = 0.42
 borderAlpha = 0.16
 gradientEndA = 0.30
-shadowAlpha = 0.12
-shadowBlur = 16
-shadowOffsetY = 5
-highlightAlpha = 0.10
-noiseAlpha = 0.014
-
+textColor = 0xFFFFFF
 local btnRects = {}
 local pendState = nil
+
+local function resolveTextColor()
+    local tc = tonumber(storage.get("textColor")) or textColor
+    local follows = storage.get("followPersonalization") == "1"
+        or storage.get("followPersonalization") == "true"
+    if follows then
+        local theme = widget.theme()
+        if theme then
+            tc = (theme.contentTheme == 1) and 0x000000 or 0xFFFFFF
+        end
+    end
+    return tc
+end
+
+local palettes = {
+    dark = {
+        title   = 0xFFFFFF,
+        subtitle = 0xF1F5F9,
+        btnText = 0xFFFFFF,
+        btnDisabled = 0x64748B,
+        btnBg   = 0xFFFFFF,
+    },
+    light = {
+        title   = 0x1E293B,
+        subtitle = 0x334155,
+        btnText = 0x1E293B,
+        btnDisabled = 0x94A3B8,
+        btnBg   = 0x000000,
+    },
+}
+
+local function getPalette()
+    local theme = widget.theme()
+    if theme and theme.contentTheme == 1 then
+        return palettes.light
+    end
+    return palettes.dark
+end
 
 settings = {
     presets = {
         {
             id = "default",
-            label = "默认外观",
+            label = l10n.tr("lua_widget.media_control.preset_dark"),
             default = true,
             values = {
                 bg = 0x0F172A,
@@ -28,34 +62,12 @@ settings = {
                 alpha = 0.42,
                 borderAlpha = 0.16,
                 gradientEndA = 0.30,
-                shadowAlpha = 0.12,
-                shadowBlur = 16,
-                shadowOffsetY = 5,
-                highlightAlpha = 0.10,
-                noiseAlpha = 0.014,
-                followPersonalization = true,
-            }
-        },
-        {
-            id = "clear",
-            label = "清透媒体",
-            values = {
-                bg = 0x111827,
-                border = 0xFFFFFF,
-                alpha = 0.24,
-                borderAlpha = 0.14,
-                gradientEndA = 0.28,
-                shadowAlpha = 0.10,
-                shadowBlur = 18,
-                shadowOffsetY = 5,
-                highlightAlpha = 0.12,
-                noiseAlpha = 0.016,
-                followPersonalization = false,
             }
         }
     },
     fields = {
-        { key = "launcher", label = "无播放时启动项", type = "text", default = "" },
+        { key = "launcher", label = l10n.tr("lua_widget.media_control.launcher"), type = "text", default = "" },
+        { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
     }
 }
 
@@ -65,9 +77,9 @@ local function readConfig()
     }
 end
 
-local function drawBtn(id, glyph, x, y, sz, enabled)
-    local fg = enabled and 0xFFFFFF or 0x3D4555
-    draw.rect(x, y, sz, sz, 0xFFFFFF, sz * 0.22, enabled and 0.10 or 0.04)
+local function drawBtn(id, glyph, x, y, sz, enabled, pal)
+    local fg = enabled and pal.btnText or pal.btnDisabled
+    draw.rect(x, y, sz, sz, pal.btnBg, sz * 0.22, enabled and 0.10 or 0.04)
     draw.fa(glyph, x + sz * 0.12, y + sz * 0.12, sz * 0.76, fg)
     btnRects[id] = { x = x, y = y, w = sz, h = sz }
 end
@@ -77,12 +89,13 @@ function render()
     local w = layout.width()
     local h = layout.height()
     btnRects = {}
+    local pal = getPalette()
 
     local available = current.available and current.playbackStatus ~= "closed"
-    local title = available and current.title ~= "" and current.title or "未在播放"
+    local title = available and current.title ~= "" and current.title or l10n.tr("lua_widget.media_control.not_playing")
     local artist = available and current.artist ~= "" and current.artist or (available and current.sourceApp or "")
     if not available then
-        artist = "双击打开播放器"
+        artist = l10n.tr("lua_widget.media_control.double_click_player")
     end
 
     local isPlaying = available and current.playbackStatus == "playing"
@@ -97,9 +110,9 @@ function render()
     end
 
     local titleY = artist ~= "" and h * 0.18 or h * 0.30
-    draw.text(layout.cu(18), titleY, title, layout.fontCu(14), 0xFFFFFF, w - layout.cu(36), true, true)
+    draw.text(layout.cu(18), titleY, title, layout.fontCu(14), pal.title, w - layout.cu(36), true, true)
     if artist ~= "" then
-        draw.text(layout.cu(18), titleY + layout.cu(22), artist, layout.fontCu(12), 0x94A3B8, w - layout.cu(36), true, true)
+        draw.text(layout.cu(18), titleY + layout.cu(22), artist, layout.fontCu(12), pal.subtitle, w - layout.cu(36), true, true)
     end
 
     local btnSz = layout.cu(40)
@@ -108,10 +121,10 @@ function render()
     local btnY = h - btnSz - layout.cu(12)
     local bx = (w - total) / 2
 
-    drawBtn("previous", "", bx, btnY, btnSz, available and current.canPrevious)
+    drawBtn("previous", "", bx, btnY, btnSz, available and current.canPrevious, pal)
     drawBtn("playPause", isPlaying and "" or "",
-        bx + btnSz + btnGap, btnY, btnSz, available and current.canPlayPause)
-    drawBtn("next", "", bx + (btnSz + btnGap) * 2, btnY, btnSz, available and current.canNext)
+        bx + btnSz + btnGap, btnY, btnSz, available and current.canPlayPause, pal)
+    drawBtn("next", "", bx + (btnSz + btnGap) * 2, btnY, btnSz, available and current.canNext, pal)
 end
 
 function onClick(x, y)
@@ -147,10 +160,10 @@ end
 
 function imguiRender()
     local cfg = readConfig()
-    imgui.text("从桌面选择启动项")
+    imgui.text(l10n.tr("lua_widget.media_control.select_launcher"))
 
     local items = desktop.items()
-    local labels = { "（不设置）" }
+    local labels = { l10n.tr("lua_widget.media_control.not_set") }
     local selIdx = 1
     for i, item in ipairs(items) do
         labels[#labels + 1] = (item.title or "") .. " (" .. (item.type or "") .. ")"
@@ -172,7 +185,7 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = "设置启动项", icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.media_control.configure_launcher"), icon = "" },
     }
 end
 

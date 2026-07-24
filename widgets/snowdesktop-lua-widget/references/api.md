@@ -3,6 +3,7 @@
 ## Contents
 
 - [Runtime model](#runtime-model)
+- [Localization](#localization)
 - [Callbacks](#callbacks)
 - [Drawing](#drawing)
 - [Widget and system](#widget-and-system)
@@ -19,7 +20,7 @@ Scripts run in a sandbox containing:
 
 - Base functions: `assert`, `error`, `ipairs`, `next`, `pairs`, `pcall`, `select`, `tonumber`, `tostring`, `type`, `xpcall`.
 - Libraries: `string`, `table`, `math`, `utf8`.
-- Host APIs: `draw`, `sys`, `layout`, `storage`, `widget`, `desktop`,
+- Host APIs: `draw`, `sys`, `layout`, `storage`, `widget`, `desktop`, `l10n`,
   `everything`, `media`, `http`, and `ui`.
 - `imgui` only when the manifest declares `ui.input`.
 - `widgetId`, a unique string for the current component instance.
@@ -32,6 +33,7 @@ Coordinates passed to drawing and mouse callbacks are local to the component. Th
 showTitle = true        -- display widget.setTitle() value in the bottom bar
 bottomBarHover = true   -- show the bottom bar only while hovering (default: true)
 useCustomStyle = true   -- enable Lua custom background style and the unified appearance panel
+followPersonalizationDefault = true -- follow global appearance until explicitly changed
 ```
 
 The host reads these from the script globals before each render. `showTitle` defaults to `false`.
@@ -44,20 +46,50 @@ border = 0xFFFFFF
 alpha = 0.92
 borderAlpha = 0.18
 gradientEndA = 0.28
-shadowAlpha = 0.12
-shadowBlur = 16
-shadowOffsetY = 4
-highlightAlpha = 0.12
-noiseAlpha = 0.014
+glassEnabled = false
 ```
 
 `bg` and `border` use `0xRRGGBB`. The alpha fields use `0.0` through `1.0`.
-`shadowBlur` and `shadowOffsetY` are design-unit values scaled by the host.
-The per-instance storage values with the same keys override script defaults.
-Set `followPersonalization` to `"1"`/`true` in storage or a default preset to
-use the global personalization colors and effects instead of the widget style.
+Blur radius is a host-wide native-composition value owned by the global
+appearance page; scripts and per-instance storage do not override it.
+The widget editor exposes a separate **跟随全局** checkbox and a **主题** selector.
+The selector contains the four host themes, **自定义**, and themes injected by
+the manifest or Lua script. Switching themes does not change the follow state.
+Set `followPersonalization` to `"1"`/`true` in storage when the widget should
+follow global personalization. Use the top-level
+`followPersonalizationDefault = true` declaration to make this the initial
+state without coupling it to a theme preset.
 
 The host checks the script timestamp and hot-reloads it while rendering. Persistent storage is scoped by component instance ID, so two instances of the same script keep separate values.
+
+## Localization
+
+```lua
+name = l10n.tr("lua_widget.my_widget.name")
+
+local status = l10n.tr("lua_widget.my_widget.item_count", #items)
+local language = l10n.language()
+```
+
+- `l10n.tr(key, arguments...)` reads a string from the active host language
+  resource and replaces `{0}`, `{1}`, and later placeholders with the supplied
+  values. A missing key is returned unchanged so the error remains visible.
+- `l10n.language()` returns the effective language such as `zh-CN` or `en-US`;
+  when the user chooses the system language, it returns the resolved language.
+- Language switching reloads Lua widgets. Compute localized top-level names,
+  settings labels, presets, menus, and other cached strings with `l10n.tr`.
+- Every widget must use literal keys and add the same keys to every language in
+  its own manifest `locales` object. Lua widget strings do not belong in the
+  host `lang/*.json`. Run `scripts/check_l10n.bat` to validate missing keys,
+  placeholders, manifest keys, and hard-coded Chinese in Lua strings.
+- Manifests support `nameKey` and `descriptionKey`. Keep `name` and
+  `description` as English fallbacks for hosts that do not contain those keys.
+- If a script uses localized state-dependent titles, list those keys in the
+  manifest's `titleKeys` array and update the title from
+  `onLanguageChanged()`.
+
+The widget's default title follows the active language. Once the user renames
+an instance, later language switches preserve that custom title.
 
 ## Callbacks
 
@@ -74,6 +106,7 @@ function onMouseMove(x, y, button, delta) end
 function onMouseUp(x, y, button, delta) end
 function onWheel(x, y, button, delta) end
 function onDesktopChanged(reason) end
+function onLanguageChanged() end
 function onVisible() end
 function onHidden() end
 function onSelected() end
@@ -89,6 +122,9 @@ function onMenu(id) end
 - `onSelected()` runs when the desktop selects the widget.
 - For wheel handling, use the sign of `delta`.
 - `onDesktopChanged(reason)` requires `desktop.read`.
+- `onLanguageChanged()` runs after the widget has been reloaded with its new
+  manifest locale. Use it to refresh state-dependent titles or other runtime
+  text caches.
 - `imguiRender()` requires `ui.input`.
 - Context-menu callbacks require `ui.contextMenu`.
 
@@ -204,8 +240,7 @@ widget.log("info", "message")
 
 local theme = widget.theme()
 -- theme.bg, theme.border, theme.alpha, theme.borderAlpha, theme.gradientEndA
--- theme.cornerRadius, theme.shadowAlpha, theme.shadowBlur, theme.shadowOffsetY
--- theme.highlightAlpha, theme.noiseAlpha
+-- theme.cornerRadius
 
 widget.editText(key, x, y, width, height, multiline,
     initialText?, selectAll?, textColor?, fontSize?, backgroundColor?)
@@ -472,11 +507,11 @@ imgui.endDisabled()
 Controls return the new/current value. Persist a value only when it differs from
 the previous value.
 
-For `useCustomStyle = true` widgets, the host separates reset actions:
-
-- **恢复默认主题** applies only host appearance keys from the default preset.
-- **恢复默认设置** applies declarative field defaults, falling back to matching
-  values from the default preset when a field has no explicit `default`.
+For `useCustomStyle = true` widgets, the host shows **跟随全局** and **主题** by
+default. Manual colors, opacity, gradient, and glass controls appear only for
+the **自定义** theme. **恢复默认设置** applies declarative field defaults,
+falling back to matching values from the default preset when a field has no
+explicit `default`.
 
 Keep custom `imguiRender()` reset buttons consistent with that split when a
 widget exposes both visual style and behavior/data settings.
@@ -487,9 +522,21 @@ The manifest filename is derived by replacing `.lua` with `.widget.json`.
 
 ```json
 {
-  "name": "示例组件",
+  "name": "Example Widget",
+  "nameKey": "lua_widget.example.name",
   "version": "1.0.0",
-  "description": "示例说明。",
+  "description": "Example description.",
+  "descriptionKey": "lua_widget.example.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.example.name": "示例组件",
+      "lua_widget.example.description": "示例说明。"
+    },
+    "en-US": {
+      "lua_widget.example.name": "Example Widget",
+      "lua_widget.example.description": "Example description."
+    }
+  },
   "defaultSize": { "columns": 2, "rows": 1 },
   "minSize": { "columns": 2, "rows": 1 },
   "maxSize": { "columns": 4, "rows": 3 },
@@ -508,13 +555,7 @@ The manifest filename is derived by replacing `.lua` with `.widget.json`.
         "border": 16777215,
         "alpha": 0.92,
         "borderAlpha": 0.18,
-        "gradientEndA": 0.28,
-        "shadowAlpha": 0.12,
-        "shadowBlur": 16,
-        "shadowOffsetY": 4,
-        "highlightAlpha": 0.12,
-        "noiseAlpha": 0.014,
-        "followPersonalization": "1"
+        "gradientEndA": 0.28
       }
     }
   ],
@@ -539,12 +580,7 @@ settings = {
         alpha = 0.92,
         borderAlpha = 0.18,
         gradientEndA = 0.28,
-        shadowAlpha = 0.12,
-        shadowBlur = 16,
-        shadowOffsetY = 4,
-        highlightAlpha = 0.12,
-        noiseAlpha = 0.014,
-        followPersonalization = true
+        glassEnabled = false
       } }
   },
   fields = {
@@ -554,9 +590,9 @@ settings = {
 }
 ```
 
-For `useCustomStyle = true` widgets, presets appear in the **外观** section
-alongside the host-managed background controls. A preset may set these visual
-keys:
+For `useCustomStyle = true` widgets, manifest and script presets are appended to
+the **主题** selector after the four host themes and **自定义**. Selecting one
+applies only these visual keys:
 
 | Key | Meaning |
 |---|---|
@@ -565,12 +601,10 @@ keys:
 | `alpha` | background opacity, `0.0` through `1.0` |
 | `borderAlpha` | border opacity, `0.0` through `1.0` |
 | `gradientEndA` | bottom gradient opacity, `0.0` through `1.0` |
-| `shadowAlpha` | shadow opacity, `0.0` through `0.8` |
-| `shadowBlur` | shadow blur radius in design units |
-| `shadowOffsetY` | vertical shadow offset in design units |
-| `highlightAlpha` | top highlight opacity, `0.0` through `0.8` |
-| `noiseAlpha` | frosted noise opacity, `0.0` through `0.18` |
-| `followPersonalization` | `true`, `"1"`, or `"true"` to follow global personalization |
+| `glassEnabled` | enable the per-widget frosted backdrop |
+
+`followPersonalization` is controlled separately and should not be included in
+theme presets.
 
 Keep presets appearance-only. Put data URLs, refresh intervals, feature toggles,
 timers, and other behavior into declarative fields so visual presets do not

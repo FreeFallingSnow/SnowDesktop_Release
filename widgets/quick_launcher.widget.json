@@ -1,7 +1,43 @@
 {
-  "name": "快速启动",
+  "name": "Quick Launcher",
+  "nameKey": "lua_widget.quick_launcher.name",
   "version": "1.0.0",
-  "description": "搜索 SnowDesktop 桌面项目并快速打开或定位。",
+  "description": "Searches SnowDesktop items and quickly opens or locates them.",
+  "descriptionKey": "lua_widget.quick_launcher.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.quick_launcher.name": "快速启动",
+      "lua_widget.quick_launcher.description": "搜索 SnowDesktop 项目，并快速打开或定位。",
+      "lua_widget.quick_launcher.preset_dark": "深色搜索",
+      "lua_widget.quick_launcher.query": "搜索词",
+      "lua_widget.quick_launcher.search_placeholder": "单击输入搜索关键字",
+      "lua_widget.quick_launcher.no_matches": "没有匹配项目",
+      "lua_widget.quick_launcher.edit_query": "编辑搜索词",
+      "lua_widget.quick_launcher.open_match": "打开当前匹配项",
+      "lua_widget.quick_launcher.reveal_match": "定位当前匹配项",
+      "lua_widget.quick_launcher.refresh_desktop": "刷新桌面",
+      "lua_widget.quick_launcher.match_count": "匹配项：{0}",
+      "lua_widget.common.font_size": "字号",
+      "lua_widget.common.text_color": "文字颜色",
+      "lua_widget.common.untitled": "（未命名）"
+    },
+    "en-US": {
+      "lua_widget.quick_launcher.name": "Quick Launcher",
+      "lua_widget.quick_launcher.description": "Searches SnowDesktop items and quickly opens or locates them.",
+      "lua_widget.quick_launcher.preset_dark": "Dark Search",
+      "lua_widget.quick_launcher.query": "Search Query",
+      "lua_widget.quick_launcher.search_placeholder": "Click to Enter Search Keywords",
+      "lua_widget.quick_launcher.no_matches": "No Matching Items",
+      "lua_widget.quick_launcher.edit_query": "Edit Search Query",
+      "lua_widget.quick_launcher.open_match": "Open Current Match",
+      "lua_widget.quick_launcher.reveal_match": "Reveal Current Match",
+      "lua_widget.quick_launcher.refresh_desktop": "Refresh Desktop",
+      "lua_widget.quick_launcher.match_count": "Matches: {0}",
+      "lua_widget.common.font_size": "Font Size",
+      "lua_widget.common.text_color": "Text Color",
+      "lua_widget.common.untitled": "(Untitled)"
+    }
+  },
   "defaultSize": { "columns": 2, "rows": 2 },
   "permissions": ["desktop.read", "desktop.action", "everything.search", "ui.contextMenu", "ui.input"]
 }

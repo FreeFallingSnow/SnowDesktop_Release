@@ -1,6 +1,9 @@
 # 飘雪桌面（SnowDesktop）
 
-一款 Windows 桌面整理美化工具
+一款 Windows 桌面整理美化工具：用 Direct2D 渲染的自定义桌面，替代 Explorer 原生图标，支持多显示器网格布局、可嵌入组件和 Lua 脚本扩展。
+## 安装
+
+[发行版仓库](https://github.com/FreeFallingSnow/SnowDesktop_Release)
 
 ## 功能
 
@@ -13,20 +16,51 @@
   - **Lua 脚本组件**：可扩展的组件，用于美化桌面
 
 - **快捷导航**：快捷键呼出，按集合组件分类显示，用于在非桌面场景快速启动软件
+- **主屏 Dock**：可选的底部快捷栏，支持普通项目、1×1 集合、Ctrl 引用复制及快捷导航入口
 - **个性化**：支持自定义组件颜色
 
-## 系统要求
+## 构建
 
-- Windows 10/11
+依赖：CMake 3.24+、Visual Studio 2022、Windows 10 SDK（0x0A00）
 
-## 安装
+```bat
+.\build.bat
+```
 
-解压到想安装的位置后，直接运行 `SnowDesktop.exe`，可在打开设置（右键菜单），设置开机启动
+构建脚本会自动终止已在运行的 SnowDesktop.exe，并为释放任务栏 Hook DLL
+短暂重启 Explorer。
 
-## 更新
+## 打包
 
-退出 SnowDesktop → 替换 `SnowDesktop.exe` 和 `widgets` 目录 → 重新启动即可，不影响已有布局数据。
+```bat
+.\release.bat
+```
 
-## 开源
+该命令打开统一发布界面，可完成状态检查、Release 构建、携带版与 MSIX
+打包、二进制 Release 仓库同步、版本分支压缩合并、远程发布和 GitHub
+Release 创建。每个版本的安装包、哈希、发布说明和日志统一保存在
+`artifacts\vA.B.C.0\`。
 
-[源码仓库](https://github.com/FreeFallingSnow/SnowDesktop)
+Agent 和自动化脚本可使用非交互入口：
+
+```bat
+.\release.bat status -Json
+.\release.bat package
+```
+
+完整命令和 Microsoft Store 身份配置见
+[packaging/README.md](./packaging/README.md)。
+
+## 技术栈
+
+- C++20 / MSVC
+- Direct2D + Direct3D 11 + DirectComposition
+- Dear ImGui（设置窗口）
+- Lua 5.4（脚本引擎）
+- spdlog（日志）
+- Font Awesome 6 Free（图标）
+- WinHTTP（Lua HTTP 运行时）
+
+## 协议
+
+GNU General Public License v3.0 — 详见 [LICENSE](./LICENSE)

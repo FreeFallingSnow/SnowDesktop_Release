@@ -1,17 +1,18 @@
--- Copy this file to widgets/my_widget.lua.
-name = "示例组件"
+-- Copy this file to SnowDesktop's active widgets/my_widget.lua.
+name = l10n.tr("lua_widget.template.name")
 useCustomStyle = true
 
 bg = 0x18202A
 border = 0x5F7691
 alpha = 0.92
 gradientEndA = 0.0
+glassEnabled = false
 
 settings = {
     presets = {
         {
             id = "default",
-            label = "默认",
+            label = l10n.tr("lua_widget.template.preset"),
             default = true,
             values = {
                 bg = 0x18202A,
@@ -19,15 +20,12 @@ settings = {
                 alpha = 0.92,
                 borderAlpha = 0.80,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = true,
+                glassEnabled = false,
             }
         }
     },
     fields = {
-        { key = "color", label = "文字颜色", type = "color", default = 0xFFFFFF },
+        { key = "color", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
     }
 }
 
@@ -45,7 +43,8 @@ function render()
     local pad = layout.cu(12)
 
     draw.text(pad, pad, config.message, layout.fontCu(14), config.color, w - pad * 2, true)
-    draw.text(pad, h - layout.cu(24), "双击编辑", layout.fontCu(11), 0xAFC2D6, w - pad * 2, false, true)
+    draw.text(pad, h - layout.cu(24), l10n.tr("lua_widget.template.double_click_edit"),
+        layout.fontCu(11), 0xAFC2D6, w - pad * 2, false, true)
 end
 
 function onDoubleClick(x, y)
@@ -56,7 +55,7 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = "恢复默认文字", icon = "" }
+        { id = 1, label = l10n.tr("lua_widget.template.reset_text"), icon = "" }
     }
 end
 

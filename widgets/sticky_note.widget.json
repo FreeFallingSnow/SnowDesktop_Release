@@ -1,7 +1,43 @@
 {
-  "name": "便签",
+  "name": "Sticky Note",
+  "nameKey": "lua_widget.sticky_note.name",
   "version": "1.0.0",
-  "description": "可编辑的桌面便签。",
+  "description": "An editable desktop sticky note.",
+  "descriptionKey": "lua_widget.sticky_note.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.sticky_note.name": "便签",
+      "lua_widget.sticky_note.description": "可编辑的桌面便签。",
+      "lua_widget.sticky_note.preset_yellow": "浅黄",
+      "lua_widget.sticky_note.preset_white": "纯白",
+      "lua_widget.sticky_note.preset_pink": "浅粉",
+      "lua_widget.sticky_note.preset_blue": "浅蓝",
+      "lua_widget.sticky_note.preset_green": "浅绿",
+      "lua_widget.sticky_note.preset_purple": "浅紫",
+      "lua_widget.sticky_note.preset_dark": "深色",
+      "lua_widget.sticky_note.double_click_edit": "双击编辑…",
+      "lua_widget.sticky_note.clear": "清空便签",
+      "lua_widget.sticky_note.reset_style": "恢复便签默认样式",
+      "lua_widget.sticky_note.content": "便签内容",
+      "lua_widget.common.font_size": "字号"
+    },
+    "en-US": {
+      "lua_widget.sticky_note.name": "Sticky Note",
+      "lua_widget.sticky_note.description": "An editable desktop sticky note.",
+      "lua_widget.sticky_note.preset_yellow": "Light Yellow",
+      "lua_widget.sticky_note.preset_white": "White",
+      "lua_widget.sticky_note.preset_pink": "Light Pink",
+      "lua_widget.sticky_note.preset_blue": "Light Blue",
+      "lua_widget.sticky_note.preset_green": "Light Green",
+      "lua_widget.sticky_note.preset_purple": "Light Purple",
+      "lua_widget.sticky_note.preset_dark": "Dark",
+      "lua_widget.sticky_note.double_click_edit": "Double-click to Edit…",
+      "lua_widget.sticky_note.clear": "Clear Note",
+      "lua_widget.sticky_note.reset_style": "Restore Default Note Style",
+      "lua_widget.sticky_note.content": "Note Content",
+      "lua_widget.common.font_size": "Font Size"
+    }
+  },
   "defaultSize": { "columns": 2, "rows": 1 },
   "permissions": ["ui.input", "ui.contextMenu"]
 }

@@ -13,18 +13,23 @@ widgets/
 └── my_widget.widget.json
 ```
 
-Place runnable `.lua` files directly in the executable's `widgets` directory. SnowDesktop only discovers `widgets\*.lua`; it does not scan subdirectories.
+Place runnable `.lua` files directly in SnowDesktop's active `widgets` directory. Portable builds use the `widgets` directory beside the executable directly. MSIX builds use `LocalState\data\widgets`, initially seeded from the packaged `widgets` directory. SnowDesktop only discovers `widgets\*.lua`; it does not scan subdirectories.
 
 ## Workflow
 
 1. Copy [assets/widget-template.lua](assets/widget-template.lua) and [assets/widget-template.widget.json](assets/widget-template.widget.json) into the root `widgets` directory.
 2. Rename both files to the same stem, using ASCII `snake_case` for predictable paths.
 3. Implement `render()` first using local widget coordinates starting at `(0, 0)`.
-4. Add only the callbacks required by the behavior.
-5. Declare every privileged API in the manifest. Keep unused permissions out.
-6. Store persistent values as strings and parse them with `tonumber` or explicit boolean conversion.
-7. Test at multiple widget spans. Derive layout from `layout.width()` and `layout.height()` instead of assuming pixels.
-8. Check hot reload after saving. If a render error invalidates the widget, refresh/re-add it after correcting the script.
+4. Put every user-visible string behind `l10n.tr("literal.key")`, including the
+   script name, settings, menus, placeholders, status text, and notifications.
+5. Add `nameKey` and `descriptionKey` to the manifest.
+6. Add every new translation key to each language under the manifest's
+   `locales` object. Lua widget text must not be added to the host `lang/*.json`.
+7. Add only the callbacks required by the behavior.
+8. Declare every privileged API in the manifest. Keep unused permissions out.
+9. Store persistent values as strings and parse them with `tonumber` or explicit boolean conversion.
+10. Test at multiple widget spans. Derive layout from `layout.width()` and `layout.height()` instead of assuming pixels.
+11. Check hot reload after saving. If a render error invalidates the widget, refresh/re-add it after correcting the script.
 
 Read [references/api.md](references/api.md) whenever using callbacks, permissions, drawing arguments, desktop integration, settings controls, or troubleshooting.
 
@@ -33,12 +38,13 @@ Read [references/api.md](references/api.md) whenever using callbacks, permission
 Every script should define:
 
 ```lua
-name = "组件名称"
+name = l10n.tr("lua_widget.my_widget.name")
 
 function render()
     local w = layout.width()
     local pad = layout.cu(12)
-    draw.text(pad, pad, "Hello", layout.cu(14), 0xFFFFFF, w - pad * 2)
+    draw.text(pad, pad, l10n.tr("lua_widget.my_widget.hello"),
+        layout.cu(14), 0xFFFFFF, w - pad * 2)
 end
 ```
 
@@ -46,22 +52,24 @@ Use these optional top-level flags and appearance globals:
 
 - `useCustomStyle = true`: enable Lua-controlled background appearance and the
   host's unified **外观** settings panel for this widget.
+- `followPersonalizationDefault = true`: make a new instance follow the global
+  appearance until the user explicitly changes its follow state.
 - `showTitle = true`: show the host title and enable host rename actions. When
   false or omitted, the host hides **重命名** and ignores F2 for the widget.
 - `bottomBarHover = false`: keep the bottom bar from using the default hover-only behavior.
 - `bg`, `border`: `0xRRGGBB`.
-- `alpha`, `borderAlpha`, `gradientEndA`, `shadowAlpha`, `highlightAlpha`,
-  `noiseAlpha`: decimal values from `0.0` to `1.0`.
-- `shadowBlur`, `shadowOffsetY`: design-unit values converted through the host
-  component scale.
+- `alpha`, `borderAlpha`, `gradientEndA`: decimal values from `0.0` to `1.0`.
+- `glassEnabled`: per-widget frosted backdrop switch. Blur radius is owned by
+  the global appearance page.
 
 For `useCustomStyle` widgets, prefer declarative `settings.presets` for visual
 presets and `settings.fields` for behavior. Presets should stay appearance-only:
-put colors, alpha, shadow, highlight, noise, and `followPersonalization` there;
+put colors, alpha, and glass there;
 keep data sources, intervals, toggles, durations, and other behavior in fields.
-Set `followPersonalization = true` in the default preset when the widget should
-initially follow global personalization. Keep it `false` for widgets that should
-own their style by default.
+The host displays one independent **跟随全局** checkbox and one **主题** selector.
+The selector contains the four host themes, **自定义**, and all manifest/script
+presets. Theme changes never change the follow checkbox, and presets must not
+contain `followPersonalization`.
 
 ## Manifest
 
@@ -69,9 +77,23 @@ Create a matching manifest even when no permission is needed:
 
 ```json
 {
-  "name": "组件名称",
+  "name": "My Widget",
+  "nameKey": "lua_widget.my_widget.name",
   "version": "1.0.0",
-  "description": "一句话说明组件用途。",
+  "description": "A short English fallback description.",
+  "descriptionKey": "lua_widget.my_widget.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.my_widget.name": "我的组件",
+      "lua_widget.my_widget.description": "一句话说明组件用途。",
+      "lua_widget.my_widget.hello": "你好"
+    },
+    "en-US": {
+      "lua_widget.my_widget.name": "My Widget",
+      "lua_widget.my_widget.description": "A short description.",
+      "lua_widget.my_widget.hello": "Hello"
+    }
+  },
   "defaultSize": { "columns": 1, "rows": 1 },
   "minSize": { "columns": 1, "rows": 1 },
   "maxSize": { "columns": 4, "rows": 3 },
@@ -102,6 +124,14 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
   design values to DPI-scaled pixels. Prefer `layout.cu()` over hardcoded pixel values so widgets
   scale correctly across monitors and DPI settings. See [references/api.md](references/api.md) for the full layout API.
 - Treat `render()` as a hot path. Do not write storage or perform desktop queries repeatedly unless necessary.
+- Use literal keys with `l10n.tr("key", arguments...)`; placeholders use
+  `{0}`, `{1}`, and so on. `l10n.language()` returns the effective language
+  (`zh-CN` or `en-US`) for behavior that truly varies by locale.
+- Keep the manifest `name` and `description` as English fallbacks and put their
+  localized keys in `nameKey` and `descriptionKey`. Store all Lua translations
+  in that same manifest's `locales` object.
+- Put state-dependent localized title keys in the manifest `titleKeys` array
+  and refresh those titles in `onLanguageChanged()`.
 - Use `storage.set` only when a value changes; it persists immediately to disk.
 - Use `draw.measureText` for centering or fitting text.
 - Use `maxWidth` with `singleLine = true` to get single-line ellipsis.
@@ -120,8 +150,9 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 - Prefer declarative manifest `settings` for simple text, bool, integer, float,
   select, and color fields; keep `imguiRender()` for custom editors.
 - The host wraps `imguiRender()` in a scrollable editor area. For
-  `useCustomStyle` widgets, **恢复默认主题** only restores appearance keys, while
-  **恢复默认设置** restores declarative fields.
+  `useCustomStyle` widgets, manual appearance controls are shown only when the
+  host **主题** selector is set to **自定义**. **恢复默认设置** restores declarative
+  behavior fields.
 - Lua scripts may also declare `settings = { presets = {...}, fields = {...} }`
   directly. The host merges manifest and script declarations into the same
   settings panel.
@@ -149,10 +180,11 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 For repository development:
 
 1. Save the files under the source `widgets` directory.
-2. Run `build.bat`; CMake copies the complete directory recursively to `.build\Release\widgets`.
-3. In SnowDesktop, right-click the desktop and choose **添加组件**, then select the manifest display name.
-4. Exercise click, double-click, wheel, editor, and context-menu behavior as applicable.
-5. Build Release before delivery. The release process copies the complete built `widgets` tree, including this skill and its resources, into `release\widgets`.
+2. Run `scripts/check_l10n.bat` to catch untranslated Lua strings and missing keys.
+3. Run `build.bat`; CMake copies the complete directory recursively to `.build\Release\widgets`.
+4. In SnowDesktop, right-click the desktop and choose **添加组件**, then select the manifest display name.
+5. Exercise click, double-click, wheel, editor, context-menu, and language-switch behavior as applicable.
+6. Build Release before delivery. The release process copies the complete built `widgets` tree, including this skill and its resources, into `release\widgets`.
 
 Before finishing, verify:
 

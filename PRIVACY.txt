@@ -1,0 +1,172 @@
+SnowDesktop 隐私政策
+SnowDesktop Privacy Policy
+
+生效日期 / Effective date: 2026-07-24
+
+一、适用范围
+
+本隐私政策适用于郭云哲（以下简称“开发者”）提供的 SnowDesktop Windows
+应用程序，包括 Microsoft Store 安装版和携带版。
+
+二、我们是否收集个人数据
+
+SnowDesktop 无需注册或登录，不包含广告、用户行为分析、遥测或开发者运营的
+云端服务。应用本体不会自动向开发者发送您的个人数据、使用统计信息、设置、
+桌面内容或崩溃信息，开发者也不会出售这些数据。
+
+三、本地处理和保存的数据
+
+为了实现桌面整理和组件功能，SnowDesktop 可能在您的设备上读取或处理桌面
+项目、文件和文件夹路径、应用快捷方式、搜索结果、当前媒体信息，以及 CPU、
+内存、电池、GPU 和网络吞吐量等系统状态。
+
+应用会在本地保存设置、桌面布局、布局备份、组件配置和组件存储数据。这些
+数据可能包含您输入的便签内容、RSS 地址或其他组件内容。发生崩溃时，应用还
+可能在本地生成崩溃日志和小型转储文件；转储可能包含进程状态、调用栈、
+文件路径或少量内存内容。
+
+上述数据默认仅保存在您的设备上，不会自动上传。只有当您自行将文件发送给
+开发者或其他人员时，接收方才会取得相应内容。请在分享崩溃转储、备份或
+配置文件前检查其中是否含有敏感信息。
+
+四、网络访问和第三方服务
+
+以下功能可能产生网络请求：
+
+1. 携带版仅在您点击“检查更新”时访问 GitHub API，以查询最新版本；商店版
+   的更新由 Microsoft Store 管理。
+2. 内置 RSS 组件会访问您配置的 RSS 地址。
+3. 用户安装、创建或修改的 Lua 组件可以在其声明的权限和域名范围内访问
+   网络。网络请求可能向目标网站发送该网站通常可以获得的信息，例如 IP
+   地址、请求头，以及由组件或您提供的请求内容。
+4. 您点击应用内链接时，目标网页会由系统浏览器打开。
+
+第三方网站、GitHub、Microsoft Store、用户组件及其服务提供方如何处理数据，
+受相应第三方隐私政策约束。开发者无法控制用户自行安装的组件或第三方服务，
+建议仅使用可信组件，并在使用前检查其代码、权限和目标域名。
+
+五、文件和系统权限
+
+SnowDesktop 是桌面增强工具，需要访问桌面项目、启动应用、执行用户发起的
+文件操作、管理开机启动及与 Windows 桌面环境交互。Microsoft Store 安装版
+使用 runFullTrust（完整信任）能力来提供这些传统桌面功能。该能力本身不代表
+应用会把数据上传给开发者。
+
+Lua 组件通过权限声明限制其可使用的功能，例如桌面读取、系统状态、媒体控制、
+Everything 搜索或网络访问。用户修改组件代码或权限后，其行为也可能随之改变。
+
+六、数据保留和删除
+
+本地数据会保留至您在应用中删除、手动删除 SnowDesktop 数据目录，或由
+Windows 在卸载商店版时清理。携带版的数据位于程序目录的 data 文件夹中，
+卸载或删除程序文件时请按需同时删除该文件夹。您也可以在应用的设置页面打开
+数据目录并检查或删除其中内容。
+
+七、儿童隐私
+
+SnowDesktop 不以儿童为目标用户，也不会有意收集儿童的个人数据。
+
+八、政策变更
+
+如果 SnowDesktop 的数据处理方式发生变化，本政策会相应更新，并修改顶部的
+生效日期。重大变化会通过项目发布页面或应用更新说明告知。
+
+九、联系我们
+
+开发者：郭云哲
+电子邮箱：guo.yunzhe@outlook.com
+项目地址：https://github.com/FreeFallingSnow/SnowDesktop
+
+----------------------------------------------------------------------
+
+1. Scope
+
+This Privacy Policy applies to the SnowDesktop Windows application provided
+by Yunzhe Guo (the "Developer"), including its Microsoft Store and portable
+editions.
+
+2. Personal data collection
+
+SnowDesktop requires no account or sign-in and contains no advertising,
+behavioral analytics, telemetry, or Developer-operated cloud service. The
+application itself does not automatically send your personal data, usage
+statistics, settings, desktop contents, or crash information to the
+Developer. The Developer does not sell this data.
+
+3. Local processing and storage
+
+To provide desktop organization and widget features, SnowDesktop may read or
+process desktop items, file and folder paths, application shortcuts, search
+results, current media information, and system status such as CPU, memory,
+battery, GPU, and network throughput.
+
+The application stores settings, desktop layouts, layout backups, widget
+configuration, and widget storage data locally. This data may include note
+text, RSS addresses, or other widget content that you provide. If the
+application crashes, it may also create local crash logs and minidump files.
+A dump may contain process state, stack information, file paths, or limited
+memory contents.
+
+This information remains on your device by default and is not uploaded
+automatically. A recipient obtains it only if you choose to send the relevant
+files. Review crash dumps, backups, and configuration files for sensitive
+information before sharing them.
+
+4. Network access and third-party services
+
+The following features may make network requests:
+
+1. The portable edition accesses the GitHub API only when you select
+   "Check for updates." Updates for the Store edition are managed by the
+   Microsoft Store.
+2. The built-in RSS widget accesses the RSS address you configure.
+3. Lua widgets that you install, create, or modify may access the network
+   within their declared permissions and domains. A destination may receive
+   information normally available to a website, such as your IP address,
+   request headers, and content supplied by you or the widget.
+4. Links selected in the application are opened in your system browser.
+
+Data processing by third-party websites, GitHub, Microsoft Store, user
+widgets, and their service providers is governed by their respective privacy
+policies. The Developer does not control user-installed widgets or third-party
+services. Use widgets from trusted sources and review their code, permissions,
+and destination domains.
+
+5. File and system permissions
+
+SnowDesktop is a desktop enhancement tool. It needs to access desktop items,
+launch applications, perform user-requested file operations, manage startup,
+and interact with the Windows desktop environment. The Microsoft Store
+edition uses the runFullTrust capability for these traditional desktop
+features. This capability does not by itself mean that data is uploaded to
+the Developer.
+
+Lua widget permission declarations restrict features such as desktop reads,
+system status, media controls, Everything search, and network access. A
+widget's behavior may change if you modify its code or permissions.
+
+6. Retention and deletion
+
+Local data remains until you delete it in the application, manually remove
+the SnowDesktop data directory, or Windows removes Store-edition data during
+uninstallation. Portable-edition data is stored in the data folder beside the
+application; remove that folder as needed when deleting the portable
+application. You can open the data directory from the application's Settings
+page to inspect or delete its contents.
+
+7. Children's privacy
+
+SnowDesktop is not directed to children and does not knowingly collect
+personal data from children.
+
+8. Changes to this policy
+
+If SnowDesktop's data practices change, this policy will be updated and the
+effective date above will be revised. Material changes will be announced on
+the project release page or in application release notes.
+
+9. Contact
+
+Developer: Yunzhe Guo
+Email: guo.yunzhe@outlook.com
+Project: https://github.com/FreeFallingSnow/SnowDesktop

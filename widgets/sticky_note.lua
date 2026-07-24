@@ -1,6 +1,7 @@
 -- sticky_note.lua - 便签组件
-name = "便签"
+name = l10n.tr("lua_widget.sticky_note.name")
 useCustomStyle = true
+followPersonalizationDefault = true
 showTitle = true
 bottomBarHover = false
 
@@ -9,13 +10,13 @@ bg = 0xFFF7D1
 border = 0xD0D0D0
 alpha = 1.0
 gradientEndA = 0.0
-textColor = 0x000000
+textColor = 0x1E293B
 
 settings = {
     presets = {
         {
             id = "classic",
-            label = "浅黄",
+            label = l10n.tr("lua_widget.sticky_note.preset_yellow"),
             default = true,
             values = {
                 bg = 0xFFF7D1,
@@ -23,168 +24,90 @@ settings = {
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x000000,
             }
         },
         {
             id = "white",
-            label = "纯白",
+            label = l10n.tr("lua_widget.sticky_note.preset_white"),
             values = {
                 bg = 0xFFFFFF,
                 border = 0xD6D6D6,
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x000000,
             }
         },
         {
             id = "pink",
-            label = "浅粉",
+            label = l10n.tr("lua_widget.sticky_note.preset_pink"),
             values = {
                 bg = 0xFFE1EC,
                 border = 0xE8AFC2,
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x2A111A,
             }
         },
         {
             id = "blue",
-            label = "浅蓝",
+            label = l10n.tr("lua_widget.sticky_note.preset_blue"),
             values = {
                 bg = 0xDCEBFF,
                 border = 0x9DBBE6,
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x102033,
             }
         },
         {
             id = "green",
-            label = "浅绿",
+            label = l10n.tr("lua_widget.sticky_note.preset_green"),
             values = {
                 bg = 0xDFF7E7,
                 border = 0x9ACDAA,
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x102818,
             }
         },
         {
             id = "purple",
-            label = "浅紫",
+            label = l10n.tr("lua_widget.sticky_note.preset_purple"),
             values = {
                 bg = 0xEDE2FF,
                 border = 0xBFA7E8,
                 alpha = 1.0,
                 borderAlpha = 0.85,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0x211330,
             }
         },
         {
             id = "dark",
-            label = "深色",
+            label = l10n.tr("lua_widget.sticky_note.preset_dark"),
             values = {
                 bg = 0x20242C,
                 border = 0x3E4654,
                 alpha = 1.0,
                 borderAlpha = 0.95,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0xFFFFFF,
             }
         }
     },
     fields = {
-        { key = "textColor", label = "文字颜色", type = "color", default = 0x000000 },
-        { key = "fontSize", label = "文字字号", type = "int", default = 15, min = 10, max = 24 },
+        { key = "fontSize", label = l10n.tr("lua_widget.common.font_size"), type = "int", default = 15, min = 10, max = 24 },
     }
 }
 
 -- 从 storage 加载已保存的值覆盖默认
-function autoTextColor(hex)
-    local r = (hex >> 16) & 0xFF
-    local g = (hex >> 8) & 0xFF
-    local b = hex & 0xFF
-    local lum = 0.299 * r + 0.587 * g + 0.114 * b
-    return lum > 140 and 0x000000 or 0xFFFFFF
-end
-
-function syncFollowTextColor()
-    local follows = storage.get("followPersonalization") == "1"
-        or storage.get("followPersonalization") == "true"
-    local state = follows and "1" or "0"
-    local previous = storage.get("__followPersonalizationState")
-
-    if previous == nil then
-        storage.set("__followPersonalizationState", state)
-        storage.remove("__followTextColorPending")
-        return
-    end
-    if previous ~= state then
-        storage.set("__followPersonalizationState", state)
-        storage.set("__followTextColorPending", state)
-        return
-    end
-    if storage.get("__followTextColorPending") ~= state then return end
-
-    local background = nil
-    if follows then
-        local theme = widget.theme()
-        background = theme and theme.bg or nil
-    else
-        background = tonumber(storage.get("bg"))
-        if background == nil then
-            local theme = widget.theme()
-            background = theme and theme.bg or nil
-        end
-    end
-    if background ~= nil then
-        textColor = autoTextColor(background)
-        storage.set("textColor", tostring(textColor))
-        storage.remove("__followTextColorPending")
-    end
-end
-
 function loadConfig()
     bg = tonumber(storage.get("bg")) or bg
     border = tonumber(storage.get("border")) or border
     alpha = tonumber(storage.get("alpha")) or alpha
     gradientEndA = tonumber(storage.get("gradientEndA")) or gradientEndA
-    textColor = tonumber(storage.get("textColor")) or textColor
-    syncFollowTextColor()
+    local theme = widget.theme()
+    if theme then
+        textColor = (theme.contentTheme == 1) and 0x000000 or 0xFFFFFF
+    end
 end
 
 function getFontSize()
@@ -196,26 +119,19 @@ function resetDefaults()
     border = 0xD0D0D0
     alpha = 1.0
     gradientEndA = 0.0
-    textColor = 0x000000
     storage.set("bg", tostring(bg))
     storage.set("border", tostring(border))
     storage.set("alpha", tostring(alpha))
     storage.set("borderAlpha", "0.85")
     storage.set("gradientEndA", tostring(gradientEndA))
-    storage.set("shadowAlpha", "0.0")
-    storage.set("highlightAlpha", "0.0")
-    storage.set("noiseAlpha", "0.0")
-    storage.set("textColor", tostring(textColor))
     storage.set("fontSize", "15")
-    storage.set("followPersonalization", "0")
-    storage.set("__followPersonalizationState", "0")
-    storage.remove("__followTextColorPending")
+    storage.set("followPersonalization", "1")
     storage.set("__preset", "classic")
 end
 
 function render()
     loadConfig()
-    widget.setTitle("便签")
+    widget.setTitle(l10n.tr("lua_widget.sticky_note.name"))
 
     local w = layout.width()
     local h = layout.height()
@@ -227,7 +143,7 @@ function render()
     local viewportH = h - pad - bottomBarH
     if viewportH <= 0 then viewportH = 1 end
 
-    local textContent = saved ~= "" and saved or "双击编辑..."
+    local textContent = saved ~= "" and saved or l10n.tr("lua_widget.sticky_note.double_click_edit")
     local textMeasured = draw.measureText(textContent, fontSize, maxWidth)
     local contentH = math.ceil(textMeasured.height) + pad * 2
 
@@ -254,8 +170,8 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = "清空便签", icon = "" },
-        { id = 2, label = "恢复便签默认样式", icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.sticky_note.clear"), icon = "" },
+        { id = 2, label = l10n.tr("lua_widget.sticky_note.reset_style"), icon = "" },
     }
 end
 
@@ -268,7 +184,7 @@ function onMenu(id)
 end
 
 function imguiRender()
-    imgui.text("便签内容")
+    imgui.text(l10n.tr("lua_widget.sticky_note.content"))
 
     local text = imgui.input("##note", storage.get("text") or "")
     if text ~= (storage.get("text") or "") then

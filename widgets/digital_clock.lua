@@ -1,5 +1,5 @@
 -- digital_clock.lua - 数字时钟
-name = "数字时钟"
+name = l10n.tr("lua_widget.digital_clock.name")
 useCustomStyle = true
 
 bg = 0x000000
@@ -11,12 +11,13 @@ showWeekday = true
 showDate = true
 showSeconds = true
 textColor = 0xFFFFFF
+clockScale = 1.0
 
 settings = {
     presets = {
         {
             id = "transparent",
-            label = "默认透明",
+            label = l10n.tr("lua_widget.digital_clock.preset_transparent"),
             default = true,
             values = {
                 bg = 0x000000,
@@ -24,49 +25,21 @@ settings = {
                 alpha = 0.0,
                 borderAlpha = 0.0,
                 gradientEndA = 0.0,
-                shadowAlpha = 0.0,
-                highlightAlpha = 0.0,
-                noiseAlpha = 0.0,
-                followPersonalization = false,
-                textColor = 0xFFFFFF,
-            }
-        },
-        {
-            id = "frosted",
-            label = "磨砂时间",
-            values = {
-                bg = 0x111827,
-                border = 0xFFFFFF,
-                alpha = 0.24,
-                borderAlpha = 0.18,
-                gradientEndA = 0.28,
-                shadowAlpha = 0.12,
-                shadowBlur = 16,
-                shadowOffsetY = 5,
-                highlightAlpha = 0.12,
-                noiseAlpha = 0.018,
-                followPersonalization = false,
                 textColor = 0xFFFFFF,
             }
         }
     },
     fields = {
-        { key = "showWeekday", label = "显示星期", type = "bool", default = true },
-        { key = "showDate", label = "显示日期", type = "bool", default = true },
-        { key = "showSeconds", label = "显示秒", type = "bool", default = true },
-        { key = "textColor", label = "文字颜色", type = "color", default = 0xFFFFFF },
+        { key = "showWeekday", label = l10n.tr("lua_widget.digital_clock.show_weekday"), type = "bool", default = true },
+        { key = "showDate", label = l10n.tr("lua_widget.digital_clock.show_date"), type = "bool", default = true },
+        { key = "showSeconds", label = l10n.tr("lua_widget.digital_clock.show_seconds"), type = "bool", default = true },
+        { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
+        { key = "scale", label = l10n.tr("lua_widget.common.scale"), type = "float", default = 1.0, min = 0.5, max = 3.0 },
     }
 }
 
 function onVisible()
     loadConfig()
-end
-function autoTextColor(hex)
-    local r = (hex >> 16) & 0xFF
-    local g = (hex >> 8) & 0xFF
-    local b = hex & 0xFF
-    local lum = 0.299 * r + 0.587 * g + 0.114 * b
-    return lum > 140 and 0x000000 or 0xFFFFFF
 end
 
 function loadConfig()
@@ -78,39 +51,15 @@ function loadConfig()
     showDate = storage.get("showDate") ~= "0"
     showSeconds = storage.get("showSeconds") ~= "0"
     textColor = tonumber(storage.get("textColor")) or textColor
+    clockScale = tonumber(storage.get("scale")) or clockScale
     followPersonalization = storage.get("followPersonalization") == "1"
     if followPersonalization then
         local theme = widget.theme()
-        if theme and theme.bg then
-            textColor = autoTextColor(theme.bg)
+        if theme then
+            textColor = (theme.contentTheme == 1) and 0x000000 or 0xFFFFFF
         end
     end
 end
-
-function saveBool(key, value)
-    storage.set(key, value and "1" or "0")
-end
-
-function resetDefaults()
-    bg = 0x000000
-    border = bg
-    alpha = 0.0
-    gradientEndA = 0.0
-    showWeekday = true
-    showDate = true
-    showSeconds = true
-    textColor = 0xFFFFFF
-    storage.set("bg", tostring(bg))
-    storage.set("alpha", tostring(alpha))
-    storage.set("gradientEndA", tostring(gradientEndA))
-    saveBool("showWeekday", showWeekday)
-    saveBool("showDate", showDate)
-    saveBool("showSeconds", showSeconds)
-    storage.set("textColor", tostring(textColor))
-    storage.set("followPersonalization", "0")
-    followPersonalization = false
-end
-
 
 function render()
     loadConfig()
@@ -123,9 +72,19 @@ function render()
     else
         timeStr = string.format("%02d:%02d", t.hour, t.min)
     end
-    local dateStr = string.format("%d年%02d月%02d日", t.year, t.month, t.day)
-    local weekDays = { "日", "一", "二", "三", "四", "五", "六" }
-    local weekdayStr = "星期" .. weekDays[t.wday or 1]
+    local dateStr = l10n.tr("lua_widget.digital_clock.date_format",
+        tostring(t.year), string.format("%02d", t.month), string.format("%02d", t.day))
+    local weekDays = {
+        l10n.tr("lua_widget.digital_clock.sunday"),
+        l10n.tr("lua_widget.digital_clock.monday"),
+        l10n.tr("lua_widget.digital_clock.tuesday"),
+        l10n.tr("lua_widget.digital_clock.wednesday"),
+        l10n.tr("lua_widget.digital_clock.thursday"),
+        l10n.tr("lua_widget.digital_clock.friday"),
+        l10n.tr("lua_widget.digital_clock.saturday"),
+    }
+    local weekdayStr = l10n.tr("lua_widget.digital_clock.weekday_format",
+        weekDays[t.wday or 1])
 
     local timeBaseSize = layout.fontCu(28)
     local secondaryBaseSize = layout.fontCu(9)
@@ -153,7 +112,7 @@ function render()
     local innerHeight = math.max(layout.cu(40), h - layout.cu(24))
     local widthScale = innerWidth / math.max(1, widest)
     local heightScale = (innerHeight - gap * math.max(0, #lines - 1)) / math.max(1, totalBaseHeight)
-    local scale = math.max(0.7, math.min(widthScale, heightScale))
+    local scale = math.max(0.7, math.min(widthScale, heightScale)) * clockScale
 
     for i = 1, #lines do
         lines[i].size = lines[i].size * scale

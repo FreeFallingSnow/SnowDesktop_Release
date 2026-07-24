@@ -1,7 +1,35 @@
 {
-  "name": "媒体控制",
+  "name": "Media Controls",
+  "nameKey": "lua_widget.media_control.name",
   "version": "1.0.0",
-  "description": "显示并控制 Windows 当前媒体会话。",
+  "description": "Displays and controls the current Windows media session.",
+  "descriptionKey": "lua_widget.media_control.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.media_control.name": "媒体控制",
+      "lua_widget.media_control.description": "显示并控制当前 Windows 媒体会话。",
+      "lua_widget.media_control.preset_dark": "深色媒体",
+      "lua_widget.media_control.launcher": "无播放时启动项",
+      "lua_widget.media_control.not_playing": "未在播放",
+      "lua_widget.media_control.double_click_player": "双击打开播放器",
+      "lua_widget.media_control.select_launcher": "从桌面选择启动项",
+      "lua_widget.media_control.not_set": "（不设置）",
+      "lua_widget.media_control.configure_launcher": "设置启动项",
+      "lua_widget.common.text_color": "文字颜色"
+    },
+    "en-US": {
+      "lua_widget.media_control.name": "Media Controls",
+      "lua_widget.media_control.description": "Displays and controls the current Windows media session.",
+      "lua_widget.media_control.preset_dark": "Dark Media",
+      "lua_widget.media_control.launcher": "Launcher When Idle",
+      "lua_widget.media_control.not_playing": "Nothing Playing",
+      "lua_widget.media_control.double_click_player": "Double-click to Open Player",
+      "lua_widget.media_control.select_launcher": "Select a Desktop Item to Launch",
+      "lua_widget.media_control.not_set": "(Not Set)",
+      "lua_widget.media_control.configure_launcher": "Configure Launcher",
+      "lua_widget.common.text_color": "Text Color"
+    }
+  },
   "defaultSize": { "columns": 3, "rows": 1 },
   "minSize": { "columns": 2, "rows": 1 },
   "maxSize": { "columns": 3, "rows": 1 },

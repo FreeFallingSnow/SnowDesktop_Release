@@ -1,7 +1,27 @@
 {
-  "name": "示例组件",
+  "name": "Example Widget",
+  "nameKey": "lua_widget.template.name",
   "version": "1.0.0",
-  "description": "SnowDesktop Lua 组件起始模板。",
+  "description": "Starter template for a SnowDesktop Lua widget.",
+  "descriptionKey": "lua_widget.template.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.template.name": "示例组件",
+      "lua_widget.template.description": "用于创建 SnowDesktop Lua 组件的最小示例。",
+      "lua_widget.template.preset": "示例主题",
+      "lua_widget.template.double_click_edit": "双击编辑",
+      "lua_widget.template.reset_text": "恢复默认文字",
+      "lua_widget.common.text_color": "文字颜色"
+    },
+    "en-US": {
+      "lua_widget.template.name": "Example Widget",
+      "lua_widget.template.description": "A minimal example for creating a SnowDesktop Lua widget.",
+      "lua_widget.template.preset": "Example Theme",
+      "lua_widget.template.double_click_edit": "Double-click to Edit",
+      "lua_widget.template.reset_text": "Restore Default Text",
+      "lua_widget.common.text_color": "Text Color"
+    }
+  },
   "defaultSize": { "columns": 2, "rows": 1 },
   "permissions": ["ui.input", "ui.contextMenu"]
 }
