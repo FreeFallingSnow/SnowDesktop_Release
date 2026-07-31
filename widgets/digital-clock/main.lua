@@ -11,6 +11,7 @@ showWeekday = true
 showDate = true
 showSeconds = true
 textColor = 0xFFFFFF
+textOpacity = 1.0
 clockScale = 1.0
 
 settings = {
@@ -26,6 +27,7 @@ settings = {
                 borderAlpha = 0.0,
                 gradientEndA = 0.0,
                 textColor = 0xFFFFFF,
+                textOpacity = 1.0,
             }
         }
     },
@@ -34,6 +36,7 @@ settings = {
         { key = "showDate", label = l10n.tr("lua_widget.digital_clock.show_date"), type = "bool", default = true },
         { key = "showSeconds", label = l10n.tr("lua_widget.digital_clock.show_seconds"), type = "bool", default = true },
         { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
+        { key = "textOpacity", label = l10n.tr("lua_widget.digital_clock.text_opacity"), type = "float", default = 1.0, min = 0.0, max = 1.0 },
         { key = "scale", label = l10n.tr("lua_widget.common.scale"), type = "float", default = 1.0, min = 0.5, max = 3.0 },
     }
 }
@@ -51,6 +54,7 @@ function loadConfig()
     showDate = storage.get("showDate") ~= "0"
     showSeconds = storage.get("showSeconds") ~= "0"
     textColor = tonumber(storage.get("textColor")) or textColor
+    textOpacity = math.max(0.0, math.min(1.0, tonumber(storage.get("textOpacity")) or textOpacity))
     clockScale = tonumber(storage.get("scale")) or clockScale
     followPersonalization = storage.get("followPersonalization") == "1"
     if followPersonalization then
@@ -132,7 +136,8 @@ function render()
     for i = 1, #lines do
         local line = lines[i]
         local drawMaxW = math.max(1, line.metrics.width + 2)
-        draw.text((w - line.metrics.width) * 0.5, y, line.text, line.size, textColor, drawMaxW, true)
+        draw.text((w - line.metrics.width) * 0.5, y, line.text, line.size,
+            textColor, drawMaxW, true, false, 0, textOpacity)
         if i == 1 and #lines > 1 then
             y = y + line.metrics.height + secondaryGap
         else

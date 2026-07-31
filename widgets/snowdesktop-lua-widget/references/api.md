@@ -10,6 +10,7 @@
 - [Storage](#storage)
 - [Desktop integration](#desktop-integration)
 - [Everything search](#everything-search)
+- [Calendar](#calendar)
 - [Settings UI](#settings-ui)
 - [Manifest and permissions](#manifest-and-permissions)
 - [Troubleshooting](#troubleshooting)
@@ -105,7 +106,16 @@ function onMouseDown(x, y, button, delta) end
 function onMouseMove(x, y, button, delta) end
 function onMouseUp(x, y, button, delta) end
 function onWheel(x, y, button, delta) end
+function renderPanel() end
+function onPanelOpened() end
+function onPanelClosed() end
+function onPanelClick(x, y, button, delta) end
+function onPanelMouseDown(x, y, button, delta) end
+function onPanelMouseMove(x, y, button, delta) end
+function onPanelMouseUp(x, y, button, delta) end
+function onPanelWheel(x, y, button, delta) end
 function onDesktopChanged(reason) end
+function onCalendarChanged(reason) end
 function onLanguageChanged() end
 function onVisible() end
 function onHidden() end
@@ -119,9 +129,15 @@ function onMenu(id) end
 ```
 
 - Mouse callbacks receive four arguments even if the script only declares `x, y`.
+- Panel mouse callbacks use coordinates local to the panel content area.
+- `renderPanel()` is rendered in a host-owned transient panel opened with
+  `widget.openPanel`. Only one component panel is open at a time; Escape,
+  clicking outside, and the host close button dismiss it.
 - `onSelected()` runs when the desktop selects the widget.
 - For wheel handling, use the sign of `delta`.
 - `onDesktopChanged(reason)` requires `desktop.read`.
+- `onCalendarChanged(reason)` requires `calendar.read`; `reason` is
+  `"selection"` or `"events"`.
 - `onLanguageChanged()` runs after the widget has been reloaded with its new
   manifest locale. Use it to refresh state-dependent titles or other runtime
   text caches.
@@ -165,12 +181,13 @@ Colors use `0xRRGGBB`.
 ### `draw.text`
 
 ```lua
-draw.text(x, y, text, size?, color?, maxWidth?, bold?, singleLine?, maxHeight?)
+draw.text(x, y, text, size?, color?, maxWidth?, bold?, singleLine?, maxHeight?, alpha?)
 ```
 
 - Defaults: `size=14`, `color=0xFFFFFF`, `maxWidth=0`.
 - `maxWidth > 0` enables wrapping.
 - `singleLine=true` disables wrapping and adds character ellipsis trimming.
+- `alpha` controls text opacity from `0.0` (transparent) to `1.0` (opaque).
 
 ### `draw.measureText`
 
@@ -226,13 +243,18 @@ draw.icon(pathOrDesktopItem, x, y, size?, alpha?)
 - `draw.image` accepts only a path relative to the root executable `widgets` directory.
 - Supported image decoding is provided by Windows Imaging Component.
 - `draw.icon` resolves a Windows shell icon and requires `desktop.read`.
+- Resolved shell icons are cached across frames and refreshed after desktop
+  changes; large result sets should still use `ui.virtualList` so only visible
+  icons are drawn.
 - `pathOrDesktopItem` may be a path string or an item table returned by `desktop`.
 
 ## Widget and system
 
 ```lua
 local info = widget.info()
--- info.id, info.width, info.height
+-- info.id, info.width, info.height, info.selected
+-- info.selectedPackageId is the package UUID of the one selected
+-- Lua widget, or an empty string when that is not applicable
 
 widget.setTitle("新标题")
 widget.invalidate()
@@ -246,13 +268,29 @@ widget.editText(key, x, y, width, height, multiline,
     initialText?, selectAll?, textColor?, fontSize?, backgroundColor?)
 
 widget.openSettings()
+widget.openPanel({
+    title = "编辑",
+    width = 560,
+    height = 620,
+})
+widget.closePanel()
 ```
 
 `widget.openSettings` opens the host settings panel for the current widget
 instance. Call this from `onDoubleClick` or `onMenu` to let the user configure
 the widget without using the right-click menu.
 
-`widget.editText` opens a host edit control and saves the result to `storage` under `key`. Defaults:
+`widget.openPanel(options)` opens a collection-popup-style auxiliary surface
+for form-heavy or detail-heavy interactions. The host clamps `width` to
+320–900 pixels and `height` to 280–900 pixels and further constrains the panel
+to the current work area. Render its content in `renderPanel()` using the same
+`draw`, `layout`, and host-rendered `ui` controls as the widget. Use
+`widget.closePanel()` after save or cancel. Prefer this surface for editors
+that would otherwise crowd the widget's normal grid span.
+
+`widget.editText` is a legacy compatibility API that opens the old system-style
+editor and saves the result to `storage` under `key`. It is not recommended for
+new or updated widgets; use `ui.textInput` or `ui.textArea` instead. Defaults:
 
 - `initialText`: current stored value.
 - `selectAll`: `true`.
@@ -288,7 +326,7 @@ local cellH = layout.cellHeight()    -- grid cell height (DPI-aware, px)
 local gapY = layout.cellGap()        -- grid vertical gap (DPI-aware, px)
 local barH = layout.barHeight()      -- bottom bar height in cu (default 24, range 16-48)
 local scale = layout.cellScale()     -- min(cellW / 92, cellH / 116)
-local fontSize = layout.cu(14)       -- 14 design units converted to px
+local fontSize = layout.cu(15)       -- 15 design units converted to px
 ```
 
 `cellWidth` and `cellHeight` return the current monitor's DPI-scaled grid cell
@@ -299,7 +337,7 @@ between 16 and 48 in settings. Use `layout.cu(layout.barHeight())` to get the
 pixel height for layout calculations.
 `cellScale` returns the component scale relative to the standard `92 x 116`
 grid cell. `cu(value)` converts a design value to current pixels. Existing
-`draw.text` sizes remain pixel values, so use `draw.text(..., layout.cu(14))`
+`draw.text` sizes remain pixel values, so use `draw.text(..., layout.cu(15))`
 when a widget should scale with its grid cell.
 
 Cached system snapshots require `system.read`:
@@ -372,11 +410,13 @@ still match `networkDomains`, and `response.ok` is true only for HTTP 2xx.
 ui.button(id, label, x, y, width, height, enabled?)
 ui.toggle(id, label, x, y, width, height, value)
 local value = ui.textInput(id, storageKey, x, y, width, height, options?)
+local text = ui.textArea(id, storageKey, x, y, width, height, options?)
 local focused = ui.focusInput(id)
 ui.progress(x, y, width, height, value0To1, color?)
 local offset = ui.scrollArea(id, x, y, width, height, contentHeight)
 local range = ui.virtualList(id, x, y, width, height, itemHeight, itemCount)
 -- range.first, range.last, range.offset
+ui.setScrollOffset(id, offset)
 
 function onUiAction(id, value)
 end
@@ -385,21 +425,37 @@ end
 Buttons and toggles use host hit-testing. Scroll areas and virtual lists consume
 the mouse wheel while the pointer is inside their bounds. The host automatically
 draws a scrollbar at the right edge of the widget frame when the content height
-exceeds the viewport height.
+exceeds the viewport height. Scroll offsets are clamped automatically when the
+viewport or content shrinks. Use `ui.setScrollOffset(id, 0)` when replacing a
+list with a new data set that should start at the top.
 
 `ui.textInput` draws a persistent, transparent single-line input field entirely
 through Direct2D and saves the edited value under `storageKey`. It uses the
 desktop's hidden keyboard input window, so focusing it never creates an opaque
-native control over the widget. Clicking the field focuses it;
+native control over the widget. Clicking the field focuses it and places the
+caret at the pointed character; dragging selects an arbitrary text range.
 `ui.focusInput(id)` does the same programmatically. Supported options are
-`placeholder`, `fontSize` (pixels), `textColor`, `placeholderColor`,
+`placeholder`, `fontSize` (pixels, default `15`), `textColor`, `placeholderColor`,
 `backgroundColor`, `borderColor`, `focusedBorderColor`, `backgroundAlpha`,
 `focusedBackgroundAlpha`, `borderAlpha`, `focusedBorderAlpha`, `radius`,
 `padding`, `borderThickness`, `selectAll`, and `liveUpdate`. The transparency
-defaults match the desktop file search field: 0.05 at rest and 0.12 while
-focused. Pass `layout.fontCu(...)` as `fontSize` to match other widget text.
+default to 0.05 at rest and 0.12 while focused. Pass `layout.fontCu(...)` as
+`fontSize` to match other widget text.
 `liveUpdate` defaults to `true`; pressing Escape restores the value from before
 editing.
+
+`ui.textArea` uses the same Direct2D-rendered input path and option set, but
+wraps text across multiple lines and scrolls with the mouse wheel when its
+content exceeds the viewport. It also accepts `placeholderWhenWhitespace`;
+when `true`, text containing only whitespace is treated as empty for the
+unfocused placeholder. Enter inserts a newline, Ctrl+Enter commits and leaves
+the field, and Escape restores the value from before editing. Both input types
+highlight mouse-drag or Shift+arrow selections. Typing, Backspace, Delete,
+cutting, or pasting replaces the selected range; Ctrl+A/C/X/V use the standard
+selection and clipboard behavior. Windows IME composition text and candidate
+windows follow the rendered caret, including the scroll offset inside a
+multiline field. Uncommitted IME text is rendered inline with an underline and
+does not enter widget storage until the IME commits it.
 
 ## Storage
 
@@ -427,12 +483,23 @@ Reading requires `desktop.read`:
 ```lua
 local all = desktop.items()
 local selected = desktop.selection()
-local matches = desktop.find("query")
+local matches = desktop.find("query", 200) -- optional result limit
+local apps = desktop.findApplications("query", 40)
 ```
 
 `desktop.find` matches item titles by normal text, pinyin initials, and compact
 full pinyin for Chinese titles. For example, `"wx"` and `"weixin"` can match
-`"微信"`.
+`"微信"`. Its optional result limit is clamped to 1–1000; omit it or pass a
+non-positive value for all matches. Search widgets should use a practical limit
+and debounce live input so large folder-backed components do not create a large
+Lua table for every keystroke.
+
+`desktop.findApplications` searches the Windows `shell:AppsFolder` application
+index used by SnowDesktop's native search popup. It returns the same item shape
+with `source = "Applications"` and `type = "application"`, requires
+`desktop.read`, and accepts a result limit clamped to 1–200. The first call can
+start background indexing; widgets receive `onDesktopChanged("applications")`
+when the index becomes available and should refresh a non-empty search then.
 
 Each item contains:
 
@@ -469,6 +536,53 @@ local results = everything.search("query", 40)
 The optional second argument is the maximum number of results, clamped by the
 host. Returned items use the same shape as desktop items; `source` is
 `"Everything"`, and `path` contains the full filesystem path.
+
+## Calendar
+
+Shared local calendar data is stored by the host. Reading requires
+`calendar.read`; selecting a date and mutating events requires
+`calendar.write`:
+
+```lua
+local selected = calendar.selectedDate() -- YYYY-MM-DD
+calendar.setSelectedDate("2026-07-30")
+
+local info = calendar.dateInfo("2026-07-30")
+-- year, month, day, weekday (1=Sunday), daysInMonth
+local tomorrow = calendar.addDays("2026-07-30", 1)
+
+local events = calendar.events("2026-07-30", "2026-08-05")
+local created = calendar.create({
+    title = "Design review",
+    date = "2026-07-30",
+    allDay = false,
+    startMinutes = 600,
+    endMinutes = 660,
+    notes = "",
+    reminderMinutes = 15,
+})
+local updated = calendar.update(created.id, created.revision, {
+    title = "Updated design review",
+    date = "2026-07-30",
+    allDay = false,
+    startMinutes = 600,
+    endMinutes = 660,
+    notes = "",
+    reminderMinutes = 15,
+})
+local removed = calendar.remove(created.id)
+```
+
+Mutation results contain `ok`, `id`, `revision`, and `error`. Updates require
+the revision returned by the latest query or mutation and return
+`error = "conflict"` rather than overwriting a newer edit.
+
+Events contain `id`, `revision`, `title`, `date`, `allDay`, `startMinutes`,
+`endMinutes`, `notes`, and `reminderMinutes`. Dates use local time and ISO
+`YYYY-MM-DD`. Timed events cannot cross midnight. Reminder values supported by
+the host are `-1` (none), `0`, `5`, `15`, `30`, `60`, and `1440`
+minutes before the event. All-day reminders use 09:00 local time as their
+base.
 
 ## Settings UI
 
@@ -518,13 +632,19 @@ widget exposes both visual style and behavior/data settings.
 
 ## Manifest and permissions
 
-The manifest filename is derived by replacing `.lua` with `.widget.json`.
+The package manifest is always `widget.json` at the component root. Its `entry`
+field identifies `main.lua` or another safe package-relative Lua file.
 
 ```json
 {
+  "schemaVersion": 1,
+  "id": "bea2cf61-ce15-4dd7-aec0-af3c29a16440",
+  "slug": "example-widget",
   "name": "Example Widget",
   "nameKey": "lua_widget.example.name",
   "version": "1.0.0",
+  "apiVersion": 1,
+  "dataVersion": 1,
   "description": "Example description.",
   "descriptionKey": "lua_widget.example.description",
   "locales": {
@@ -541,10 +661,11 @@ The manifest filename is derived by replacing `.lua` with `.widget.json`.
   "minSize": { "columns": 2, "rows": 1 },
   "maxSize": { "columns": 4, "rows": 3 },
   "permissions": ["ui.input", "network.http"],
-  "networkDomains": ["api.example.com", "*.example.net"],
-  "publisher": "Example",
-  "minHostVersion": "0.1.2",
-  "entry": "example.lua",
+  "networkDomains": ["api.example.com"],
+  "author": "Example",
+  "license": "MIT",
+  "minHostVersion": "1.0.1.0",
+  "entry": "main.lua",
   "presets": [
     {
       "id": "default",
@@ -624,6 +745,7 @@ restoring saved layouts, and reacting to grid changes.
 |---|---|
 | `ui.input` | `imgui`, `imguiRender()` |
 | `ui.contextMenu` | `getContextMenu()`, `onMenu(id)` |
+| `ui.notify` | rate-limited `sys.notify` |
 | `desktop.read` | `desktop.items`, `selection`, `find`, `draw.icon`, desktop-change callback |
 | `desktop.action` | `desktop.open`, `reveal`, `refresh` |
 | `everything.search` | `everything.search(query, maxResults)` |
@@ -631,32 +753,32 @@ restoring saved layouts, and reacting to grid changes.
 | `media.read` | `media.current` |
 | `media.action` | Media playback controls |
 | `network.http` | `http.request`, `http.cancel` |
+| `calendar.read` | selected date, date helpers, event queries, calendar-change callback |
+| `calendar.write` | shared date selection and event create/update/delete |
 
 Missing permissions produce a runtime error for guarded APIs. Context menus and desktop-change callbacks are skipped by the host when their permission is absent.
 
 Declarative setting types are `text`, `bool`, `int`, `float`, `select`, and `color`.
 Values are stored in the same per-instance string storage used by `storage`.
 
-For local package installation, select a `.widget.json` from
-**设置 → 调试 → 安装/升级组件包**. The optional `entry` field names the paired
-Lua file. Reinstalling the same manifest stem upgrades it. An optional
-`signature` field accepts `sha256:<64 lowercase hex characters>` and is checked
-against the Lua entry file. `minHostVersion` hides and rejects incompatible
-widgets. Installation validates temporary files first and restores the previous
-version if replacement fails.
+Validate and export with `snowwidget validate <directory>` and
+`snowwidget pack <directory> <output.snowwidget>`. Installation always stages
+and validates the complete package. Package identity is the UUID, versions are
+SemVer, and last-known-good versions remain available for rollback. Source
+changes and permission/domain expansion require explicit confirmation.
 
 ## Troubleshooting
 
 ### Component is absent from **添加组件**
 
-- Put the `.lua` file directly in the executable's `widgets` directory.
-- Do not put runnable scripts in a subdirectory.
+- Put `widget.json` and its declared Lua entry in one package directory.
+- Do not put runnable loose scripts directly in `widgets`.
 - Rebuild or run the widget sync script after editing the source repository's `widgets` folder.
-- Confirm the extension is exactly `.lua`.
+- Run `snowwidget validate` and fix every error in its JSON report.
 
 ### Manifest is ignored
 
-- Match `example.lua` with `example.widget.json`.
+- Name the manifest `widget.json` and keep `entry` package-relative.
 - Validate JSON syntax.
 - Keep `defaultSize` values between 1 and 8.
 - Ensure `defaultSize` is compatible with optional `minSize` and `maxSize`.
@@ -677,7 +799,7 @@ Add the exact permission required by the API and reload the widget.
 
 ### Image does not render
 
-- Use a relative path under the root `widgets` directory.
+- Use a relative path under the current package directory.
 - Do not pass an absolute path.
 - Verify Windows Imaging Component supports the file.
 

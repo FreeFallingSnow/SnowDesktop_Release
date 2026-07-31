@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "8a1c7607-56f6-4f97-81ed-ab0a5d95cd8b",
+  "slug": "reminders",
+  "apiVersion": 1,
+  "dataVersion": 1,
+  "entry": "main.lua",
+  "minHostVersion": "1.0.1.0",
+  "author": "SnowDesktop",
+  "license": "GPL-3.0-only",
+  "name": "ToDo List",
+  "nameKey": "lua_widget.reminders.name",
+  "titleKeys": [
+    "lua_widget.reminders.legacy_name"
+  ],
+  "version": "1.0.0",
+  "description": "An interactive local ToDo list with quick add, completion, editing, and filtering.",
+  "descriptionKey": "lua_widget.reminders.description",
+  "locales": {
+    "zh-CN": {
+      "lua_widget.reminders.name": "ToDo列表",
+      "lua_widget.reminders.legacy_name": "提醒事项",
+      "lua_widget.reminders.description": "可快速添加、勾选、编辑和筛选的本地 ToDo 清单。",
+      "lua_widget.reminders.show_completed": "显示已完成待办",
+      "lua_widget.reminders.empty": "暂无待办",
+      "lua_widget.reminders.all_done": "待办已全部完成",
+      "lua_widget.reminders.add_placeholder": "添加待办",
+      "lua_widget.reminders.empty_hint": "在上方输入新待办",
+      "lua_widget.reminders.completed_hidden": "已完成待办已隐藏",
+      "lua_widget.reminders.untitled": "未命名待办",
+      "lua_widget.reminders.add_task": "添加待办",
+      "lua_widget.reminders.delete_selected": "删除所选待办",
+      "lua_widget.reminders.clear_completed": "清除已完成待办",
+      "lua_widget.reminders.complete_all": "所有待办标记为已完成",
+      "lua_widget.reminders.reopen_all": "所有待办标记为未完成",
+      "lua_widget.common.font_size": "字号"
+    },
+    "en-US": {
+      "lua_widget.reminders.name": "ToDo List",
+      "lua_widget.reminders.legacy_name": "Reminders",
+      "lua_widget.reminders.description": "An interactive local ToDo list with quick add, completion, editing, and filtering.",
+      "lua_widget.reminders.show_completed": "Show Completed ToDos",
+      "lua_widget.reminders.empty": "No ToDos",
+      "lua_widget.reminders.all_done": "All ToDos Completed",
+      "lua_widget.reminders.add_placeholder": "Add a ToDo",
+      "lua_widget.reminders.empty_hint": "Enter a New ToDo Above",
+      "lua_widget.reminders.completed_hidden": "Completed ToDos Are Hidden",
+      "lua_widget.reminders.untitled": "Untitled ToDo",
+      "lua_widget.reminders.add_task": "Add ToDo",
+      "lua_widget.reminders.delete_selected": "Delete Selected ToDo",
+      "lua_widget.reminders.clear_completed": "Clear Completed ToDos",
+      "lua_widget.reminders.complete_all": "Mark All ToDos as Completed",
+      "lua_widget.reminders.reopen_all": "Mark All ToDos as Incomplete",
+      "lua_widget.common.font_size": "Font Size"
+    }
+  },
+  "defaultSize": { "columns": 2, "rows": 2 },
+  "minSize": { "columns": 2, "rows": 2 },
+  "maxSize": { "columns": 4, "rows": 4 },
+  "permissions": ["ui.input", "ui.contextMenu"]
+}

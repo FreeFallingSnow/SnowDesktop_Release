@@ -20,17 +20,6 @@ settings = {
                 borderAlpha = 0,
                 gradientEndA = 0,
             }
-        },
-        {
-            id = "glass",
-            label = l10n.tr("lua_widget.analog_clock.preset_glass"),
-            values = {
-                bg = 0xFFFFFF,
-                border = 0xFFFFFF,
-                alpha = 0.16,
-                borderAlpha = 0.24,
-                gradientEndA = 0.20,
-            }
         }
     },
     fields = {

@@ -135,7 +135,6 @@ function render()
 
     local w = layout.width()
     local h = layout.height()
-    local saved = storage.get("text") or ""
     local pad = layout.cu(14)
     local fontSize = layout.fontCu(getFontSize())
     local maxWidth = w - pad * 2
@@ -143,29 +142,29 @@ function render()
     local viewportH = h - pad - bottomBarH
     if viewportH <= 0 then viewportH = 1 end
 
-    local textContent = saved ~= "" and saved or l10n.tr("lua_widget.sticky_note.double_click_edit")
-    local textMeasured = draw.measureText(textContent, fontSize, maxWidth)
-    local contentH = math.ceil(textMeasured.height) + pad * 2
-
-    local scrollOffset = ui.scrollArea("text", pad, pad, maxWidth, viewportH, contentH)
-
-    draw.pushClip(pad, pad, maxWidth, viewportH)
-    draw.text(pad, pad - scrollOffset, textContent, fontSize, textColor, maxWidth)
-    draw.popClip()
-end
-
-function onClick(x, y)
+    ui.textArea("note", "text", pad, pad, maxWidth, viewportH, {
+        placeholder = l10n.tr("lua_widget.sticky_note.empty_hint"),
+        placeholderWhenWhitespace = true,
+        fontSize = fontSize,
+        textColor = textColor,
+        placeholderColor = textColor,
+        backgroundColor = textColor,
+        borderColor = textColor,
+        focusedBorderColor = textColor,
+        backgroundAlpha = 0.0,
+        focusedBackgroundAlpha = 0.0,
+        borderAlpha = 0.0,
+        focusedBorderAlpha = 0.0,
+        radius = layout.cu(7),
+        padding = layout.cu(2),
+        borderThickness = layout.cu(1),
+        selectAll = false,
+        liveUpdate = true,
+    })
 end
 
 function onDoubleClick(x, y)
-    local w = layout.width()
-    local h = layout.height()
-    loadConfig()
-    local pad = layout.cu(14)
-    local bottomBarH = layout.cu(layout.barHeight())
-    local viewportH = h - pad - bottomBarH
-    widget.editText("text", pad, pad, w - pad * 2, viewportH, true,
-        storage.get("text") or "", false, textColor, layout.fontCu(getFontSize()))
+    ui.focusInput("note")
 end
 
 function getContextMenu()

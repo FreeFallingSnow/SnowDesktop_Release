@@ -1,4 +1,13 @@
 {
+  "schemaVersion": 1,
+  "id": "64107f41-197a-426a-8f86-6eeb020f56b0",
+  "slug": "analog-clock",
+  "apiVersion": 1,
+  "dataVersion": 1,
+  "entry": "main.lua",
+  "minHostVersion": "1.0.1.0",
+  "author": "SnowDesktop",
+  "license": "GPL-3.0-only",
   "name": "Analog Clock",
   "nameKey": "lua_widget.analog_clock.name",
   "version": "1.0.0",
@@ -9,7 +18,6 @@
       "lua_widget.analog_clock.name": "指针时钟",
       "lua_widget.analog_clock.description": "显示可响应组件尺寸的指针时钟。",
       "lua_widget.analog_clock.preset_transparent": "透明表盘",
-      "lua_widget.analog_clock.preset_glass": "玻璃表盘",
       "lua_widget.analog_clock.show_second_hand": "显示秒针",
       "lua_widget.analog_clock.show_numbers": "显示数字"
     },
@@ -17,7 +25,6 @@
       "lua_widget.analog_clock.name": "Analog Clock",
       "lua_widget.analog_clock.description": "Displays a responsive analog clock.",
       "lua_widget.analog_clock.preset_transparent": "Transparent Face",
-      "lua_widget.analog_clock.preset_glass": "Glass Face",
       "lua_widget.analog_clock.show_second_hand": "Show Second Hand",
       "lua_widget.analog_clock.show_numbers": "Show Numbers"
     }

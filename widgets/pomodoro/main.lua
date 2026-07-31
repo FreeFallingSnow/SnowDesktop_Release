@@ -33,31 +33,6 @@ local function getPalette()
 end
 
 settings = {
-    presets = {
-        {
-            id = "dark",
-            label = l10n.tr("lua_widget.pomodoro.preset_dark"),
-            default = true,
-            values = {
-                bg = 0x151A21,
-                border = 0xFFFFFF,
-                alpha = 0.42,
-                borderAlpha = 0.18,
-                gradientEndA = 0.30,
-            }
-        },
-        {
-            id = "light",
-            label = l10n.tr("lua_widget.pomodoro.preset_light"),
-            values = {
-                bg = 0xFFFFFF,
-                border = 0xD0D0D0,
-                alpha = 0.98,
-                borderAlpha = 0.70,
-                gradientEndA = 0.0,
-            }
-        },
-    },
     fields = {
         { key = "workMin", label = l10n.tr("lua_widget.pomodoro.work_minutes"), type = "int", default = 25, min = 1, max = 120 },
         { key = "breakMin", label = l10n.tr("lua_widget.pomodoro.short_break_minutes"), type = "int", default = 5, min = 1, max = 60 },
@@ -366,6 +341,7 @@ function render()
     local h = layout.height()
     local cx = w / 2
     local rows = layout.rows()
+    local bottomBarH = layout.cu(layout.barHeight())
 
     local function scu(value, minimum)
         return math.max(minimum or 0, layout.cu(value * rows))
@@ -409,11 +385,17 @@ function render()
     local belowH = labelH + gap + dotsH + gap + btnsH
 
     local ringR = math.min(w, h - belowH) / 2 - ringPad
-    if ringR < scu(28) then ringR = math.min(w, h - belowH) / 2 - ringPad / 2 end
+    if ringR < scu(28) then
+        ringR = math.min(w, h - belowH) / 2 - ringPad / 2
+    end
+    local edgeInset = math.max(margin, bottomBarH)
+    local maxBalancedRingR =
+        (h - belowH - ringThick * 1.5 - edgeInset * 2) / 2
+    ringR = math.min(ringR, maxBalancedRingR)
     if ringR <= 0 then return end
 
-    local totalH = ringR * 2 + ringThick * 2 + gap + belowH
-    local curY = math.max(margin, (h - totalH) / 2)
+    local visualContentH = ringR * 2 + ringThick * 2 + belowH
+    local curY = (h - visualContentH - ringThick / 2) / 2
     local ringCY = curY + ringR + ringThick
 
     drawTrackRing(cx, ringCY, ringR, ringThick, pal.trackColor, 0.5)

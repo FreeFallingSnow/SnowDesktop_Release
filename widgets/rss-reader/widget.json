@@ -1,4 +1,13 @@
 {
+  "schemaVersion": 1,
+  "id": "3a8b02f9-560c-49b9-9b22-bc4405d863ea",
+  "slug": "rss-reader",
+  "apiVersion": 1,
+  "dataVersion": 1,
+  "entry": "main.lua",
+  "minHostVersion": "1.0.1.0",
+  "author": "SnowDesktop",
+  "license": "GPL-3.0-only",
   "name": "RSS Reader",
   "nameKey": "lua_widget.rss_reader.name",
   "version": "2.0.0",
@@ -8,7 +17,6 @@
     "zh-CN": {
       "lua_widget.rss_reader.name": "RSS 阅读器",
       "lua_widget.rss_reader.description": "订阅 RSS 与 Atom 源，列出标题和日期，并可双击打开文章。",
-      "lua_widget.rss_reader.preset_standard": "标准列表",
       "lua_widget.rss_reader.url": "RSS 地址",
       "lua_widget.rss_reader.refresh_interval": "刷新间隔（秒）",
       "lua_widget.rss_reader.max_items": "最大条目数",
@@ -28,7 +36,6 @@
     "en-US": {
       "lua_widget.rss_reader.name": "RSS Reader",
       "lua_widget.rss_reader.description": "Subscribes to RSS and Atom feeds, lists headlines and dates, and opens articles on double-click.",
-      "lua_widget.rss_reader.preset_standard": "Standard List",
       "lua_widget.rss_reader.url": "RSS URL",
       "lua_widget.rss_reader.refresh_interval": "Refresh Interval (Seconds)",
       "lua_widget.rss_reader.max_items": "Maximum Items",
@@ -49,5 +56,5 @@
   "defaultSize": { "columns": 3, "rows": 2 },
   "minSize": { "columns": 2, "rows": 2 },
   "permissions": ["network.http", "ui.input", "desktop.action", "ui.contextMenu"],
-  "networkDomains": ["*"]
+  "networkDomains": ["www.ithome.com"]
 }

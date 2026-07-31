@@ -1,4 +1,13 @@
 {
+  "schemaVersion": 1,
+  "id": "7d6803f2-63fd-428d-b947-6e07437ead2a",
+  "slug": "system-monitor",
+  "apiVersion": 1,
+  "dataVersion": 1,
+  "entry": "main.lua",
+  "minHostVersion": "1.0.1.0",
+  "author": "SnowDesktop",
+  "license": "GPL-3.0-only",
   "name": "System Monitor",
   "nameKey": "lua_widget.system_monitor.name",
   "version": "1.0.0",
@@ -8,7 +17,6 @@
     "zh-CN": {
       "lua_widget.system_monitor.name": "系统状态",
       "lua_widget.system_monitor.description": "显示 CPU、内存、网络和电池状态。",
-      "lua_widget.system_monitor.preset_standard": "标准卡片",
       "lua_widget.system_monitor.show_cpu": "显示 CPU",
       "lua_widget.system_monitor.show_memory": "显示内存",
       "lua_widget.system_monitor.show_gpu": "显示 GPU",
@@ -30,7 +38,6 @@
     "en-US": {
       "lua_widget.system_monitor.name": "System Monitor",
       "lua_widget.system_monitor.description": "Displays CPU, memory, network, and battery status.",
-      "lua_widget.system_monitor.preset_standard": "Standard Cards",
       "lua_widget.system_monitor.show_cpu": "Show CPU",
       "lua_widget.system_monitor.show_memory": "Show Memory",
       "lua_widget.system_monitor.show_gpu": "Show GPU",

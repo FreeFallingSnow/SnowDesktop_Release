@@ -52,20 +52,6 @@ local function getPalette()
 end
 
 settings = {
-    presets = {
-        {
-            id = "default",
-            label = l10n.tr("lua_widget.system_monitor.preset_standard"),
-            default = true,
-            values = {
-                bg = 0x0F172A,
-                border = 0xFFFFFF,
-                alpha = 0.34,
-                borderAlpha = 0.16,
-                gradientEndA = 0.30,
-            }
-        }
-    },
     fields = {
         { key = "show_cpu", label = l10n.tr("lua_widget.system_monitor.show_cpu"), type = "bool", default = true },
         { key = "show_memory", label = l10n.tr("lua_widget.system_monitor.show_memory"), type = "bool", default = true },
@@ -131,7 +117,7 @@ local function drawCard(x, y, w, h, info, pal)
             lineY = lineY + lineH + layout.cu(2)
         end
     else
-        local valFont = math.max(layout.fontCu(14), math.min(layout.fontCu(24), math.floor(h * 0.18)))
+        local valFont = math.max(layout.fontCu(15), math.min(layout.fontCu(24), math.floor(h * 0.18)))
         local vm = draw.measureText(info.value, valFont, 0, true)
         local vx = x + (w - vm.width) / 2
         local vy = y + h * 0.42 - vm.height / 2

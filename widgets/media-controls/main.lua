@@ -51,20 +51,6 @@ local function getPalette()
 end
 
 settings = {
-    presets = {
-        {
-            id = "default",
-            label = l10n.tr("lua_widget.media_control.preset_dark"),
-            default = true,
-            values = {
-                bg = 0x0F172A,
-                border = 0xFFFFFF,
-                alpha = 0.42,
-                borderAlpha = 0.16,
-                gradientEndA = 0.30,
-            }
-        }
-    },
     fields = {
         { key = "launcher", label = l10n.tr("lua_widget.media_control.launcher"), type = "text", default = "" },
         { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
@@ -110,7 +96,7 @@ function render()
     end
 
     local titleY = artist ~= "" and h * 0.18 or h * 0.30
-    draw.text(layout.cu(18), titleY, title, layout.fontCu(14), pal.title, w - layout.cu(36), true, true)
+    draw.text(layout.cu(18), titleY, title, layout.fontCu(15), pal.title, w - layout.cu(36), true, true)
     if artist ~= "" then
         draw.text(layout.cu(18), titleY + layout.cu(22), artist, layout.fontCu(12), pal.subtitle, w - layout.cu(36), true, true)
     end

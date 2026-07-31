@@ -1,4 +1,13 @@
 {
+  "schemaVersion": 1,
+  "id": "3fbb18cd-7c46-4a9f-9fe3-3e2c19facb23",
+  "slug": "pomodoro",
+  "apiVersion": 1,
+  "dataVersion": 1,
+  "entry": "main.lua",
+  "minHostVersion": "1.0.1.0",
+  "author": "SnowDesktop",
+  "license": "GPL-3.0-only",
   "name": "Pomodoro",
   "nameKey": "lua_widget.pomodoro.name",
   "version": "1.0.0",
@@ -13,8 +22,6 @@
     "zh-CN": {
       "lua_widget.pomodoro.name": "番茄钟",
       "lua_widget.pomodoro.description": "支持专注与休息循环、暂停继续以及自定义时长和颜色的番茄钟。",
-      "lua_widget.pomodoro.preset_dark": "暗色专注",
-      "lua_widget.pomodoro.preset_light": "明亮专注",
       "lua_widget.pomodoro.work_minutes": "专注时长（分钟）",
       "lua_widget.pomodoro.short_break_minutes": "短休息（分钟）",
       "lua_widget.pomodoro.long_break_minutes": "长休息（分钟）",
@@ -43,8 +50,6 @@
     "en-US": {
       "lua_widget.pomodoro.name": "Pomodoro",
       "lua_widget.pomodoro.description": "A Pomodoro timer with focus and break cycles, pause and resume, and customizable durations and colors.",
-      "lua_widget.pomodoro.preset_dark": "Dark Focus",
-      "lua_widget.pomodoro.preset_light": "Light Focus",
       "lua_widget.pomodoro.work_minutes": "Focus Duration (Minutes)",
       "lua_widget.pomodoro.short_break_minutes": "Short Break (Minutes)",
       "lua_widget.pomodoro.long_break_minutes": "Long Break (Minutes)",
@@ -73,5 +78,5 @@
   },
   "defaultSize": { "columns": 2, "rows": 2 },
   "minSize": { "columns": 2, "rows": 2 },
-  "permissions": ["ui.input", "ui.contextMenu"]
+  "permissions": ["ui.input", "ui.contextMenu", "ui.notify"]
 }
