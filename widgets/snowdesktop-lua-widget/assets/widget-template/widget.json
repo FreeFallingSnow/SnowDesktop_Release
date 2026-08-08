@@ -17,6 +17,13 @@
     "zh-CN": {
       "lua_widget.template.name": "示例组件",
       "lua_widget.template.description": "用于创建 SnowDesktop Lua 组件的最小示例。",
+      "lua_widget.template.preview_intro": "选择你喜欢的样式，添加后仍可随时调整大小。",
+      "lua_widget.template.preview_compact": "一目了然",
+      "lua_widget.template.preview_compact_hint": "把今天最重要的事放在眼前。",
+      "lua_widget.template.preview_expanded": "更多内容",
+      "lua_widget.template.preview_expanded_hint": "空间更充裕时，可以看到完整内容。",
+      "lua_widget.template.preview_message": "每天进步一点点。",
+      "lua_widget.template.preview_expanded_message": "今日计划：读完这本书，傍晚出去散步。",
       "lua_widget.template.preset": "示例主题",
       "lua_widget.template.empty_hint": "输入内容…",
       "lua_widget.template.reset_text": "恢复默认文字",
@@ -25,6 +32,13 @@
     "en-US": {
       "lua_widget.template.name": "Example Widget",
       "lua_widget.template.description": "A minimal example for creating a SnowDesktop Lua widget.",
+      "lua_widget.template.preview_intro": "Choose the style you like. You can resize it anytime after adding.",
+      "lua_widget.template.preview_compact": "At a Glance",
+      "lua_widget.template.preview_compact_hint": "Keep today's highlight close at hand.",
+      "lua_widget.template.preview_expanded": "More to See",
+      "lua_widget.template.preview_expanded_hint": "See the full note when you have a little more room.",
+      "lua_widget.template.preview_message": "A little progress every day.",
+      "lua_widget.template.preview_expanded_message": "Today's plan: finish the book and take an evening walk.",
       "lua_widget.template.preset": "Example Theme",
       "lua_widget.template.empty_hint": "Write something…",
       "lua_widget.template.reset_text": "Restore Default Text",
@@ -32,5 +46,39 @@
     }
   },
   "defaultSize": { "columns": 2, "rows": 1 },
+  "previewData": {
+    "introduction": "Choose the style you like. You can resize it anytime after adding.",
+    "introductionKey": "lua_widget.template.preview_intro",
+    "storage": {
+      "message": "A little progress every day."
+    },
+    "storageKeys": {
+      "message": "lua_widget.template.preview_message"
+    },
+    "variants": [
+      {
+        "id": "compact",
+        "title": "At a Glance",
+        "titleKey": "lua_widget.template.preview_compact",
+        "description": "Keep today's highlight close at hand.",
+        "descriptionKey": "lua_widget.template.preview_compact_hint",
+        "size": { "columns": 2, "rows": 1 }
+      },
+      {
+        "id": "expanded",
+        "title": "More to See",
+        "titleKey": "lua_widget.template.preview_expanded",
+        "description": "See the full note when you have a little more room.",
+        "descriptionKey": "lua_widget.template.preview_expanded_hint",
+        "size": { "columns": 3, "rows": 2 },
+        "storage": {
+          "message": "Today's plan: finish the book and take an evening walk."
+        },
+        "storageKeys": {
+          "message": "lua_widget.template.preview_expanded_message"
+        }
+      }
+    ]
+  },
   "permissions": ["ui.input", "ui.contextMenu"]
 }

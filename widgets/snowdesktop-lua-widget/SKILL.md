@@ -36,7 +36,7 @@ Installed and development packages live under `data\widgets\installed` and
 8. Declare every privileged API in the manifest. Keep unused permissions out.
 9. Store persistent values as strings and parse them with `tonumber` or explicit boolean conversion.
 10. Test at multiple widget spans. Derive layout from `layout.width()` and `layout.height()` instead of assuming pixels.
-11. For repository development, run `widget-dev.bat widgets\my-widget`.
+11. For repository development, run `scripts\widget-dev.bat widgets\my-widget`.
     The first run syncs the package into `.build\<Config>\data\widgets\dev`,
     activates the development override, and then watches source files. Later
     saves update the live package without rebuilding the host.
@@ -171,10 +171,15 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 - Add `ui.input` before defining `imguiRender`; otherwise `imgui` is absent from the sandbox.
 - Add `ui.contextMenu` before defining custom menu callbacks; otherwise the host ignores them.
 - Context-menu items may set `icon` to a Font Awesome 6 Free Solid glyph, for
-  example `{ id = 1, label = "刷新", icon = "" }`. Leave it out for no icon.
+  example `{ id = 1, label = "刷新", icon = "" }`. They may instead set
+  `iconFont = "fluent"` and use a Fluent System Icons Regular glyph. The default
+  remains Font Awesome for compatibility; leave `icon` out for no icon.
+- Use `draw.fluent(glyph, x, y, size, color)` for matching in-component Fluent
+  controls; `draw.fa` remains available for existing component compatibility.
 - To unlock the debug page, open **设置 → 关于** and click the version number
-  five times. Then open **调试 → Font Awesome 图标字符**; clicking an icon copies
-  it to the clipboard.
+  five times. Then open **调试 → Font Awesome 图标字符** or
+  **Fluent System Icons Regular 图标字符**; clicking an icon copies it to the
+  clipboard.
 - Use `imguiRender()` for the host **详细设置** panel.
 - Prefer declarative manifest `settings` for simple text, bool, integer, float,
   select, and color fields; keep `imguiRender()` for custom editors.
@@ -219,8 +224,8 @@ Keep `defaultSize.columns` and `defaultSize.rows` between 1 and 8.
 For repository development:
 
 1. Save the package directory under the source `widgets` directory.
-2. Run `scripts/check_l10n.bat` to catch untranslated Lua strings and missing keys.
-3. Build the host once, then run `widget-dev.bat widgets\my-widget`.
+2. Run `scripts/test.bat` to catch untranslated Lua strings and missing keys through the CTest localization contract.
+3. Build the host once, then run `scripts\widget-dev.bat widgets\my-widget`.
    It validates and mirrors the source package into the active development
    directory. When the override is first created, SnowDesktop restarts once to
    discover it; subsequent `main.lua`, manifest, locale, module, and asset saves
@@ -231,7 +236,7 @@ For repository development:
 5. Run `.build\Release\snowwidget.exe validate widgets\my-widget`.
 6. In SnowDesktop, right-click the desktop and choose **添加组件**, then select the manifest display name.
 7. Exercise click, double-click, wheel, editor, context-menu, and language-switch behavior as applicable.
-8. Run `build.bat` only for final delivery verification. The release process
+8. Run `scripts\build.bat` only for final delivery verification. The release process
    copies the complete built `widgets` tree, including this skill and its
    resources, into `release\widgets`.
 

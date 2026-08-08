@@ -33,6 +33,9 @@
       "lua_widget.reminders.clear_completed": "清除已完成待办",
       "lua_widget.reminders.complete_all": "所有待办标记为已完成",
       "lua_widget.reminders.reopen_all": "所有待办标记为未完成",
+      "lua_widget.reminders.preview_task_1": "买一束花",
+      "lua_widget.reminders.preview_task_2": "预订周五晚餐",
+      "lua_widget.reminders.preview_task_3": "收拾周末行李",
       "lua_widget.common.font_size": "字号"
     },
     "en-US": {
@@ -51,11 +54,30 @@
       "lua_widget.reminders.clear_completed": "Clear Completed ToDos",
       "lua_widget.reminders.complete_all": "Mark All ToDos as Completed",
       "lua_widget.reminders.reopen_all": "Mark All ToDos as Incomplete",
+      "lua_widget.reminders.preview_task_1": "Pick up flowers",
+      "lua_widget.reminders.preview_task_2": "Book dinner for Friday",
+      "lua_widget.reminders.preview_task_3": "Pack for the weekend",
       "lua_widget.common.font_size": "Font Size"
     }
   },
   "defaultSize": { "columns": 2, "rows": 2 },
   "minSize": { "columns": 2, "rows": 2 },
   "maxSize": { "columns": 4, "rows": 4 },
+  "previewData": {
+    "storage": {
+      "order": "1,2,3",
+      "task_1_text": "Pick up flowers",
+      "task_1_done": "1",
+      "task_2_text": "Book dinner for Friday",
+      "task_2_done": "0",
+      "task_3_text": "Pack for the weekend",
+      "task_3_done": "0"
+    },
+    "storageKeys": {
+      "task_1_text": "lua_widget.reminders.preview_task_1",
+      "task_2_text": "lua_widget.reminders.preview_task_2",
+      "task_3_text": "lua_widget.reminders.preview_task_3"
+    }
+  },
   "permissions": ["ui.input", "ui.contextMenu"]
 }

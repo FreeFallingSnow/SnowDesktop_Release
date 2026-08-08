@@ -57,6 +57,81 @@ store method，导入器拒绝加密、data descriptor、ZIP64 和其他压缩 m
 还可声明尺寸、刷新间隔、BCP-47 本地化目录、预览和设置元数据。v1 不允许
 跨包依赖、DLL、可执行文件、包外资源、符号链接、junction 或重解析点。
 
+### 可渲染预览数据
+
+添加组件选择器会创建一个真实但隔离的临时实例。宿主为 `sys`、`media`、
+`desktop`、`everything` 和 `calendar` API 提供稳定示例数据，并禁止网络请求、
+通知、外部打开、媒体控制、定时器和日历写入。预览实例不进入布局，存储也不会
+写盘。
+
+作者可以用 `previewData.storage` 覆盖组件的存储默认值，让依赖用户内容的组件
+在首次预览时仍有代表性内容：
+
+```json
+"previewData": {
+  "storage": {
+    "message": "Hello from the component preview",
+    "itemCount": 3,
+    "showDetails": true
+  },
+  "storageKeys": {
+    "message": "my_widget.preview.message"
+  }
+}
+```
+
+值仅允许字符串、数字或布尔值；运行时会按 `storage.get()` 的字符串语义提供。
+最多 64 项，总计 64 KiB，单个键最多 128 字节、单个值最多 16 KiB。不要在
+预览数据中放入令牌、个人数据或其他秘密。需要翻译的字符串可在
+`storageKeys` 中把存储名映射到清单 `locales` 的键；`storage` 中仍须保留英文
+回退值。数值、布尔值、状态标识和机器可读日期无需放入 `storageKeys`。
+
+响应式组件可以再声明最多 4 个 `previewData.variants`。选择器会在独立预览窗
+中同时渲染这些尺寸；每个变体可以覆盖一部分预览存储，并为模式名称、说明和
+整体介绍指定组件自己的多语言键：
+
+```json
+"previewData": {
+  "introduction": "Preview this component at multiple sizes.",
+  "introductionKey": "my_widget.preview.introduction",
+  "storage": {
+    "mode": "sample",
+    "message": "Hello from the component preview"
+  },
+  "storageKeys": { "message": "my_widget.preview.message" },
+  "variants": [
+    {
+      "id": "compact",
+      "title": "Compact",
+      "titleKey": "my_widget.preview.compact",
+      "description": "Primary information only.",
+      "descriptionKey": "my_widget.preview.compact_hint",
+      "size": { "columns": 2, "rows": 1 }
+    },
+    {
+      "id": "expanded",
+      "title": "Expanded",
+      "titleKey": "my_widget.preview.expanded",
+      "description": "Uses the additional space.",
+      "descriptionKey": "my_widget.preview.expanded_hint",
+      "size": { "columns": 3, "rows": 2 },
+      "storage": {
+        "message": "This wider preview shows more content.",
+        "showDetails": true
+      },
+      "storageKeys": {
+        "message": "my_widget.preview.expanded_message"
+      }
+    }
+  ]
+}
+```
+
+`introduction`、`title` 和 `description` 是必备的英文回退；对应的 `*Key`
+从清单 `locales` 字典取值。`storageKeys` 同样从该字典取值，并且每一项必须在
+同级 `storage` 中有英文回退。变体尺寸必须落在组件 `minSize`/`maxSize` 范围内。
+变体存储与公共存储遵循相同的类型、条目数和容量限制，且只覆盖当前预览实例。
+
 ## 校验限制
 
 - 制品最大 20 MiB，解压后最大 64 MiB

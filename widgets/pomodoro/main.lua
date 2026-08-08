@@ -4,6 +4,13 @@ useCustomStyle = true
 followPersonalizationDefault = true
 bottomBarHover = false
 
+local fluent = {
+    play = utf8.char(0xF605),
+    stop = utf8.char(0xF72A),
+    next = utf8.char(0xF569),
+    reset = utf8.char(0xF19F),
+}
+
 bg = 0x151A21
 border = 0xFFFFFF
 alpha = 0.42
@@ -472,16 +479,16 @@ function getContextMenu()
     local menu = {}
 
     if s == "idle" then
-        menu[#menu + 1] = { id = 1, label = l10n.tr("lua_widget.pomodoro.start"), icon = "" }
+        menu[#menu + 1] = { id = 1, label = l10n.tr("lua_widget.pomodoro.start"), icon = fluent.play, iconFont = "fluent" }
     elseif s == "paused" then
-        menu[#menu + 1] = { id = 2, label = l10n.tr("lua_widget.pomodoro.resume"), icon = "" }
-        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = "" }
+        menu[#menu + 1] = { id = 2, label = l10n.tr("lua_widget.pomodoro.resume"), icon = fluent.play, iconFont = "fluent" }
+        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = fluent.stop, iconFont = "fluent" }
     else
-        menu[#menu + 1] = { id = 5, label = l10n.tr("lua_widget.pomodoro.skip"), icon = "" }
-        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = "" }
+        menu[#menu + 1] = { id = 5, label = l10n.tr("lua_widget.pomodoro.skip"), icon = fluent.next, iconFont = "fluent" }
+        menu[#menu + 1] = { id = 3, label = l10n.tr("lua_widget.pomodoro.stop"), icon = fluent.stop, iconFont = "fluent" }
     end
     menu[#menu + 1] = { separator = true }
-    menu[#menu + 1] = { id = 10, label = l10n.tr("lua_widget.pomodoro.reset_count"), icon = "" }
+    menu[#menu + 1] = { id = 10, label = l10n.tr("lua_widget.pomodoro.reset_count"), icon = fluent.reset, iconFont = "fluent" }
 
     return menu
 end

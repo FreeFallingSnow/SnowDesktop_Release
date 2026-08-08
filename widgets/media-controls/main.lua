@@ -3,27 +3,19 @@ useCustomStyle = true
 followPersonalizationDefault = true
 bottomBarHover = true
 
+local fluent = {
+    settings = utf8.char(0xF6A9),
+}
+
 bg = 0x0F172A
 border = 0xFFFFFF
 alpha = 0.42
 borderAlpha = 0.16
 gradientEndA = 0.30
-textColor = 0xFFFFFF
 local btnRects = {}
 local pendState = nil
-
-local function resolveTextColor()
-    local tc = tonumber(storage.get("textColor")) or textColor
-    local follows = storage.get("followPersonalization") == "1"
-        or storage.get("followPersonalization") == "true"
-    if follows then
-        local theme = widget.theme()
-        if theme then
-            tc = (theme.contentTheme == 1) and 0x000000 or 0xFFFFFF
-        end
-    end
-    return tc
-end
+local launcherSearchQuery = nil
+local launcherSearchResults = {}
 
 local palettes = {
     dark = {
@@ -53,7 +45,6 @@ end
 settings = {
     fields = {
         { key = "launcher", label = l10n.tr("lua_widget.media_control.launcher"), type = "text", default = "" },
-        { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
     }
 }
 
@@ -146,35 +137,67 @@ end
 
 function imguiRender()
     local cfg = readConfig()
-    imgui.text(l10n.tr("lua_widget.media_control.select_launcher"))
-
-    local items = desktop.items()
-    local labels = { l10n.tr("lua_widget.media_control.not_set") }
-    local selIdx = 1
-    for i, item in ipairs(items) do
-        labels[#labels + 1] = (item.title or "") .. " (" .. (item.type or "") .. ")"
-        if item.path == cfg.launcher then selIdx = i + 1 end
+    local query = storage.get("launcherSearch") or ""
+    imgui.settingRow(l10n.tr("lua_widget.media_control.select_launcher"))
+    local nextQuery = imgui.inputText("##launcherSearch", query)
+    if nextQuery ~= query then
+        query = nextQuery
+        storage.set("launcherSearch", query)
+        launcherSearchQuery = nil
     end
 
-    local nv = imgui.combo("##item", selIdx, labels)
-    if nv ~= selIdx then
-        if nv == 1 then
+    if imgui.selectable(l10n.tr("lua_widget.media_control.not_set"), cfg.launcher == "") then
+        if cfg.launcher ~= "" then
             storage.set("launcher", "")
-        else
-            local item = items[nv - 1]
-            if item and item.path then
-                storage.set("launcher", item.path)
+        end
+        return
+    end
+
+    if query == "" then return end
+
+    if launcherSearchQuery ~= query then
+        local results = {}
+        local seen = {}
+        local function append(items)
+            for _, item in ipairs(items or {}) do
+                local key = string.lower(item.path or item.id or "")
+                if key ~= "" and not seen[key] then
+                    seen[key] = true
+                    results[#results + 1] = item
+                end
             end
+        end
+        append(desktop.find(query, 40))
+        if desktop.findApplications then
+            append(desktop.findApplications(query, 40))
+        end
+        launcherSearchQuery = query
+        launcherSearchResults = results
+    end
+
+    if #launcherSearchResults == 0 then
+        imgui.text(l10n.tr("lua_widget.media_control.no_search_results"))
+        return
+    end
+
+    for _, item in ipairs(launcherSearchResults) do
+        local label = (item.title or "") .. " (" .. (item.type or "") .. ")"
+        if imgui.selectable(label, item.path == cfg.launcher) then
+            storage.set("launcher", item.path or "")
         end
     end
 end
 
+function onDesktopChanged(reason)
+    launcherSearchQuery = nil
+end
+
 function getContextMenu()
     return {
-        { id = 1, label = l10n.tr("lua_widget.media_control.configure_launcher"), icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.media_control.configure_launcher"), icon = fluent.settings, iconFont = "fluent" },
     }
 end
 
 function onMenu(id)
-    if id == 1 then widget.invalidate() end
+    if id == 1 then widget.openSettings() end
 end

@@ -4,6 +4,11 @@ followPersonalizationDefault = true
 showTitle = true
 bottomBarHover = true
 
+local fluent = {
+    refresh = utf8.char(0xF13D),
+    style = utf8.char(0xF592),
+}
+
 bg = 0x0F172A
 border = 0xFFFFFF
 alpha = 0.34
@@ -311,9 +316,9 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = l10n.tr("lua_widget.system_monitor.refresh"), icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.system_monitor.refresh"), icon = fluent.refresh, iconFont = "fluent" },
         { separator = true },
-        { id = 2, label = l10n.tr("lua_widget.common.reset_style"), icon = "" },
+        { id = 2, label = l10n.tr("lua_widget.common.reset_style"), icon = fluent.style, iconFont = "fluent" },
     }
 end
 
@@ -321,6 +326,12 @@ function onMenu(id)
     if id == 1 then
         widget.invalidate()
     elseif id == 2 then
+        storage.set("bg", tostring(bg))
+        storage.set("border", tostring(border))
+        storage.set("alpha", tostring(alpha))
+        storage.set("borderAlpha", tostring(borderAlpha))
+        storage.set("gradientEndA", tostring(gradientEndA))
+        storage.set("followPersonalization", "1")
         widget.invalidate()
     end
 end

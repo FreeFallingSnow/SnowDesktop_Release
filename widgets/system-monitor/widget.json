@@ -57,7 +57,7 @@
       "lua_widget.common.reset_style": "Restore Default Style"
     }
   },
-  "defaultSize": { "columns": 2, "rows": 2 },
+  "defaultSize": { "columns": 3, "rows": 2 },
   "minSize": { "columns": 2, "rows": 1 },
   "permissions": ["system.read", "ui.input", "ui.contextMenu"]
 }

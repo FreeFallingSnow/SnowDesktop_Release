@@ -2,6 +2,8 @@
 name = l10n.tr("lua_widget.template.name")
 useCustomStyle = true
 
+local fluentReset = utf8.char(0xF19F)
+
 bg = 0x18202A
 border = 0x5F7691
 alpha = 0.92
@@ -69,7 +71,8 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = l10n.tr("lua_widget.template.reset_text"), icon = "" }
+        { id = 1, label = l10n.tr("lua_widget.template.reset_text"),
+            icon = fluentReset, iconFont = "fluent" }
     }
 end
 

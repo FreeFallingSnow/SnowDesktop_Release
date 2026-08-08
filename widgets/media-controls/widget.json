@@ -20,10 +20,10 @@
       "lua_widget.media_control.launcher": "无播放时启动项",
       "lua_widget.media_control.not_playing": "未在播放",
       "lua_widget.media_control.double_click_player": "双击打开播放器",
-      "lua_widget.media_control.select_launcher": "从桌面选择启动项",
+      "lua_widget.media_control.select_launcher": "搜索并选择启动项",
       "lua_widget.media_control.not_set": "（不设置）",
       "lua_widget.media_control.configure_launcher": "设置启动项",
-      "lua_widget.common.text_color": "文字颜色"
+      "lua_widget.media_control.no_search_results": "没有匹配的桌面项目"
     },
     "en-US": {
       "lua_widget.media_control.name": "Media Controls",
@@ -31,10 +31,10 @@
       "lua_widget.media_control.launcher": "Launcher When Idle",
       "lua_widget.media_control.not_playing": "Nothing Playing",
       "lua_widget.media_control.double_click_player": "Double-click to Open Player",
-      "lua_widget.media_control.select_launcher": "Select a Desktop Item to Launch",
+      "lua_widget.media_control.select_launcher": "Search and Select a Launcher",
       "lua_widget.media_control.not_set": "(Not Set)",
       "lua_widget.media_control.configure_launcher": "Configure Launcher",
-      "lua_widget.common.text_color": "Text Color"
+      "lua_widget.media_control.no_search_results": "No matching desktop items"
     }
   },
   "defaultSize": { "columns": 3, "rows": 1 },

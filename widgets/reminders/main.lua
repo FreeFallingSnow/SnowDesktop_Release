@@ -4,6 +4,14 @@ followPersonalizationDefault = true
 showTitle = false
 bottomBarHover = false
 
+local fluent = {
+    addTask = utf8.char(0xF788),
+    delete = utf8.char(0xF34C),
+    clear = utf8.char(0xF201),
+    complete = utf8.char(0xE309),
+    reset = utf8.char(0xF19F),
+}
+
 bg = 0x151A21
 border = 0xFFFFFF
 alpha = 0.42
@@ -164,7 +172,7 @@ local function getPalette()
             muted = 0x000000,
             completed = 0x6F6F6F,
             accent = 0x000000,
-            add = 0xFFFFFF,
+            add = 0x000000,
             card = 0x000000,
             divider = 0x000000,
             inputText = 0x000000,
@@ -495,12 +503,14 @@ function getContextMenu()
         {
             id = 1,
             label = l10n.tr("lua_widget.reminders.add_task"),
-            icon = "",
+            icon = fluent.addTask,
+            iconFont = "fluent",
         },
         {
             id = 4,
             label = l10n.tr("lua_widget.reminders.delete_selected"),
-            icon = "",
+            icon = fluent.delete,
+            iconFont = "fluent",
             enabled = selectedId ~= nil
                 and storage.get(taskTextKey(selectedId)) ~= nil,
         },
@@ -508,7 +518,8 @@ function getContextMenu()
         {
             id = 2,
             label = l10n.tr("lua_widget.reminders.clear_completed"),
-            icon = "",
+            icon = fluent.clear,
+            iconFont = "fluent",
             enabled = completed > 0,
         },
         {
@@ -516,7 +527,8 @@ function getContextMenu()
             label = completed < total
                 and l10n.tr("lua_widget.reminders.complete_all")
                 or l10n.tr("lua_widget.reminders.reopen_all"),
-            icon = completed < total and "" or "",
+            icon = completed < total and fluent.complete or fluent.reset,
+            iconFont = "fluent",
             enabled = total > 0,
         },
     }

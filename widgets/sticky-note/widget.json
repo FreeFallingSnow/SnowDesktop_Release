@@ -28,6 +28,7 @@
       "lua_widget.sticky_note.clear": "清空便签",
       "lua_widget.sticky_note.reset_style": "恢复便签默认样式",
       "lua_widget.sticky_note.content": "便签内容",
+      "lua_widget.sticky_note.preview_text": "周末计划\n\n11 点吃早午餐\n去湖边散步\n给妈妈打电话",
       "lua_widget.common.font_size": "字号"
     },
     "en-US": {
@@ -44,9 +45,18 @@
       "lua_widget.sticky_note.clear": "Clear Note",
       "lua_widget.sticky_note.reset_style": "Restore Default Note Style",
       "lua_widget.sticky_note.content": "Note Content",
+      "lua_widget.sticky_note.preview_text": "Weekend Plans\n\nBrunch at 11\nWalk by the Lake\nCall Mom",
       "lua_widget.common.font_size": "Font Size"
     }
   },
-  "defaultSize": { "columns": 2, "rows": 1 },
+  "defaultSize": { "columns": 2, "rows": 2 },
+  "previewData": {
+    "storage": {
+      "text": "Weekend Plans\n\nBrunch at 11\nWalk by the Lake\nCall Mom"
+    },
+    "storageKeys": {
+      "text": "lua_widget.sticky_note.preview_text"
+    }
+  },
   "permissions": ["ui.input", "ui.contextMenu"]
 }

@@ -55,7 +55,7 @@
       "lua_widget.common.scale": "Scale"
     }
   },
-  "defaultSize": { "columns": 1, "rows": 1 },
+  "defaultSize": { "columns": 2, "rows": 2 },
   "refreshIntervalMs": 1000,
   "permissions": ["ui.input"]
 }

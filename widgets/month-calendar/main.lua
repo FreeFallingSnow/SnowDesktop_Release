@@ -4,6 +4,12 @@ followPersonalizationDefault = true
 showTitle = false
 bottomBarHover = false
 
+local fluent = {
+    today = utf8.char(0xF23C),
+    previous = utf8.char(0xF15B),
+    next = utf8.char(0xF181),
+}
+
 bg = 0x151A21
 border = 0xFFFFFF
 alpha = 0.40
@@ -447,19 +453,22 @@ function getContextMenu()
             id = 1,
             label = l10n.tr(
                 "lua_widget.month_calendar.today"),
-            icon = "",
+            icon = fluent.today,
+            iconFont = "fluent",
         },
         {
             id = 2,
             label = l10n.tr(
                 "lua_widget.month_calendar.previous_month"),
-            icon = "",
+            icon = fluent.previous,
+            iconFont = "fluent",
         },
         {
             id = 3,
             label = l10n.tr(
                 "lua_widget.month_calendar.next_month"),
-            icon = "",
+            icon = fluent.next,
+            iconFont = "fluent",
         },
     }
 end

@@ -4,6 +4,13 @@ followPersonalizationDefault = true
 showTitle = true
 bottomBarHover = false
 
+local fluent = {
+    edit = utf8.char(0xF3DD),
+    open = utf8.char(0xF582),
+    folderOpen = utf8.char(0xF42E),
+    refresh = utf8.char(0xF13D),
+}
+
 bg = 0x151A21
 border = 0xFFFFFF
 alpha = 0.40
@@ -445,10 +452,10 @@ end
 
 function getContextMenu()
     return {
-        { id = 4, label = l10n.tr("lua_widget.quick_launcher.edit_query"), icon = "" },
-        { id = 1, label = l10n.tr("lua_widget.quick_launcher.open_match"), icon = "" },
-        { id = 2, label = l10n.tr("lua_widget.quick_launcher.reveal_match"), icon = "" },
-        { id = 3, label = l10n.tr("lua_widget.quick_launcher.refresh_desktop"), icon = "" },
+        { id = 4, label = l10n.tr("lua_widget.quick_launcher.edit_query"), icon = fluent.edit, iconFont = "fluent" },
+        { id = 1, label = l10n.tr("lua_widget.quick_launcher.open_match"), icon = fluent.open, iconFont = "fluent" },
+        { id = 2, label = l10n.tr("lua_widget.quick_launcher.reveal_match"), icon = fluent.folderOpen, iconFont = "fluent" },
+        { id = 3, label = l10n.tr("lua_widget.quick_launcher.refresh_desktop"), icon = fluent.refresh, iconFont = "fluent" },
     }
 end
 

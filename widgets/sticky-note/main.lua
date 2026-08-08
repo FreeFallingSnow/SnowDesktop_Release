@@ -5,6 +5,11 @@ followPersonalizationDefault = true
 showTitle = true
 bottomBarHover = false
 
+local fluent = {
+    clear = utf8.char(0xE5E4),
+    style = utf8.char(0xF592),
+}
+
 -- 默认值
 bg = 0xFFF7D1
 border = 0xD0D0D0
@@ -169,8 +174,8 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = l10n.tr("lua_widget.sticky_note.clear"), icon = "" },
-        { id = 2, label = l10n.tr("lua_widget.sticky_note.reset_style"), icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.sticky_note.clear"), icon = fluent.clear, iconFont = "fluent" },
+        { id = 2, label = l10n.tr("lua_widget.sticky_note.reset_style"), icon = fluent.style, iconFont = "fluent" },
     }
 end
 

@@ -4,6 +4,15 @@ followPersonalizationDefault = true
 showTitle = false
 bottomBarHover = false
 
+local fluent = {
+    calendarAdd = utf8.char(0xF211),
+    calendarEdit = utf8.char(0xE246),
+    delete = utf8.char(0xF34C),
+    today = utf8.char(0xF23C),
+    previous = utf8.char(0xF15B),
+    next = utf8.char(0xF181),
+}
+
 bg = 0x151A21
 border = 0xFFFFFF
 alpha = 0.40
@@ -1378,37 +1387,43 @@ function getContextMenu()
         {
             id = 1,
             label = l10n.tr("lua_widget.agenda.add"),
-            icon = "",
+            icon = fluent.calendarAdd,
+            iconFont = "fluent",
         },
         {
             id = 2,
             label = l10n.tr("lua_widget.agenda.edit"),
-            icon = "",
+            icon = fluent.calendarEdit,
+            iconFont = "fluent",
             enabled = selected ~= nil,
         },
         {
             id = 3,
             label = l10n.tr("lua_widget.agenda.delete"),
-            icon = "",
+            icon = fluent.delete,
+            iconFont = "fluent",
             enabled = selected ~= nil,
         },
         { separator = true },
         {
             id = 4,
             label = l10n.tr("lua_widget.agenda.today"),
-            icon = "",
+            icon = fluent.today,
+            iconFont = "fluent",
         },
         {
             id = 5,
             label = l10n.tr(
                 "lua_widget.agenda.previous_day"),
-            icon = "",
+            icon = fluent.previous,
+            iconFont = "fluent",
         },
         {
             id = 6,
             label = l10n.tr(
                 "lua_widget.agenda.next_day"),
-            icon = "",
+            icon = fluent.next,
+            iconFont = "fluent",
         },
     }
 end

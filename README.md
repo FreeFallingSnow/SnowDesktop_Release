@@ -37,11 +37,12 @@
 依赖：CMake 3.24+、Visual Studio 2022、Windows 10 SDK（0x0A00）
 
 ```bat
-.\build.bat
+.\scripts\build.bat
 ```
 
-构建脚本会自动终止已在运行的 SnowDesktop.exe，并为释放任务栏 Hook DLL
-短暂重启 Explorer。
+默认构建不会终止 SnowDesktop 或重启 Explorer。如果任务栏 Hook DLL 正被占用，
+预检会在编译前停止并提示。请先正常退出 SnowDesktop；需要自动解除占用时可使用
+`.\scripts\build.bat --reload-shell`，该参数会终止 SnowDesktop 并短暂重启 Explorer。
 
 ## 🧱 技术栈
 
@@ -49,10 +50,16 @@
 - Direct2D + Direct3D 11 + DirectComposition
 - Dear ImGui（设置窗口）
 - Lua 5.4（脚本引擎）
-- spdlog（日志）
-- Font Awesome 6 Free（图标）
+- Fluent System Icons Regular（现代右键菜单与组件菜单图标）
+- Font Awesome 6 Free（组件兼容图标）
 - WinHTTP（Lua HTTP 运行时）
 
-## 📄 协议
+## 📄 许可证
 
-GNU General Public License v3.0 — 详见 [LICENSE](./LICENSE)
+SnowDesktop 核心代码采用 GNU General Public License v3.0，详见 [LICENSE](./LICENSE)。
+仓库中包含的第三方组件及其版权和许可信息，统一记录在
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
+
+独立的 `steam_bridge/` 创意工坊桥接程序采用 MIT 许可证，详见
+[steam_bridge/LICENSE](./steam_bridge/LICENSE)。Steamworks SDK 本身不包含在本仓库内，
+也不适用上述 GPL 或 MIT 许可证。

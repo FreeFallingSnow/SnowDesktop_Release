@@ -29,7 +29,7 @@
       "lua_widget.analog_clock.show_numbers": "Show Numbers"
     }
   },
-  "defaultSize": { "columns": 1, "rows": 1 },
+  "defaultSize": { "columns": 2, "rows": 2 },
   "refreshIntervalMs": 1000,
   "permissions": ["ui.input"]
 }

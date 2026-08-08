@@ -13,6 +13,14 @@
   "version": "1.0.0",
   "description": "A Pomodoro timer with focus and break cycles, pause and resume, and customizable durations and colors.",
   "descriptionKey": "lua_widget.pomodoro.description",
+  "previewData": {
+    "storage": {
+      "state": "paused",
+      "prevState": "work",
+      "pausedRemaining": "754",
+      "sessions": "2"
+    }
+  },
   "titleKeys": [
     "lua_widget.pomodoro.title_work",
     "lua_widget.pomodoro.title_break",

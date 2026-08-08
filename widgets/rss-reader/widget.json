@@ -29,8 +29,12 @@
       "lua_widget.rss_reader.article_count": "{0} 篇",
       "lua_widget.rss_reader.no_articles": "暂无文章，等待刷新…",
       "lua_widget.rss_reader.refresh_now": "立即刷新",
-      "lua_widget.rss_reader.clear_cache": "清除缓存",
+      "lua_widget.rss_reader.clear_cache": "清除缓存并刷新",
       "lua_widget.rss_reader.open_source": "打开源地址",
+      "lua_widget.rss_reader.preview_feed_title": "今日精选",
+      "lua_widget.rss_reader.preview_article_1": "周末去海边，三天两夜这样安排",
+      "lua_widget.rss_reader.preview_article_2": "七个不用大改造的收纳办法",
+      "lua_widget.rss_reader.preview_article_3": "公路旅行循环播放的歌单",
       "lua_widget.common.text_color": "文字颜色"
     },
     "en-US": {
@@ -48,13 +52,34 @@
       "lua_widget.rss_reader.article_count": "{0} Articles",
       "lua_widget.rss_reader.no_articles": "No Articles Yet. Waiting for Refresh…",
       "lua_widget.rss_reader.refresh_now": "Refresh Now",
-      "lua_widget.rss_reader.clear_cache": "Clear Cache",
+      "lua_widget.rss_reader.clear_cache": "Clear Cache and Refresh",
       "lua_widget.rss_reader.open_source": "Open Feed URL",
+      "lua_widget.rss_reader.preview_feed_title": "Daily Highlights",
+      "lua_widget.rss_reader.preview_article_1": "A Three-Day Weekend by the Coast",
+      "lua_widget.rss_reader.preview_article_2": "Seven Small Ways to Tidy Up at Home",
+      "lua_widget.rss_reader.preview_article_3": "The Road-Trip Playlist on Repeat",
       "lua_widget.common.text_color": "Text Color"
     }
   },
   "defaultSize": { "columns": 3, "rows": 2 },
   "minSize": { "columns": 2, "rows": 2 },
+  "previewData": {
+    "storage": {
+      "previewFeedTitle": "Daily Highlights",
+      "previewArticle1Title": "A Three-Day Weekend by the Coast",
+      "previewArticle1Date": "Sun, 02 Aug 2026 10:00:00 GMT",
+      "previewArticle2Title": "Seven Small Ways to Tidy Up at Home",
+      "previewArticle2Date": "Sat, 01 Aug 2026 18:30:00 GMT",
+      "previewArticle3Title": "The Road-Trip Playlist on Repeat",
+      "previewArticle3Date": "Fri, 31 Jul 2026 09:15:00 GMT"
+    },
+    "storageKeys": {
+      "previewFeedTitle": "lua_widget.rss_reader.preview_feed_title",
+      "previewArticle1Title": "lua_widget.rss_reader.preview_article_1",
+      "previewArticle2Title": "lua_widget.rss_reader.preview_article_2",
+      "previewArticle3Title": "lua_widget.rss_reader.preview_article_3"
+    }
+  },
   "permissions": ["network.http", "ui.input", "desktop.action", "ui.contextMenu"],
   "networkDomains": ["www.ithome.com"]
 }

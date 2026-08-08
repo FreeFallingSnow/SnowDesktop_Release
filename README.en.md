@@ -38,11 +38,13 @@ A Windows desktop organization and personalization tool. SnowDesktop replaces na
 Requirements: CMake 3.24+, Visual Studio 2022, and the Windows 10 SDK (0x0A00).
 
 ```bat
-.\build.bat
+.\scripts\build.bat
 ```
 
-The build script automatically stops a running `SnowDesktop.exe` and briefly
-restarts Explorer to release the taskbar hook DLL.
+The default build does not stop SnowDesktop or restart Explorer. Its preflight
+stops before compilation when the app or hook DLL is active. Exit SnowDesktop
+normally first. To clear the lock automatically, use
+`.\scripts\build.bat --reload-shell`; it stops SnowDesktop and briefly restarts Explorer.
 
 ## 🧱 Technology
 
@@ -50,10 +52,17 @@ restarts Explorer to release the taskbar hook DLL.
 - Direct2D + Direct3D 11 + DirectComposition
 - Dear ImGui (settings window)
 - Lua 5.4 (script engine)
-- spdlog (logging)
-- Font Awesome 6 Free (icons)
+- Fluent System Icons Regular (modern context-menu and widget-menu icons)
+- Font Awesome 6 Free (backward-compatible widget icons)
 - WinHTTP (Lua HTTP runtime)
 
 ## 📄 License
 
-GNU General Public License v3.0 — see [LICENSE](./LICENSE).
+The SnowDesktop core is licensed under GNU General Public License v3.0; see
+[LICENSE](./LICENSE). Copyright and license information for third-party
+components included in this repository is collected in
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+
+The separate `steam_bridge/` Workshop bridge is MIT-licensed under
+[steam_bridge/LICENSE](./steam_bridge/LICENSE). The Steamworks SDK is not
+included in this repository and is not covered by either license.

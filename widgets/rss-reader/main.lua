@@ -3,6 +3,12 @@ useCustomStyle = true
 followPersonalizationDefault = true
 bottomBarHover = false
 
+local fluent = {
+    refresh = utf8.char(0xF13D),
+    clear = utf8.char(0xF201),
+    open = utf8.char(0xF582),
+}
+
 bg = 0x0F172A
 border = 0xFFFFFF
 alpha = 0.38
@@ -16,6 +22,19 @@ local lastError = ""
 local lastUrl = nil
 local lastInterval = nil
 local lastMaxItems = nil
+
+feedTitle = storage.get("previewFeedTitle") or feedTitle
+for index = 1, 12 do
+    local title = storage.get("previewArticle" .. tostring(index) .. "Title")
+    if title and title ~= "" then
+        articles[#articles + 1] = {
+            title = title,
+            date = storage.get("previewArticle" .. tostring(index) .. "Date") or "",
+            link = storage.get("previewArticle" .. tostring(index) .. "Link") or "",
+            desc = storage.get("previewArticle" .. tostring(index) .. "Description") or "",
+        }
+    end
+end
 
 local function resolveTextColor()
     local tc = tonumber(storage.get("textColor")) or textColor
@@ -363,10 +382,10 @@ end
 
 function getContextMenu()
     return {
-        { id = 1, label = l10n.tr("lua_widget.rss_reader.refresh_now"), icon = "" },
-        { id = 2, label = l10n.tr("lua_widget.rss_reader.clear_cache"), icon = "" },
+        { id = 1, label = l10n.tr("lua_widget.rss_reader.refresh_now"), icon = fluent.refresh, iconFont = "fluent" },
+        { id = 2, label = l10n.tr("lua_widget.rss_reader.clear_cache"), icon = fluent.clear, iconFont = "fluent" },
         { separator = true },
-        { id = 3, label = l10n.tr("lua_widget.rss_reader.open_source"), icon = "" },
+        { id = 3, label = l10n.tr("lua_widget.rss_reader.open_source"), icon = fluent.open, iconFont = "fluent" },
     }
 end
 

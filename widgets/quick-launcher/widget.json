@@ -29,6 +29,7 @@
       "lua_widget.quick_launcher.reveal_match": "定位当前匹配项",
       "lua_widget.quick_launcher.refresh_desktop": "刷新桌面",
       "lua_widget.quick_launcher.match_count": "匹配项：{0}",
+      "lua_widget.quick_launcher.preview_query": "旅行",
       "lua_widget.common.font_size": "字号",
       "lua_widget.common.text_color": "文字颜色",
       "lua_widget.common.untitled": "（未命名）"
@@ -48,11 +49,18 @@
       "lua_widget.quick_launcher.reveal_match": "Reveal Current Match",
       "lua_widget.quick_launcher.refresh_desktop": "Refresh Desktop",
       "lua_widget.quick_launcher.match_count": "Matches: {0}",
+      "lua_widget.quick_launcher.preview_query": "Travel",
       "lua_widget.common.font_size": "Font Size",
       "lua_widget.common.text_color": "Text Color",
       "lua_widget.common.untitled": "(Untitled)"
     }
   },
   "defaultSize": { "columns": 2, "rows": 2 },
+  "previewData": {
+    "storage": { "query": "Travel" },
+    "storageKeys": {
+      "query": "lua_widget.quick_launcher.preview_query"
+    }
+  },
   "permissions": ["desktop.read", "desktop.action", "everything.search", "ui.contextMenu", "ui.input"]
 }
