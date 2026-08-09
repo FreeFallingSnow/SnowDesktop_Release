@@ -27,9 +27,70 @@
       "lua_widget.analog_clock.preset_transparent": "Transparent Face",
       "lua_widget.analog_clock.show_second_hand": "Show Second Hand",
       "lua_widget.analog_clock.show_numbers": "Show Numbers"
+    },
+    "zh-TW": {
+      "lua_widget.analog_clock.name": "指針時鐘",
+      "lua_widget.analog_clock.description": "顯示可隨元件大小調整的指針時鐘。",
+      "lua_widget.analog_clock.preset_transparent": "透明錶盤",
+      "lua_widget.analog_clock.show_second_hand": "顯示秒針",
+      "lua_widget.analog_clock.show_numbers": "顯示數字"
+    },
+    "ja-JP": {
+      "lua_widget.analog_clock.name": "アナログ時計",
+      "lua_widget.analog_clock.description": "応答性の高いアナログ時計を表示します。",
+      "lua_widget.analog_clock.preset_transparent": "透明面",
+      "lua_widget.analog_clock.show_second_hand": "秒針を表示",
+      "lua_widget.analog_clock.show_numbers": "番号を表示"
+    },
+    "ko-KR": {
+      "lua_widget.analog_clock.name": "아날로그 시계",
+      "lua_widget.analog_clock.description": "반응형 아날로그 시계를 표시합니다.",
+      "lua_widget.analog_clock.preset_transparent": "투명 페이스",
+      "lua_widget.analog_clock.show_second_hand": "초침 표시",
+      "lua_widget.analog_clock.show_numbers": "숫자 표시"
+    },
+    "de-DE": {
+      "lua_widget.analog_clock.name": "Analoguhr",
+      "lua_widget.analog_clock.description": "Zeigt eine analoge Uhr mit anpassbarer Größe an.",
+      "lua_widget.analog_clock.preset_transparent": "Transparentes Zifferblatt",
+      "lua_widget.analog_clock.show_second_hand": "Sekundenzeiger anzeigen",
+      "lua_widget.analog_clock.show_numbers": "Zahlen anzeigen"
+    },
+    "fr-FR": {
+      "lua_widget.analog_clock.name": "Horloge analogique",
+      "lua_widget.analog_clock.description": "Affiche une horloge analogique réactive.",
+      "lua_widget.analog_clock.preset_transparent": "Face transparente",
+      "lua_widget.analog_clock.show_second_hand": "Afficher la trotteuse",
+      "lua_widget.analog_clock.show_numbers": "Afficher les chiffres"
+    },
+    "es-ES": {
+      "lua_widget.analog_clock.name": "Reloj analógico",
+      "lua_widget.analog_clock.description": "Muestra un reloj analógico adaptable.",
+      "lua_widget.analog_clock.preset_transparent": "Cara transparente",
+      "lua_widget.analog_clock.show_second_hand": "Mostrar segundero",
+      "lua_widget.analog_clock.show_numbers": "Mostrar números"
+    },
+    "es-419": {
+      "lua_widget.analog_clock.name": "Reloj analógico",
+      "lua_widget.analog_clock.description": "Muestra un reloj analógico receptivo.",
+      "lua_widget.analog_clock.preset_transparent": "Cara transparente",
+      "lua_widget.analog_clock.show_second_hand": "Mostrar segundero",
+      "lua_widget.analog_clock.show_numbers": "Mostrar números"
+    },
+    "pt-BR": {
+      "lua_widget.analog_clock.name": "Relógio Analógico",
+      "lua_widget.analog_clock.description": "Exibe um relógio analógico responsivo.",
+    "lua_widget.analog_clock.preset_transparent": "Mostrador transparente",
+    "lua_widget.analog_clock.show_second_hand": "Mostrar ponteiro dos segundos",
+    "lua_widget.analog_clock.show_numbers": "Mostrar números"
     }
   },
-  "defaultSize": { "columns": 2, "rows": 2 },
+  "defaultSize": {
+    "columns": 2,
+    "rows": 2
+  },
   "refreshIntervalMs": 1000,
-  "permissions": ["ui.input"]
+  "permissions": [
+    "ui.input"
+  ]
 }

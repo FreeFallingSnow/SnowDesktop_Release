@@ -43,9 +43,132 @@
       "lua_widget.template.empty_hint": "Write something…",
       "lua_widget.template.reset_text": "Restore Default Text",
       "lua_widget.common.text_color": "Text Color"
+    },
+    "zh-TW": {
+      "lua_widget.template.name": "範例元件",
+      "lua_widget.template.description": "用於建立 SnowDesktop Lua 元件的最小範例。",
+      "lua_widget.template.preview_intro": "選擇你喜歡的樣式，新增後仍可隨時調整大小。",
+      "lua_widget.template.preview_compact": "一目了然",
+      "lua_widget.template.preview_compact_hint": "把今天最重要的事放在眼前。",
+      "lua_widget.template.preview_expanded": "更多內容",
+      "lua_widget.template.preview_expanded_hint": "空間更充裕時，可以看到完整內容。",
+      "lua_widget.template.preview_message": "每天進步一點點。",
+      "lua_widget.template.preview_expanded_message": "今日計畫：讀完這本書，傍晚出去散步。",
+      "lua_widget.template.preset": "範例主題",
+      "lua_widget.template.empty_hint": "輸入內容…",
+      "lua_widget.template.reset_text": "還原預設文字",
+      "lua_widget.common.text_color": "文字顏色"
+    },
+    "ja-JP": {
+      "lua_widget.template.name": "ウィジェットの例",
+      "lua_widget.template.description": "SnowDesktop Lua ウィジェットを作成するための最小限の例。",
+      "lua_widget.template.preview_intro": "お好みのスタイルをお選びください。追加後はいつでもサイズを変更できます。",
+      "lua_widget.template.preview_compact": "概要",
+      "lua_widget.template.preview_compact_hint": "今日のハイライトを身近に置いてください。",
+      "lua_widget.template.preview_expanded": "もっと見る",
+      "lua_widget.template.preview_expanded_hint": "もう少し余裕があるときにメモ全文をご覧ください。",
+      "lua_widget.template.preview_message": "毎日少しずつ進歩。",
+      "lua_widget.template.preview_expanded_message": "今日の計画: 本を読み終えて、夜の散歩をする。",
+      "lua_widget.template.preset": "サンプルテーマ",
+      "lua_widget.template.empty_hint": "何か書いてください…",
+      "lua_widget.template.reset_text": "デフォルトのテキストを復元する",
+      "lua_widget.common.text_color": "文字色"
+    },
+    "ko-KR": {
+      "lua_widget.template.name": "예시 위젯",
+      "lua_widget.template.description": "SnowDesktop Lua 위젯을 생성하기 위한 최소한의 예입니다.",
+      "lua_widget.template.preview_intro": "원하는 스타일을 선택하세요. 추가한 후 언제든지 크기를 조정할 수 있습니다.",
+      "lua_widget.template.preview_compact": "개요",
+      "lua_widget.template.preview_compact_hint": "오늘의 하이라이트를 가까이에 두세요.",
+      "lua_widget.template.preview_expanded": "더 많은 볼거리",
+      "lua_widget.template.preview_expanded_hint": "공간이 조금 더 있으면 전체 내용을 확인하세요.",
+      "lua_widget.template.preview_message": "매일 조금씩 발전하고 있습니다.",
+      "lua_widget.template.preview_expanded_message": "오늘의 계획: 책을 다 읽고 저녁 산책을 해보세요.",
+      "lua_widget.template.preset": "예제 테마",
+      "lua_widget.template.empty_hint": "뭔가 쓰세요…",
+      "lua_widget.template.reset_text": "기본 텍스트 복원",
+      "lua_widget.common.text_color": "텍스트 색상"
+    },
+    "de-DE": {
+      "lua_widget.template.name": "Beispiel-Widget",
+      "lua_widget.template.description": "Ein minimales Beispiel für die Erstellung eines SnowDesktop Lua-Widgets.",
+      "lua_widget.template.preview_intro": "Wählen Sie den Stil, der Ihnen gefällt. Sie können die Größe nach dem Hinzufügen jederzeit ändern.",
+      "lua_widget.template.preview_compact": "Auf einen Blick",
+      "lua_widget.template.preview_compact_hint": "Halten Sie das heutige Highlight immer griffbereit.",
+      "lua_widget.template.preview_expanded": "Mehr zu sehen",
+      "lua_widget.template.preview_expanded_hint": "Sehen Sie sich die vollständige Notiz an, wenn Sie etwas mehr Platz haben.",
+      "lua_widget.template.preview_message": "Jeden Tag ein kleiner Fortschritt.",
+      "lua_widget.template.preview_expanded_message": "Der heutige Plan: Lesen Sie das Buch zu Ende und machen Sie einen Abendspaziergang.",
+      "lua_widget.template.preset": "Beispielthema",
+      "lua_widget.template.empty_hint": "Schreibe etwas…",
+      "lua_widget.template.reset_text": "Standardtext wiederherstellen",
+      "lua_widget.common.text_color": "Textfarbe"
+    },
+    "fr-FR": {
+      "lua_widget.template.name": "Exemple de widget",
+      "lua_widget.template.description": "Un exemple minimal pour créer un widget SnowDesktop Lua.",
+      "lua_widget.template.preview_intro": "Choisissez le style que vous aimez. Vous pouvez le redimensionner à tout moment après l'ajout.",
+      "lua_widget.template.preview_compact": "En un coup d’œil",
+      "lua_widget.template.preview_compact_hint": "Gardez le moment fort du jour à portée de main.",
+      "lua_widget.template.preview_expanded": "Plus à voir",
+      "lua_widget.template.preview_expanded_hint": "Consultez la note complète lorsque vous aurez un peu plus de place.",
+      "lua_widget.template.preview_message": "Un petit progrès chaque jour.",
+      "lua_widget.template.preview_expanded_message": "Le plan du jour : terminer le livre et faire une promenade en soirée.",
+      "lua_widget.template.preset": "Exemple de thème",
+      "lua_widget.template.empty_hint": "Écrivez quelque chose…",
+      "lua_widget.template.reset_text": "Restaurer le texte par défaut",
+      "lua_widget.common.text_color": "Couleur du texte"
+    },
+    "es-ES": {
+      "lua_widget.template.name": "Componente de ejemplo",
+      "lua_widget.template.description": "Un ejemplo mínimo para crear un componente Lua de SnowDesktop.",
+      "lua_widget.template.preview_intro": "Elige el estilo que prefieras. Puedes cambiar su tamaño en cualquier momento después de añadirlo.",
+      "lua_widget.template.preview_compact": "De un vistazo",
+      "lua_widget.template.preview_compact_hint": "Tenga a mano lo más destacado de hoy.",
+      "lua_widget.template.preview_expanded": "Vista ampliada",
+      "lua_widget.template.preview_expanded_hint": "Consulta la nota completa cuando tengas un poco más de espacio.",
+      "lua_widget.template.preview_message": "Un pequeño progreso cada día.",
+      "lua_widget.template.preview_expanded_message": "El plan de hoy: terminar el libro y dar un paseo nocturno.",
+      "lua_widget.template.preset": "Tema de ejemplo",
+      "lua_widget.template.empty_hint": "Escribe algo…",
+      "lua_widget.template.reset_text": "Restaurar texto predeterminado",
+      "lua_widget.common.text_color": "Color del texto"
+    },
+    "es-419": {
+      "lua_widget.template.name": "Widget de ejemplo",
+      "lua_widget.template.description": "Un ejemplo mínimo para crear un widget SnowDesktop Lua.",
+      "lua_widget.template.preview_intro": "Elige el estilo que más te guste. Puede cambiar su tamaño en cualquier momento después de agregarlo.",
+      "lua_widget.template.preview_compact": "De un vistazo",
+      "lua_widget.template.preview_compact_hint": "Tenga a mano lo más destacado de hoy.",
+      "lua_widget.template.preview_expanded": "Más para ver",
+      "lua_widget.template.preview_expanded_hint": "Mira la nota completa cuando tengas un poco más de espacio.",
+      "lua_widget.template.preview_message": "Un pequeño progreso cada día.",
+      "lua_widget.template.preview_expanded_message": "El plan de hoy: terminar el libro y dar un paseo nocturno.",
+      "lua_widget.template.preset": "Tema de ejemplo",
+      "lua_widget.template.empty_hint": "Escribe algo…",
+      "lua_widget.template.reset_text": "Restaurar texto predeterminado",
+      "lua_widget.common.text_color": "Color del texto"
+    },
+    "pt-BR": {
+      "lua_widget.template.name": "Exemplo de widget",
+      "lua_widget.template.description": "Um exemplo mínimo para criar um widget SnowDesktop Lua.",
+      "lua_widget.template.preview_intro": "Escolha o estilo que você gosta. Você pode redimensioná-lo a qualquer momento após adicioná-lo.",
+      "lua_widget.template.preview_compact": "Visão geral",
+      "lua_widget.template.preview_compact_hint": "Mantenha o destaque de hoje à mão.",
+      "lua_widget.template.preview_expanded": "Mais para ver",
+      "lua_widget.template.preview_expanded_hint": "Veja a nota completa quando tiver um pouco mais de espaço.",
+      "lua_widget.template.preview_message": "Um pequeno progresso todos os dias.",
+      "lua_widget.template.preview_expanded_message": "Plano de hoje: terminar o livro e dar um passeio noturno.",
+      "lua_widget.template.preset": "Exemplo de tema",
+      "lua_widget.template.empty_hint": "Escreva algo…",
+      "lua_widget.template.reset_text": "Restaurar texto padrão",
+      "lua_widget.common.text_color": "Cor do texto"
     }
   },
-  "defaultSize": { "columns": 2, "rows": 1 },
+  "defaultSize": {
+    "columns": 2,
+    "rows": 1
+  },
   "previewData": {
     "introduction": "Choose the style you like. You can resize it anytime after adding.",
     "introductionKey": "lua_widget.template.preview_intro",
@@ -62,7 +185,10 @@
         "titleKey": "lua_widget.template.preview_compact",
         "description": "Keep today's highlight close at hand.",
         "descriptionKey": "lua_widget.template.preview_compact_hint",
-        "size": { "columns": 2, "rows": 1 }
+        "size": {
+          "columns": 2,
+          "rows": 1
+        }
       },
       {
         "id": "expanded",
@@ -70,7 +196,10 @@
         "titleKey": "lua_widget.template.preview_expanded",
         "description": "See the full note when you have a little more room.",
         "descriptionKey": "lua_widget.template.preview_expanded_hint",
-        "size": { "columns": 3, "rows": 2 },
+        "size": {
+          "columns": 3,
+          "rows": 2
+        },
         "storage": {
           "message": "Today's plan: finish the book and take an evening walk."
         },
@@ -80,5 +209,8 @@
       }
     ]
   },
-  "permissions": ["ui.input", "ui.contextMenu"]
+  "permissions": [
+    "ui.input",
+    "ui.contextMenu"
+  ]
 }

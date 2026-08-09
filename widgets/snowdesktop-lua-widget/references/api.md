@@ -75,7 +75,8 @@ local language = l10n.language()
 - `l10n.tr(key, arguments...)` reads a string from the active host language
   resource and replaces `{0}`, `{1}`, and later placeholders with the supplied
   values. A missing key is returned unchanged so the error remains visible.
-- `l10n.language()` returns the effective language such as `zh-CN` or `en-US`;
+- `l10n.language()` returns the effective language such as `zh-CN`, `zh-TW`,
+  `ja-JP`, or `en-US`;
   when the user chooses the system language, it returns the resolved language.
 - Language switching reloads Lua widgets. Compute localized top-level names,
   settings labels, presets, menus, and other cached strings with `l10n.tr`.
@@ -397,7 +398,9 @@ as the third argument.
 
 ## Asynchronous HTTP
 
-Declare `network.http` and list exact or wildcard hosts in `networkDomains`.
+Declare `network.http`. Requests may target any HTTP or HTTPS address, including
+localhost and private-network hosts. `networkDomains` is retained only as
+optional compatibility metadata and is not used as a runtime allowlist.
 
 ```lua
 local requestId = http.request({
@@ -418,8 +421,8 @@ http.cancel(requestId)
 
 The host permits at most four concurrent requests per widget, a 64 KiB request
 body, a 1 MiB response, three redirects, and a 30-second maximum timeout.
-Callbacks are dispatched on the Lua host thread. Every redirect target must
-still match `networkDomains`, and `response.ok` is true only for HTTP 2xx.
+Callbacks are dispatched on the Lua host thread. Initial URLs and redirect
+targets may use HTTP or HTTPS. `response.ok` is true only for HTTP 2xx.
 
 ## Host controls
 
@@ -679,7 +682,6 @@ field identifies `main.lua` or another safe package-relative Lua file.
   "minSize": { "columns": 2, "rows": 1 },
   "maxSize": { "columns": 4, "rows": 3 },
   "permissions": ["ui.input", "network.http"],
-  "networkDomains": ["api.example.com"],
   "author": "Example",
   "license": "MIT",
   "minHostVersion": "1.0.1.0",

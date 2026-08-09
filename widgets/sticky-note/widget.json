@@ -47,9 +47,148 @@
       "lua_widget.sticky_note.content": "Note Content",
       "lua_widget.sticky_note.preview_text": "Weekend Plans\n\nBrunch at 11\nWalk by the Lake\nCall Mom",
       "lua_widget.common.font_size": "Font Size"
+    },
+    "zh-TW": {
+      "lua_widget.sticky_note.name": "便籤",
+      "lua_widget.sticky_note.description": "可編輯的桌面便籤。",
+      "lua_widget.sticky_note.preset_yellow": "淺黃",
+      "lua_widget.sticky_note.preset_white": "純白",
+      "lua_widget.sticky_note.preset_pink": "淺粉",
+      "lua_widget.sticky_note.preset_blue": "淺藍",
+      "lua_widget.sticky_note.preset_green": "淺綠",
+      "lua_widget.sticky_note.preset_purple": "淺紫",
+      "lua_widget.sticky_note.preset_dark": "深色",
+      "lua_widget.sticky_note.empty_hint": "輸入便籤內容…",
+      "lua_widget.sticky_note.clear": "清除便籤",
+      "lua_widget.sticky_note.reset_style": "還原便籤預設樣式",
+      "lua_widget.sticky_note.content": "便籤內容",
+      "lua_widget.sticky_note.preview_text": "週末計劃\n\n",
+      "lua_widget.common.font_size": "字型大小"
+    },
+    "ja-JP": {
+      "lua_widget.sticky_note.name": "付箋",
+      "lua_widget.sticky_note.description": "編集可能なデスクトップ付箋。",
+      "lua_widget.sticky_note.preset_yellow": "ライトイエロー",
+      "lua_widget.sticky_note.preset_white": "ホワイト",
+      "lua_widget.sticky_note.preset_pink": "ライトピンク",
+      "lua_widget.sticky_note.preset_blue": "ライトブルー",
+      "lua_widget.sticky_note.preset_green": "ライトグリーン",
+      "lua_widget.sticky_note.preset_purple": "ライトパープル",
+      "lua_widget.sticky_note.preset_dark": "ダーク",
+      "lua_widget.sticky_note.empty_hint": "メモを書く…",
+      "lua_widget.sticky_note.clear": "クリアノート",
+      "lua_widget.sticky_note.reset_style": "デフォルトの付箋スタイルに戻す",
+      "lua_widget.sticky_note.content": "メモの内容",
+      "lua_widget.sticky_note.preview_text": "週末プラン\n\n11時にブランチ\n湖畔を歩く\nお母さんに電話する",
+      "lua_widget.common.font_size": "フォント サイズ"
+    },
+    "ko-KR": {
+      "lua_widget.sticky_note.name": "스티커 메모",
+      "lua_widget.sticky_note.description": "편집 가능한 데스크탑 스티커 메모입니다.",
+      "lua_widget.sticky_note.preset_yellow": "밝은 노랑",
+      "lua_widget.sticky_note.preset_white": "흰색",
+      "lua_widget.sticky_note.preset_pink": "밝은 분홍",
+      "lua_widget.sticky_note.preset_blue": "밝은 파랑",
+      "lua_widget.sticky_note.preset_green": "밝은 초록",
+      "lua_widget.sticky_note.preset_purple": "밝은 보라",
+      "lua_widget.sticky_note.preset_dark": "어두운 색",
+      "lua_widget.sticky_note.empty_hint": "메모 쓰기…",
+      "lua_widget.sticky_note.clear": "메모 지우기",
+      "lua_widget.sticky_note.reset_style": "기본 메모 스타일 복원",
+      "lua_widget.sticky_note.content": "참고 내용",
+      "lua_widget.sticky_note.preview_text": "주말 계획\n\n11시에 브런치\n호수 산책\n엄마에게 전화해",
+      "lua_widget.common.font_size": "글꼴 크기"
+    },
+    "de-DE": {
+      "lua_widget.sticky_note.name": "Haftnotiz",
+      "lua_widget.sticky_note.description": "Eine bearbeitbare Desktop-Haftnotiz.",
+      "lua_widget.sticky_note.preset_yellow": "Hellgelb",
+      "lua_widget.sticky_note.preset_white": "Weiß",
+      "lua_widget.sticky_note.preset_pink": "Hellrosa",
+      "lua_widget.sticky_note.preset_blue": "Hellblau",
+      "lua_widget.sticky_note.preset_green": "Hellgrün",
+      "lua_widget.sticky_note.preset_purple": "Hellviolett",
+      "lua_widget.sticky_note.preset_dark": "Dunkel",
+      "lua_widget.sticky_note.empty_hint": "Eine Notiz schreiben…",
+      "lua_widget.sticky_note.clear": "Notiz löschen",
+      "lua_widget.sticky_note.reset_style": "Standard-Notizstil wiederherstellen",
+      "lua_widget.sticky_note.content": "Notizinhalt",
+      "lua_widget.sticky_note.preview_text": "Wochenendpläne\n\nBrunch um 11\nSpazieren Sie am See entlang\nRuf Mama an",
+      "lua_widget.common.font_size": "Schriftgröße"
+    },
+    "fr-FR": {
+      "lua_widget.sticky_note.name": "Note autocollante",
+      "lua_widget.sticky_note.description": "Une note collante de bureau modifiable.",
+      "lua_widget.sticky_note.preset_yellow": "Jaune clair",
+      "lua_widget.sticky_note.preset_white": "Blanc",
+      "lua_widget.sticky_note.preset_pink": "Rose clair",
+      "lua_widget.sticky_note.preset_blue": "Bleu clair",
+      "lua_widget.sticky_note.preset_green": "Vert clair",
+      "lua_widget.sticky_note.preset_purple": "Violet clair",
+      "lua_widget.sticky_note.preset_dark": "Foncé",
+      "lua_widget.sticky_note.empty_hint": "Écrivez une note…",
+      "lua_widget.sticky_note.clear": "Effacer la note",
+      "lua_widget.sticky_note.reset_style": "Restaurer le style de note par défaut",
+      "lua_widget.sticky_note.content": "Contenu de la note",
+      "lua_widget.sticky_note.preview_text": "Plans du week-end\n\nBrunch à 11 heures\nPromenade au bord du lac\nAppeler maman",
+      "lua_widget.common.font_size": "Taille de la police"
+    },
+    "es-ES": {
+      "lua_widget.sticky_note.name": "Nota adhesiva",
+      "lua_widget.sticky_note.description": "Una nota adhesiva de escritorio editable.",
+      "lua_widget.sticky_note.preset_yellow": "Amarillo claro",
+      "lua_widget.sticky_note.preset_white": "Blanco",
+      "lua_widget.sticky_note.preset_pink": "Rosa claro",
+      "lua_widget.sticky_note.preset_blue": "Azul claro",
+      "lua_widget.sticky_note.preset_green": "Verde claro",
+      "lua_widget.sticky_note.preset_purple": "Púrpura claro",
+      "lua_widget.sticky_note.preset_dark": "Oscuro",
+      "lua_widget.sticky_note.empty_hint": "Escribe una nota...",
+      "lua_widget.sticky_note.clear": "Borrar nota",
+      "lua_widget.sticky_note.reset_style": "Restaurar el estilo de nota predeterminado",
+      "lua_widget.sticky_note.content": "Contenido de la nota",
+      "lua_widget.sticky_note.preview_text": "Planes de fin de semana\n\nAlmuerzo a las 11\nPaseo por el lago\nLlamar a mamá",
+      "lua_widget.common.font_size": "Tamaño de fuente"
+    },
+    "es-419": {
+      "lua_widget.sticky_note.name": "Nota adhesiva",
+      "lua_widget.sticky_note.description": "Una nota adhesiva de escritorio editable.",
+      "lua_widget.sticky_note.preset_yellow": "Amarillo claro",
+      "lua_widget.sticky_note.preset_white": "Blanco",
+      "lua_widget.sticky_note.preset_pink": "Rosa claro",
+      "lua_widget.sticky_note.preset_blue": "Azul claro",
+      "lua_widget.sticky_note.preset_green": "Verde claro",
+      "lua_widget.sticky_note.preset_purple": "Púrpura claro",
+      "lua_widget.sticky_note.preset_dark": "Oscuro",
+      "lua_widget.sticky_note.empty_hint": "Escribe una nota...",
+      "lua_widget.sticky_note.clear": "Borrar nota",
+      "lua_widget.sticky_note.reset_style": "Restaurar el estilo de nota predeterminado",
+      "lua_widget.sticky_note.content": "Contenido de la nota",
+      "lua_widget.sticky_note.preview_text": "Planes de fin de semana\n\nAlmuerzo a las 11\nPaseo por el lago\nLlamar a mamá",
+      "lua_widget.common.font_size": "Tamaño de fuente"
+    },
+    "pt-BR": {
+      "lua_widget.sticky_note.name": "Nota adesiva",
+      "lua_widget.sticky_note.description": "Uma nota adesiva editável na área de trabalho.",
+      "lua_widget.sticky_note.preset_yellow": "Amarelo claro",
+      "lua_widget.sticky_note.preset_white": "Branco",
+    "lua_widget.sticky_note.preset_pink": "Rosa claro",
+    "lua_widget.sticky_note.preset_blue": "Azul claro",
+    "lua_widget.sticky_note.preset_green": "Verde claro",
+    "lua_widget.sticky_note.preset_purple": "Roxo claro",
+      "lua_widget.sticky_note.preset_dark": "Escuro",
+      "lua_widget.sticky_note.empty_hint": "Escreva uma nota…",
+    "lua_widget.sticky_note.clear": "Limpar nota",
+      "lua_widget.sticky_note.reset_style": "Restaurar estilo de nota padrão",
+    "lua_widget.sticky_note.content": "Conteúdo da nota",
+    "lua_widget.sticky_note.preview_text": "Planos para o fim de semana\n\nAlmoço às 11h\nCaminhar à beira do lago\nLigar para a mamãe",
+      "lua_widget.common.font_size": "Tamanho da fonte"
     }
   },
-  "defaultSize": { "columns": 2, "rows": 2 },
+  "defaultSize": {
+    "columns": 2,
+    "rows": 2
+  },
   "previewData": {
     "storage": {
       "text": "Weekend Plans\n\nBrunch at 11\nWalk by the Lake\nCall Mom"
@@ -58,5 +197,8 @@
       "text": "lua_widget.sticky_note.preview_text"
     }
   },
-  "permissions": ["ui.input", "ui.contextMenu"]
+  "permissions": [
+    "ui.input",
+    "ui.contextMenu"
+  ]
 }
