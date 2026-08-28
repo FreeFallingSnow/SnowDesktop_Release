@@ -8,6 +8,8 @@ A Windows desktop organization and personalization tool. SnowDesktop replaces na
 
 [![Get it from Microsoft](https://get.microsoft.com/images/en-us%20dark.svg)](https://apps.microsoft.com/detail/9PLLGJVL4LC3)
 
+[Steam Store (coming soon; add to your wishlist)](https://store.steampowered.com/app/5080330/SnowDesktop/)
+
 [Source repository](https://github.com/FreeFallingSnow/SnowDesktop)
 
 [Release repository](https://github.com/FreeFallingSnow/SnowDesktop_Release)
@@ -35,7 +37,11 @@ A Windows desktop organization and personalization tool. SnowDesktop replaces na
 
 ## 🛠️ Build
 
-Requirements: CMake 3.24+, Visual Studio 2022, and the Windows 10 SDK (0x0A00).
+Requirements: CMake 3.24+, Visual Studio 2022 with the Desktop development
+with C++ workload, and Windows 10/11 SDK 10.0.19041.0 or newer. NuGet restores
+the pinned Microsoft Windows App SDK 2.4.0 and
+Microsoft.Windows.CppWinRT 3.0.260818.1 packages. Neither development nor
+target machines need a preinstalled Windows App SDK Runtime.
 
 ```bat
 .\scripts\build.bat
@@ -49,8 +55,9 @@ normally first. To clear the lock automatically, use
 ## 🧱 Technology
 
 - C++20 / MSVC
+- WinUI 3 / Windows App SDK 2.4.0 (settings center in a Win32 XAML Island)
 - Direct2D + Direct3D 11 + DirectComposition
-- Dear ImGui (settings window)
+- Dear ImGui (Workshop Manager only)
 - Lua 5.4 (script engine)
 - Fluent System Icons Regular (modern context-menu and widget-menu icons)
 - Font Awesome 6 Free (backward-compatible widget icons)
@@ -62,6 +69,8 @@ The SnowDesktop core is licensed under GNU General Public License v3.0; see
 [LICENSE](./LICENSE). Copyright and license information for third-party
 components included in this repository is collected in
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+Release packages include the complete license and notice files for distributed
+third-party components in the `licenses/` directory.
 
 The separate `steam_bridge/` Workshop bridge is MIT-licensed under
 [steam_bridge/LICENSE](./steam_bridge/LICENSE). The Steamworks SDK is not

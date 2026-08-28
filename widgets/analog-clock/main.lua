@@ -1,13 +1,5 @@
--- analog_clock.lua - 指针时钟
-name = l10n.tr("lua_widget.analog_clock.name")
-useCustomStyle = true
-
-bg = 0x000000
-border = 0x000000
-alpha = 0
-gradientEndA = 0
-
-settings = {
+-- analog_clock.lua - API v2 指针时钟
+local settings = {
     presets = {
         {
             id = "transparent",
@@ -28,8 +20,12 @@ settings = {
     }
 }
 
-function render()
-    local t = sys.getTime()
+local function setup()
+    schedule.every("clock", 1000, { whenHidden = "pause" })
+end
+
+local function render()
+    local t = time.parts(time.now())
     local showSecondHand = storage.get("showSecondHand") ~= "0"
     local showNumbers = storage.get("showNumbers") ~= "0"
     local w = layout.width()
@@ -126,3 +122,14 @@ function render()
         draw.circle(cx, cy, su(2.1), 0xEF4444, 1.0)
     end
 end
+
+return widget.define({
+    useCustomStyle = true,
+    bg = 0x000000,
+    border = 0x000000,
+    alpha = 0,
+    gradientEndA = 0,
+    settings = settings,
+    setup = setup,
+    render = render,
+})

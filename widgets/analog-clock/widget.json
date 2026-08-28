@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "64107f41-197a-426a-8f86-6eeb020f56b0",
   "slug": "analog-clock",
-  "apiVersion": 1,
+  "apiVersion": 2,
   "dataVersion": 1,
   "entry": "main.lua",
   "minHostVersion": "1.0.1.0",
@@ -10,7 +10,7 @@
   "license": "GPL-3.0-only",
   "name": "Analog Clock",
   "nameKey": "lua_widget.analog_clock.name",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Displays a responsive analog clock.",
   "descriptionKey": "lua_widget.analog_clock.description",
   "locales": {
@@ -89,8 +89,13 @@
     "columns": 2,
     "rows": 2
   },
-  "refreshIntervalMs": 1000,
-  "permissions": [
-    "ui.input"
-  ]
+  "permissions": [],
+  "requiredFeatures": [
+    "draw.immediate",
+    "lifecycle.model",
+    "schedule.basic",
+    "schedule.visibility",
+    "time.basic"
+  ],
+  "optionalFeatures": []
 }

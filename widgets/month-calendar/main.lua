@@ -1,8 +1,7 @@
-name = l10n.tr("lua_widget.month_calendar.name")
-useCustomStyle = true
-followPersonalizationDefault = true
-showTitle = false
-bottomBarHover = false
+-- month-calendar/main.lua - API v2 local calendar reader and shared selection
+local selectedDateSubscription
+local eventSubscription
+local descriptor
 
 local fluent = {
     today = utf8.char(0xF23C),
@@ -10,160 +9,197 @@ local fluent = {
     next = utf8.char(0xF181),
 }
 
-bg = 0x151A21
-border = 0xFFFFFF
-alpha = 0.40
-borderAlpha = 0.18
-gradientEndA = 0.28
-
-local viewYear = nil
-local viewMonth = nil
-local dateHits = {}
-local headerHits = {}
-local eventCounts = {}
-local eventCacheKey = nil
-local calendarDirty = true
-local wasHostSelected = nil
-local AGENDA_PACKAGE_ID =
-    "4a1577fc-1fe4-4a91-9fa5-8ce400ede1e3"
-
-settings = {
+local settings = {
     fields = {
         {
+            key = "weekStart",
+            label = l10n.tr("lua_widget.month_calendar.week_start"),
+            type = "select",
+            default = "locale",
+            options = { "locale", "monday", "sunday" },
+            optionLabels = {
+                l10n.tr("lua_widget.month_calendar.week_start_locale"),
+                l10n.tr("lua_widget.month_calendar.week_start_monday"),
+                l10n.tr("lua_widget.month_calendar.week_start_sunday"),
+            },
+        },
+        {
             key = "showAdjacent",
-            label = l10n.tr(
-                "lua_widget.month_calendar.show_adjacent"),
+            label = l10n.tr("lua_widget.month_calendar.show_adjacent"),
             type = "bool",
             default = true,
         },
         {
             key = "fontSize",
-            label = l10n.tr(
-                "lua_widget.common.font_size"),
+            label = l10n.tr("lua_widget.common.font_size"),
             type = "int",
             default = 15,
             min = 11,
             max = 20,
         },
-    }
+    },
 }
+
+local function loadStyle()
+    descriptor.bg = tonumber(storage.get("bg")) or
+        tonumber(storage.get("bgColor")) or 0x151A21
+    descriptor.border = tonumber(storage.get("border")) or
+        tonumber(storage.get("borderColor")) or 0xFFFFFF
+    descriptor.alpha = tonumber(storage.get("alpha")) or 0.40
+    descriptor.borderAlpha = tonumber(storage.get("borderAlpha")) or 0.18
+    descriptor.gradientEndA = tonumber(storage.get("gradientEndA")) or 0.28
+    if storage.get("followPersonalization") == "1" then
+        local theme = widget.theme()
+        if theme and theme.bg then
+            descriptor.bg = theme.bg
+            descriptor.border = theme.border or descriptor.border
+            descriptor.alpha = theme.alpha or descriptor.alpha
+            descriptor.borderAlpha = theme.borderAlpha or descriptor.borderAlpha
+            descriptor.gradientEndA = theme.gradientEndA or
+                descriptor.gradientEndA
+        end
+    end
+end
 
 local function palette()
     local theme = widget.theme()
     if theme and theme.contentTheme == 1 then
-        return {
-            text = 0x000000,
-            inverse = 0xFFFFFF,
-        }
+        return { text = 0x000000, inverse = 0xFFFFFF }
     end
-    return {
-        text = 0xFFFFFF,
-        inverse = 0x000000,
-    }
-end
-
-local function pointIn(rect, x, y)
-    return rect and x >= rect.x and
-        x <= rect.x + rect.w and
-        y >= rect.y and y <= rect.y + rect.h
+    return { text = 0xFFFFFF, inverse = 0x000000 }
 end
 
 local function todayDate()
-    local now = sys.getTime()
-    return string.format(
-        "%04d-%02d-%02d",
-        now.year, now.month, now.day)
-end
-
-local function returnToToday()
-    local today = todayDate()
-    local info = calendar.dateInfo(today)
-    if not info then return end
-    viewYear = info.year
-    viewMonth = info.month
-    if calendar.selectedDate() ~= today then
-        calendar.setSelectedDate(today)
-    end
-    calendarDirty = true
-end
-
-local function ensureView()
-    if viewYear and viewMonth then return end
-    local selected = calendar.selectedDate()
-    local info = calendar.dateInfo(selected)
-    if not info then
-        selected = todayDate()
-        info = calendar.dateInfo(selected)
-    end
-    viewYear = info.year
-    viewMonth = info.month
+    local now = time.parts(time.now())
+    return string.format("%04d-%02d-%02d", now.year, now.month, now.day)
 end
 
 local function monthDate(year, month)
     return string.format("%04d-%02d-01", year, month)
 end
 
-local function shiftMonth(delta)
-    ensureView()
-    viewMonth = viewMonth + delta
-    while viewMonth < 1 do
-        viewMonth = viewMonth + 12
-        viewYear = viewYear - 1
+local function selectedDate()
+    if selectedDateSubscription then
+        local snapshot = selectedDateSubscription:value()
+        if snapshot.available and snapshot.value and snapshot.value.date then
+            return snapshot.value.date
+        end
     end
-    while viewMonth > 12 do
-        viewMonth = viewMonth - 12
-        viewYear = viewYear + 1
+    return nil
+end
+
+local function refreshEventSubscription(model)
+    local first = monthDate(model.viewYear, model.viewMonth)
+    local fromDate = calendar.addDays(first, -6)
+    local toDate = calendar.addDays(first, 47)
+    if not fromDate or not toDate then return end
+    if eventSubscription then eventSubscription:unsubscribe() end
+    eventSubscription = data.subscribe("calendar.events", {
+        fromDate = fromDate,
+        toDate = toDate,
+        maxAgeMs = 1000,
+        whenHidden = "throttle",
+    })
+    model.eventRange = fromDate .. ":" .. toDate
+end
+
+local function setViewFromDate(model, date)
+    local info = calendar.dateInfo(date)
+    if not info then return false end
+    local changed = info.year ~= model.viewYear or info.month ~= model.viewMonth
+    model.viewYear = info.year
+    model.viewMonth = info.month
+    if changed then refreshEventSubscription(model) end
+    return true
+end
+
+local function selectDate(model, date)
+    if not setViewFromDate(model, date) then return end
+    if calendar.selectDate(date) then model.selectedDate = date end
+end
+
+local function returnToToday(model)
+    selectDate(model, todayDate())
+end
+
+local function shiftMonth(model, delta)
+    model.viewMonth = model.viewMonth + delta
+    while model.viewMonth < 1 do
+        model.viewMonth = model.viewMonth + 12
+        model.viewYear = model.viewYear - 1
     end
-    calendarDirty = true
+    while model.viewMonth > 12 do
+        model.viewMonth = model.viewMonth - 12
+        model.viewYear = model.viewYear + 1
+    end
+    refreshEventSubscription(model)
+end
+
+local function setup()
+    selectedDateSubscription = data.subscribe("calendar.selectedDate", {
+        maxAgeMs = 1000,
+        whenHidden = "throttle",
+    })
+    local initial = selectedDate() or todayDate()
+    local info = calendar.dateInfo(initial) or calendar.dateInfo(todayDate())
+    local model = {
+        viewYear = info.year,
+        viewMonth = info.month,
+        selectedDate = initial,
+        eventRange = "",
+    }
+    refreshEventSubscription(model)
+    widget.setTitle(l10n.tr("lua_widget.month_calendar.name"))
+    return model
 end
 
 local function effectiveWeekStart()
-    local mode = tonumber(storage.get("weekStart")) or 0
-    if mode == 1 then return 2 end
-    if mode == 2 then return 1 end
-    return l10n.language() == "zh-CN" and 2 or 1
+    local mode = storage.get("weekStart") or "locale"
+    if mode == "monday" or mode == "1" then return 2 end
+    if mode == "sunday" or mode == "2" then return 1 end
+    local language = l10n.language()
+    if language == "en-US" or language == "zh-TW" or
+        language == "ja-JP" or language == "ko-KR" then
+        return 1
+    end
+    return 2
+end
+
+local function monthName(month)
+    if month == 1 then return l10n.tr("lua_widget.month_calendar.month_1") end
+    if month == 2 then return l10n.tr("lua_widget.month_calendar.month_2") end
+    if month == 3 then return l10n.tr("lua_widget.month_calendar.month_3") end
+    if month == 4 then return l10n.tr("lua_widget.month_calendar.month_4") end
+    if month == 5 then return l10n.tr("lua_widget.month_calendar.month_5") end
+    if month == 6 then return l10n.tr("lua_widget.month_calendar.month_6") end
+    if month == 7 then return l10n.tr("lua_widget.month_calendar.month_7") end
+    if month == 8 then return l10n.tr("lua_widget.month_calendar.month_8") end
+    if month == 9 then return l10n.tr("lua_widget.month_calendar.month_9") end
+    if month == 10 then return l10n.tr("lua_widget.month_calendar.month_10") end
+    if month == 11 then return l10n.tr("lua_widget.month_calendar.month_11") end
+    return l10n.tr("lua_widget.month_calendar.month_12")
 end
 
 local function currentFontSize()
-    return math.max(
-        11,
-        math.min(
-            20,
-            tonumber(storage.get("fontSize")) or 15))
-end
-
-local function mainLayoutGrowth()
-    local columnGrowth =
-        math.max(0, layout.columns() - 3)
-    local rowGrowth =
-        math.max(0, layout.rows() - 2)
-    return math.min(
-        4, columnGrowth + rowGrowth * 1.5)
+    return math.max(11, math.min(20,
+        tonumber(storage.get("fontSize")) or 15))
 end
 
 local function showAdjacent()
     return storage.get("showAdjacent") ~= "0"
 end
 
-local function loadMonthCells()
-    ensureView()
-    local first = monthDate(viewYear, viewMonth)
+local function layoutGrowth()
+    local columns = math.max(0, layout.columns() - 3)
+    local rows = math.max(0, layout.rows() - 2)
+    return math.min(4, columns + rows * 1.5)
+end
+
+local function monthCells(model)
+    local first = monthDate(model.viewYear, model.viewMonth)
     local firstInfo = calendar.dateInfo(first)
-    local leading =
-        (firstInfo.weekday - effectiveWeekStart() + 7) % 7
+    local leading = (firstInfo.weekday - effectiveWeekStart() + 7) % 7
     local gridStart = calendar.addDays(first, -leading)
-    local gridEnd = calendar.addDays(gridStart, 41)
-    local key = gridStart .. ":" .. gridEnd
-    if calendarDirty or eventCacheKey ~= key then
-        eventCounts = {}
-        for _, event in ipairs(
-            calendar.events(gridStart, gridEnd)) do
-            eventCounts[event.date] =
-                (eventCounts[event.date] or 0) + 1
-        end
-        eventCacheKey = key
-        calendarDirty = false
-    end
     local cells = {}
     for index = 0, 41 do
         local date = calendar.addDays(gridStart, index)
@@ -171,339 +207,329 @@ local function loadMonthCells()
         cells[#cells + 1] = {
             date = date,
             info = info,
-            currentMonth =
-                info.year == viewYear and
-                info.month == viewMonth,
+            currentMonth = info.year == model.viewYear and
+                info.month == model.viewMonth,
         }
     end
     return cells
 end
 
-local function centeredText(
-    text, x, y, width, height,
-    size, color, bold, alpha)
-    local measured = draw.measureText(
-        text, size, width, bold)
-    draw.text(
-        x + math.max(0, (width - measured.width) / 2),
-        y + math.max(0, (height - measured.height) / 2),
-        text, size, color,
-        math.max(1, width), bold, true, nil, alpha)
+local function eventCounts()
+    local counts = {}
+    if not eventSubscription then return counts end
+    local snapshot = eventSubscription:value()
+    if not snapshot.available or not snapshot.value then return counts end
+    for _, item in ipairs(snapshot.value.events or {}) do
+        counts[item.date] = (counts[item.date] or 0) + 1
+    end
+    return counts
 end
 
-local function drawHeaderButton(
-    hit, label, fontSize, colors, iconOnly,
-    iconYOffset)
-    draw.strokeRect(
-        hit.x, hit.y, hit.w, hit.h,
-        colors.text, layout.cu(7),
-        layout.cu(1), 0.28)
+local function centeredText(text, x, y, width, height,
+    size, color, bold, alpha)
+    local measured = draw.measureText(text, size, width, bold)
+    draw.text(x + math.max(0, (width - measured.width) / 2),
+        y + math.max(0, (height - measured.height) / 2),
+        text, size, color, math.max(1, width), bold, true, 0,
+        alpha or 1.0)
+end
+
+local function submitButton(id, label, shape)
+    interaction.region({
+        key = id,
+        shape = {
+            type = "roundedRect",
+            x = shape.x,
+            y = shape.y,
+            width = shape.width,
+            height = shape.height,
+            radius = layout.cu(7),
+        },
+        cursor = "hand",
+        events = {
+            click = { id = id },
+            contextMenu = { id = "calendar.menu", scope = "component" },
+        },
+        accessibility = { role = "button", label = label },
+    })
+end
+
+local function drawHeaderButton(id, label, fontSize, colors, shape,
+    iconOnly, iconYOffset)
+    local hovered = interaction.isHovered(id)
+    local pressed = interaction.isPressed(id)
+    draw.strokeRect(shape.x, shape.y, shape.width, shape.height,
+        colors.text, layout.cu(7), layout.cu(pressed and 2 or 1),
+        pressed and 0.72 or (hovered and 0.48 or 0.28))
     if iconOnly then
-        draw.fa(
-            label,
-            hit.x + (hit.w - fontSize) / 2,
-            hit.y + (hit.h - fontSize) / 2 +
-                (iconYOffset or 0),
+        draw.fa(label,
+            shape.x + (shape.width - fontSize) / 2,
+            shape.y + (shape.height - fontSize) / 2 + (iconYOffset or 0),
             fontSize, colors.text)
     else
-        centeredText(
-            label, hit.x, hit.y, hit.w, hit.h,
+        centeredText(label, shape.x, shape.y, shape.width, shape.height,
             fontSize, colors.text, true, 1.0)
     end
+    submitButton(id, label, shape)
 end
 
-function render()
-    widget.setTitle(
-        l10n.tr("lua_widget.month_calendar.name"))
-    local info = widget.info()
-    local hostSelected = info.selected == true
-    if wasHostSelected == true and
-        not hostSelected and
-        info.selectedPackageId ~=
-            AGENDA_PACKAGE_ID then
-        returnToToday()
+local function weekdayLabel(weekday)
+    if weekday == 1 then
+        return l10n.tr("lua_widget.month_calendar.sun")
+    elseif weekday == 2 then
+        return l10n.tr("lua_widget.month_calendar.mon")
+    elseif weekday == 3 then
+        return l10n.tr("lua_widget.month_calendar.tue")
+    elseif weekday == 4 then
+        return l10n.tr("lua_widget.month_calendar.wed")
+    elseif weekday == 5 then
+        return l10n.tr("lua_widget.month_calendar.thu")
+    elseif weekday == 6 then
+        return l10n.tr("lua_widget.month_calendar.fri")
     end
-    wasHostSelected = hostSelected
-    ensureView()
-    dateHits = {}
-    headerHits = {}
+    return l10n.tr("lua_widget.month_calendar.sat")
+end
 
+local function render(context, model)
+    loadStyle()
     local colors = palette()
-    local w = layout.width()
-    local h = layout.height()
-    local pad = layout.cu(11)
-    local bottom = h -
-        layout.cu(layout.barHeight()) - layout.cu(5)
-    local growth = mainLayoutGrowth()
-    local headerH = layout.cu(30 + growth * 1.8)
+    local width = layout.width()
+    local height = layout.height()
+    local contentHeight = math.max(1, height)
+    local padding = layout.cu(11)
+    local growth = layoutGrowth()
+    local headerHeight = layout.cu(30 + growth * 1.8)
     local calendarGap = layout.cu(7 + growth)
-    local weekdayH = layout.cu(22 + growth)
-    local weekdayTop = pad + headerH + calendarGap
-    local gridTop = weekdayTop + weekdayH
-    local gridH = math.max(
-        layout.cu(90), bottom - gridTop)
-    local cellW = (w - pad * 2) / 7
-    local cellH = gridH / 6
-    local font = layout.fontCu(
-        currentFontSize() + growth)
-    local smallFont = layout.fontCu(
-        math.max(
-            10,
-            currentFontSize() - 3 +
-                growth * 0.75))
+    local weekdayHeight = layout.cu(22 + growth)
+    local weekdayTop = padding + headerHeight + calendarGap
+    local gridTop = weekdayTop + weekdayHeight
+    local gridHeight = math.max(layout.cu(90),
+        contentHeight - layout.cu(5) - gridTop)
+    local cellWidth = (width - padding * 2) / 7
+    local cellHeight = gridHeight / 6
+    local fontSize = layout.fontCu(currentFontSize() + growth)
+    local smallFont = layout.fontCu(math.max(10,
+        currentFontSize() - 3 + growth * 0.75))
 
-    local button = layout.cu(
-        26 + growth * 1.6)
-    local buttonY = pad + (headerH - button) / 2
-    local iconFont =
-        layout.fontCu(14 + growth)
-    headerHits.previous = {
-        x = pad, y = buttonY,
-        w = button, h = button,
-    }
-    headerHits.next = {
-        x = pad + button + layout.cu(4),
+    interaction.region({
+        key = "calendar.surface",
+        shape = {
+            type = "rect", x = 0, y = 0,
+            width = width, height = contentHeight,
+        },
+        events = { contextMenu = {
+            id = "calendar.menu", scope = "component" } },
+        accessibility = {
+            role = "group",
+            label = l10n.tr("lua_widget.month_calendar.name"),
+        },
+    })
+
+    local buttonSize = layout.cu(26 + growth * 1.6)
+    local buttonY = padding + (headerHeight - buttonSize) / 2
+    local iconFont = layout.fontCu(14 + growth)
+    local previousShape = {
+        x = padding,
         y = buttonY,
-        w = button, h = button,
+        width = buttonSize,
+        height = buttonSize,
     }
-    drawHeaderButton(
-        headerHits.previous, "",
-        iconFont, colors, true,
-        layout.cu(1.4))
-    drawHeaderButton(
-        headerHits.next, "",
-        iconFont, colors, true,
-        layout.cu(1.4))
-
-    local todayText =
-        l10n.tr("lua_widget.month_calendar.today")
-    local todayMetrics = draw.measureText(
-        todayText, smallFont, 0, true)
-    local todayW = math.max(
-        layout.cu(40),
+    local nextShape = {
+        x = padding + buttonSize + layout.cu(4),
+        y = buttonY,
+        width = buttonSize,
+        height = buttonSize,
+    }
+    local todayText = l10n.tr("lua_widget.month_calendar.today")
+    local todayMetrics = draw.measureText(todayText, smallFont, 0, true)
+    local todayWidth = math.max(layout.cu(40),
         todayMetrics.width + layout.cu(12))
-    headerHits.today = {
-        x = w - pad - todayW,
+    local todayShape = {
+        x = width - padding - todayWidth,
         y = buttonY,
-        w = todayW,
-        h = button,
+        width = todayWidth,
+        height = buttonSize,
     }
-    drawHeaderButton(
-        headerHits.today, todayText,
-        smallFont, colors, false)
+    drawHeaderButton("calendar.previous", "", iconFont, colors,
+        previousShape, true, layout.cu(1.4))
+    drawHeaderButton("calendar.next", "", iconFont, colors,
+        nextShape, true, layout.cu(1.4))
+    drawHeaderButton("calendar.today", todayText, smallFont, colors,
+        todayShape, false)
 
-    local title = l10n.tr(
-        "lua_widget.month_calendar.month_format",
-        tostring(viewYear), tostring(viewMonth))
-    local titleX =
-        headerHits.next.x + headerHits.next.w +
-        layout.cu(8)
-    local titleW = math.max(
-        1, headerHits.today.x - titleX - layout.cu(5))
-    centeredText(
-        title, titleX, pad, titleW, headerH,
-        font, colors.text, true, 1.0)
+    local title = l10n.tr("lua_widget.month_calendar.month_format",
+        tostring(model.viewYear), monthName(model.viewMonth))
+    local titleX = nextShape.x + nextShape.width + layout.cu(8)
+    local titleWidth = math.max(1,
+        todayShape.x - titleX - layout.cu(5))
+    centeredText(title, titleX, padding, titleWidth, headerHeight,
+        fontSize, colors.text, true, 1.0)
 
-    local weekdayKeys = {
-        "sun", "mon", "tue", "wed",
-        "thu", "fri", "sat",
-    }
     local weekStart = effectiveWeekStart()
     for column = 0, 6 do
-        local weekday =
-            ((weekStart - 1 + column) % 7) + 1
-        local key = weekdayKeys[weekday]
-        local text
-        if key == "sun" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.sun")
-        elseif key == "mon" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.mon")
-        elseif key == "tue" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.tue")
-        elseif key == "wed" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.wed")
-        elseif key == "thu" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.thu")
-        elseif key == "fri" then
-            text = l10n.tr(
-                "lua_widget.month_calendar.fri")
-        else
-            text = l10n.tr(
-                "lua_widget.month_calendar.sat")
-        end
-        centeredText(
-            text, pad + column * cellW,
-            weekdayTop, cellW, weekdayH,
-            smallFont, colors.text, true, 0.60)
+        local weekday = ((weekStart - 1 + column) % 7) + 1
+        centeredText(weekdayLabel(weekday),
+            padding + column * cellWidth, weekdayTop,
+            cellWidth, weekdayHeight, smallFont, colors.text, true, 0.60)
     end
 
-    local selected = calendar.selectedDate()
+    local selected = context.preview and model.selectedDate or
+        (selectedDate() or model.selectedDate)
     local today = todayDate()
-    local cells = loadMonthCells()
-    for index, cell in ipairs(cells) do
+    local counts = eventCounts()
+    for index, cell in ipairs(monthCells(model)) do
         local zero = index - 1
         local column = zero % 7
         local row = math.floor(zero / 7)
-        local x = pad + column * cellW
-        local y = gridTop + row * cellH
-        local visible =
-            cell.currentMonth or showAdjacent()
-        dateHits[#dateHits + 1] = {
-            x = x, y = y, w = cellW, h = cellH,
-            date = cell.date,
-        }
+        local x = padding + column * cellWidth
+        local y = gridTop + row * cellHeight
+        local visible = cell.currentMonth or showAdjacent()
         if visible then
+            local key = "calendar.date." .. cell.date
             local isSelected = cell.date == selected
             local isToday = cell.date == today
-            local circleRatio =
-                0.72 + math.min(0.06, growth * 0.015)
-            local diameter = math.min(
-                cellW * circleRatio,
-                cellH * circleRatio)
-            local cx = x + cellW / 2
-            local cy = y + cellH * 0.44
+            local circleRatio = 0.72 + math.min(0.06, growth * 0.015)
+            local diameter = math.min(cellWidth * circleRatio,
+                cellHeight * circleRatio)
+            local centerX = x + cellWidth / 2
+            local centerY = y + cellHeight * 0.44
             if isSelected then
-                draw.circle(
-                    cx, cy, diameter / 2,
+                draw.circle(centerX, centerY, diameter / 2,
                     colors.text, 0.92)
             elseif isToday then
-                draw.strokeRect(
-                    cx - diameter / 2,
-                    cy - diameter / 2,
-                    diameter, diameter,
-                    colors.text, diameter / 2,
-                    layout.cu(1.3), 0.82)
+                draw.strokeRect(centerX - diameter / 2,
+                    centerY - diameter / 2, diameter, diameter,
+                    colors.text, diameter / 2, layout.cu(1.3), 0.82)
+            elseif interaction.isHovered(key) then
+                draw.circle(centerX, centerY, diameter / 2,
+                    colors.text, 0.12)
             end
-            local dayText = tostring(cell.info.day)
-            centeredText(
-                dayText,
-                cx - diameter / 2,
-                cy - diameter / 2,
-                diameter, diameter,
-                font,
-                isSelected
-                    and colors.inverse or colors.text,
+            centeredText(tostring(cell.info.day),
+                centerX - diameter / 2, centerY - diameter / 2,
+                diameter, diameter, fontSize,
+                isSelected and colors.inverse or colors.text,
                 isToday or isSelected,
                 cell.currentMonth and 1.0 or 0.38)
-            if eventCounts[cell.date] then
-                draw.circle(
-                    cx,
-                    y + cellH -
-                        layout.cu(4 + growth * 0.3),
-                    math.max(
-                        layout.cu(1.4 + growth * 0.18),
-                        cellW * 0.035),
-                    isSelected
-                        and colors.inverse or colors.text,
+            if counts[cell.date] then
+                draw.circle(centerX,
+                    y + cellHeight - layout.cu(4 + growth * 0.3),
+                    math.max(layout.cu(1.4 + growth * 0.18),
+                        cellWidth * 0.035),
+                    isSelected and colors.inverse or colors.text,
                     cell.currentMonth and 0.86 or 0.34)
             end
+            interaction.region({
+                key = key,
+                shape = {
+                    type = "rect", x = x, y = y,
+                    width = cellWidth, height = cellHeight,
+                },
+                cursor = "hand",
+                events = {
+                    click = {
+                        id = "calendar.select",
+                        value = { date = cell.date },
+                    },
+                    contextMenu = {
+                        id = "calendar.menu", scope = "component" },
+                },
+                accessibility = {
+                    role = "button",
+                    label = cell.date,
+                },
+            })
         end
     end
 end
 
-function onClick(x, y)
-    if pointIn(headerHits.previous, x, y) then
-        shiftMonth(-1)
-        widget.invalidate()
-        return
-    end
-    if pointIn(headerHits.next, x, y) then
-        shiftMonth(1)
-        widget.invalidate()
-        return
-    end
-    if pointIn(headerHits.today, x, y) then
-        returnToToday()
-        widget.invalidate()
-        return
-    end
-    for _, hit in ipairs(dateHits) do
-        if pointIn(hit, x, y) then
-            local info = calendar.dateInfo(hit.date)
-            viewYear = info.year
-            viewMonth = info.month
-            calendar.setSelectedDate(hit.date)
-            calendarDirty = true
-            widget.invalidate()
-            return
+local function event(_context, model, value)
+    if value.kind == "data.change" and
+        value.topic == "calendar.selectedDate" then
+        local current = selectedDate()
+        if current and current ~= model.selectedDate then
+            model.selectedDate = current
+            setViewFromDate(model, current)
         end
+        return
+    end
+    if value.kind == "environment" then
+        widget.setTitle(l10n.tr("lua_widget.month_calendar.name"))
+        return
+    end
+    if value.kind ~= "action" then return end
+    if value.id == "calendar.previous" then
+        shiftMonth(model, -1)
+    elseif value.id == "calendar.next" then
+        shiftMonth(model, 1)
+    elseif value.id == "calendar.today" then
+        returnToToday(model)
+    elseif value.id == "calendar.select" and value.value then
+        selectDate(model, value.value.date)
     end
 end
 
-function onCalendarChanged(reason)
-    calendarDirty = true
-    if reason == "selection" then
-        local info =
-            calendar.dateInfo(calendar.selectedDate())
-        if info then
-            viewYear = info.year
-            viewMonth = info.month
-        end
-    end
-end
-
-function getContextMenu()
-    return {
+local function menu(_context, _model, request)
+    if request.id ~= "calendar.menu" then return nil end
+    return ui.menu({
         {
-            id = 1,
-            label = l10n.tr(
-                "lua_widget.month_calendar.today"),
+            id = "calendar.today",
+            label = l10n.tr("lua_widget.month_calendar.today"),
             icon = fluent.today,
             iconFont = "fluent",
         },
         {
-            id = 2,
-            label = l10n.tr(
-                "lua_widget.month_calendar.previous_month"),
+            id = "calendar.previous",
+            label = l10n.tr("lua_widget.month_calendar.previous_month"),
             icon = fluent.previous,
             iconFont = "fluent",
         },
         {
-            id = 3,
-            label = l10n.tr(
-                "lua_widget.month_calendar.next_month"),
+            id = "calendar.next",
+            label = l10n.tr("lua_widget.month_calendar.next_month"),
             icon = fluent.next,
             iconFont = "fluent",
         },
-    }
+    })
 end
 
-function onMenu(id)
-    if id == 1 then
-        returnToToday()
-    elseif id == 2 then
-        shiftMonth(-1)
-    elseif id == 3 then
-        shiftMonth(1)
+local function dispose()
+    if selectedDateSubscription then
+        selectedDateSubscription:unsubscribe()
+        selectedDateSubscription = nil
     end
-    calendarDirty = true
-    widget.invalidate()
+    if eventSubscription then
+        eventSubscription:unsubscribe()
+        eventSubscription = nil
+    end
 end
 
-function imguiRender()
-    local mode =
-        math.max(0, math.min(
-            2,
-            tonumber(storage.get("weekStart")) or 0))
-    local labels = {
-        l10n.tr(
-            "lua_widget.month_calendar.week_start_locale"),
-        l10n.tr(
-            "lua_widget.month_calendar.week_start_monday"),
-        l10n.tr(
-            "lua_widget.month_calendar.week_start_sunday"),
-    }
-    local nextMode = imgui.combo(
-        l10n.tr(
-            "lua_widget.month_calendar.week_start"),
-        mode + 1, labels) - 1
-    if nextMode ~= mode then
-        storage.set("weekStart", tostring(nextMode))
-        calendarDirty = true
+local function migrateStorage(oldVersion, newVersion)
+    if oldVersion >= 2 or newVersion < 2 then return end
+    local old = storage.get("weekStart")
+    if old == "0" then storage.set("weekStart", "locale")
+    elseif old == "1" then storage.set("weekStart", "monday")
+    elseif old == "2" then storage.set("weekStart", "sunday")
     end
 end
+
+descriptor = {
+    name = l10n.tr("lua_widget.month_calendar.name"),
+    useCustomStyle = true,
+    followPersonalizationDefault = true,
+    showTitle = false,
+    bottomBarHover = false,
+    bg = 0x151A21,
+    border = 0xFFFFFF,
+    alpha = 0.40,
+    borderAlpha = 0.18,
+    gradientEndA = 0.28,
+    settings = settings,
+    setup = setup,
+    render = render,
+    event = event,
+    menu = menu,
+    dispose = dispose,
+    migrateStorage = migrateStorage,
+}
+
+return widget.define(descriptor)

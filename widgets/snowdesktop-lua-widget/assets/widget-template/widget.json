@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "02a4ce3b-7e73-421a-ac29-0d66f32f90ab",
   "slug": "example-widget",
-  "apiVersion": 1,
+  "apiVersion": 2,
   "dataVersion": 1,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "Example Author",
   "license": "MIT",
   "name": "Example Widget",
@@ -209,8 +209,16 @@
       }
     ]
   },
-  "permissions": [
-    "ui.input",
-    "ui.contextMenu"
-  ]
+  "requiredFeatures": [
+    "draw.immediate",
+    "layout.relativeUnits",
+    "lifecycle.model",
+    "l10n.basic",
+    "widget.context"
+  ],
+  "optionalFeatures": [],
+  "resources": {},
+  "slots": {},
+  "permissions": [],
+  "optionalPermissions": []
 }

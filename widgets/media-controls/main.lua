@@ -1,36 +1,46 @@
-name = l10n.tr("lua_widget.media_control.name")
-useCustomStyle = true
-followPersonalizationDefault = true
-bottomBarHover = true
+-- media-controls/main.lua - API v2 media session controls and app launcher
+local mediaCurrent
+local mediaArtwork
+local launcherBinding
 
 local fluent = {
     settings = utf8.char(0xF6A9),
 }
 
-bg = 0x0F172A
-border = 0xFFFFFF
-alpha = 0.42
-borderAlpha = 0.16
-gradientEndA = 0.30
-local btnRects = {}
-local pendState = nil
-local launcherSearchQuery = nil
-local launcherSearchResults = {}
-
 local palettes = {
     dark = {
-        title   = 0xFFFFFF,
+        title = 0xFFFFFF,
         subtitle = 0xF1F5F9,
         btnText = 0xFFFFFF,
         btnDisabled = 0x64748B,
-        btnBg   = 0xFFFFFF,
+        btnBg = 0xFFFFFF,
     },
     light = {
-        title   = 0x1E293B,
+        title = 0x1E293B,
         subtitle = 0x334155,
         btnText = 0x1E293B,
         btnDisabled = 0x94A3B8,
-        btnBg   = 0x000000,
+        btnBg = 0x000000,
+    },
+}
+
+local settings = {
+    fields = {
+        {
+            key = "showArtwork",
+            label = l10n.tr("lua_widget.media_control.show_artwork"),
+            type = "bool",
+            default = true,
+        },
+        {
+            key = "launcherReference",
+            label = l10n.tr("lua_widget.media_control.select_launcher"),
+            type = "appReference",
+            binding = "idlePlayer",
+            emptyLabel = l10n.tr("lua_widget.media_control.not_set"),
+            noResultsLabel =
+                l10n.tr("lua_widget.media_control.no_search_results"),
+        },
     },
 }
 
@@ -42,162 +52,325 @@ local function getPalette()
     return palettes.dark
 end
 
-settings = {
-    fields = {
-        { key = "launcher", label = l10n.tr("lua_widget.media_control.launcher"), type = "text", default = "" },
-    }
-}
+local function currentSession()
+    if not mediaCurrent then return nil end
+    local snapshot = mediaCurrent:value()
+    if not snapshot.available or not snapshot.value then return nil end
+    local session = snapshot.value.session
+    if not session or session.playbackStatus == "closed" then return nil end
+    return session
+end
 
-local function readConfig()
+local function currentArtwork(session)
+    if not session or not mediaArtwork or
+        storage.get("showArtwork") == "0" then
+        return nil
+    end
+    local snapshot = mediaArtwork:value()
+    if not snapshot.available or not snapshot.value then return nil end
+    local artwork = snapshot.value
+    if artwork.sessionId ~= session.id or not artwork.image then return nil end
+    return artwork
+end
+
+local function currentLauncher()
+    if not launcherBinding then return nil end
+    return launcherBinding:item()
+end
+
+local function chooseLauncher()
+    if launcherBinding then
+        launcherBinding:pick()
+    else
+        widget.openSettings()
+    end
+end
+
+local function startMediaAction(model, taskName, pendingState)
+    if not widget.hasPermission("media.action") then return end
+    local session = currentSession()
+    if not session then return end
+    local taskId, err = task.start(taskName, {
+        sessionId = session.id,
+    })
+    if taskId then
+        model.mediaTasks[tostring(taskId)] = taskName
+        model.pendingState = pendingState
+    else
+        model.pendingState = nil
+        widget.log("warn", taskName .. " rejected: " .. tostring(err))
+    end
+end
+
+local function startLauncher(model)
+    local launcher = currentLauncher()
+    if not launcher then
+        chooseLauncher()
+        return
+    end
+    if launcher.availability ~= "available" then
+        widget.log("warn", "bound launcher is unavailable")
+        return
+    end
+    if not widget.hasFeature("task.app.launch") or
+        not widget.hasPermission("app.launch") then
+        widget.openSettings()
+        return
+    end
+    local taskId, err = task.start("app.launch", {
+        ref = launcher.reference,
+    })
+    if taskId then
+        model.launchTask = taskId
+    else
+        widget.log("warn", "app.launch rejected: " .. tostring(err))
+    end
+end
+
+local function setup()
+    launcherBinding = slots.binding("idlePlayer")
+    mediaCurrent = data.subscribe("media.current", {
+        maxAgeMs = 500,
+        whenHidden = "throttle",
+    })
+    mediaArtwork = data.subscribe("media.artwork", {
+        maxAgeMs = 500,
+        whenHidden = "throttle",
+    })
+
     return {
-        launcher = storage.get("launcher") or "",
+        pendingState = nil,
+        mediaTasks = {},
+        launchTask = nil,
     }
 end
 
-local function drawBtn(id, glyph, x, y, sz, enabled, pal)
-    local fg = enabled and pal.btnText or pal.btnDisabled
-    draw.rect(x, y, sz, sz, pal.btnBg, sz * 0.22, enabled and 0.10 or 0.04)
-    draw.fa(glyph, x + sz * 0.12, y + sz * 0.12, sz * 0.76, fg)
-    btnRects[id] = { x = x, y = y, w = sz, h = sz }
+local function drawButton(model, id, taskName, glyph, label,
+    x, y, size, enabled, palette, pendingState)
+    local hovered = enabled and interaction.isHovered(id)
+    local pressed = enabled and interaction.isPressed(id)
+    local alpha = enabled and (pressed and 0.22 or (hovered and 0.16 or 0.10)) or 0.04
+    local foreground = enabled and palette.btnText or palette.btnDisabled
+    draw.rect(x, y, size, size, palette.btnBg, size * 0.22, alpha)
+    draw.fa(glyph, x + size * 0.12, y + size * 0.12,
+        size * 0.76, foreground)
+    if not enabled then return end
+
+    interaction.region({
+        key = id,
+        shape = {
+            type = "roundedRect",
+            x = x,
+            y = y,
+            width = size,
+            height = size,
+            radius = size * 0.22,
+        },
+        cursor = "hand",
+        events = {
+            click = {
+                id = taskName,
+                value = { pendingState = pendingState or "" },
+            },
+        },
+        accessibility = {
+            role = "button",
+            label = label,
+        },
+    })
 end
 
-function render()
-    local current = media.current()
-    local w = layout.width()
-    local h = layout.height()
-    btnRects = {}
-    local pal = getPalette()
+local function render(_context, model)
+    local width = layout.width()
+    local height = layout.height()
+    local palette = getPalette()
+    local session = currentSession()
+    local available = session ~= nil
+    local controls = available and session.controls or {}
+    local canControl = widget.hasPermission("media.action")
+    local artwork = currentArtwork(session)
+    local launcher = currentLauncher()
 
-    local available = current.available and current.playbackStatus ~= "closed"
-    local title = available and current.title ~= "" and current.title or l10n.tr("lua_widget.media_control.not_playing")
-    local artist = available and current.artist ~= "" and current.artist or (available and current.sourceApp or "")
-    if not available then
-        artist = l10n.tr("lua_widget.media_control.double_click_player")
-    end
-
-    local isPlaying = available and current.playbackStatus == "playing"
-    if pendState == "playing" then
-        if isPlaying then pendState = nil end
+    local isPlaying = available and session.playbackStatus == "playing"
+    if model.pendingState == "playing" then
+        if isPlaying then model.pendingState = nil end
         isPlaying = true
-    elseif pendState == "paused" then
-        if not isPlaying then pendState = nil end
+    elseif model.pendingState == "paused" then
+        if not isPlaying then model.pendingState = nil end
         isPlaying = false
-    elseif pendState then
-        pendState = nil
     end
 
-    local titleY = artist ~= "" and h * 0.18 or h * 0.30
-    draw.text(layout.cu(18), titleY, title, layout.fontCu(15), pal.title, w - layout.cu(36), true, true)
-    if artist ~= "" then
-        draw.text(layout.cu(18), titleY + layout.cu(22), artist, layout.fontCu(12), pal.subtitle, w - layout.cu(36), true, true)
+    local title = available and session.title ~= "" and session.title or
+        l10n.tr("lua_widget.media_control.not_playing")
+    local subtitle = ""
+    if available then
+        subtitle = session.artist ~= "" and session.artist or session.sourceName
+    elseif launcher then
+        subtitle = launcher.title
+    else
+        subtitle = l10n.tr("lua_widget.media_control.configure_launcher")
     end
 
-    local btnSz = layout.cu(40)
-    local btnGap = layout.cu(12)
-    local total = btnSz * 3 + btnGap * 2
-    local btnY = h - btnSz - layout.cu(12)
-    local bx = (w - total) / 2
+    local interactiveHeight = math.max(1, height)
+    interaction.region({
+        key = "media.surface",
+        shape = {
+            type = "rect",
+            x = 0,
+            y = 0,
+            width = width,
+            height = interactiveHeight,
+        },
+        events = {
+            doubleClick = { id = "launcher.open" },
+            contextMenu = { id = "media.menu", scope = "component" },
+        },
+        accessibility = {
+            role = "group",
+            label = l10n.tr("lua_widget.media_control.name"),
+        },
+    })
 
-    drawBtn("previous", "", bx, btnY, btnSz, available and current.canPrevious, pal)
-    drawBtn("playPause", isPlaying and "" or "",
-        bx + btnSz + btnGap, btnY, btnSz, available and current.canPlayPause, pal)
-    drawBtn("next", "", bx + (btnSz + btnGap) * 2, btnY, btnSz, available and current.canNext, pal)
+    local buttonSize = layout.cu(40)
+    local buttonGap = layout.cu(12)
+    local total = buttonSize * 3 + buttonGap * 2
+    local buttonY = height - buttonSize - layout.cu(8)
+    local buttonX = (width - total) / 2
+
+    local textX = layout.cu(18)
+    if artwork then
+        local artworkSize = math.min(layout.cu(52),
+            buttonY - layout.cu(16))
+        if artworkSize >= layout.cu(24) then
+            local artworkY = math.max(layout.cu(8),
+                (buttonY - artworkSize) / 2)
+            draw.imageFit(artwork.image, textX, artworkY,
+                artworkSize, artworkSize, "cover", "center", 1.0, "linear")
+            draw.strokeRect(textX, artworkY, artworkSize, artworkSize,
+                palette.btnText, layout.cu(5), layout.cu(1), 0.16)
+            textX = textX + artworkSize + layout.cu(12)
+        end
+    end
+
+    local titleY = subtitle ~= "" and height * 0.14 or height * 0.25
+    local textWidth = math.max(layout.cu(24),
+        width - textX - layout.cu(18))
+    draw.text(textX, titleY, title, layout.fontCu(15),
+        palette.title, textWidth, true, true)
+    if subtitle ~= "" then
+        draw.text(textX, titleY + layout.cu(22), subtitle,
+            layout.fontCu(12), palette.subtitle,
+            textWidth, true, true)
+    end
+
+    drawButton(model, "media.previous", "media.previous", "",
+        l10n.tr("lua_widget.media_control.previous"),
+        buttonX, buttonY, buttonSize,
+        available and canControl and controls.canPrevious,
+        palette)
+    drawButton(model, "media.toggle", "media.toggle",
+        isPlaying and "" or "",
+        l10n.tr(isPlaying and "lua_widget.media_control.pause" or
+            "lua_widget.media_control.play"),
+        buttonX + buttonSize + buttonGap, buttonY, buttonSize,
+        available and canControl and controls.canPlayPause,
+        palette, isPlaying and "paused" or "playing")
+    drawButton(model, "media.next", "media.next", "",
+        l10n.tr("lua_widget.media_control.next"),
+        buttonX + (buttonSize + buttonGap) * 2, buttonY, buttonSize,
+        available and canControl and controls.canNext,
+        palette)
 end
 
-function onClick(x, y)
-    for id, r in pairs(btnRects) do
-        if x >= r.x and x <= r.x + r.w and y >= r.y and y <= r.y + r.h then
-            if id == "previous" then media.previous()
-            elseif id == "playPause" then
-                local current = media.current()
-                local effective = current.playbackStatus == "playing"
-                if pendState == "playing" then effective = true
-                elseif pendState == "paused" then effective = false end
-                pendState = effective and "paused" or "playing"
-                media.playPause()
-            elseif id == "next" then media.next()
+local function event(_context, model, value)
+    if value.kind == "task.complete" then
+        if value.taskId == model.launchTask then
+            model.launchTask = nil
+            if not value.ok then
+                widget.log("warn", "app.launch failed: " ..
+                    tostring(value.error))
             end
-            widget.invalidate()
             return
         end
-    end
-end
-
-function onDoubleClick(x, y)
-    local current = media.current()
-    if not current.available or current.playbackStatus == "closed" then
-        local cfg = readConfig()
-        if cfg.launcher ~= "" then
-            desktop.open(cfg.launcher)
-        else
-            widget.openSettings()
-        end
-    end
-end
-
-function imguiRender()
-    local cfg = readConfig()
-    local query = storage.get("launcherSearch") or ""
-    imgui.settingRow(l10n.tr("lua_widget.media_control.select_launcher"))
-    local nextQuery = imgui.inputText("##launcherSearch", query)
-    if nextQuery ~= query then
-        query = nextQuery
-        storage.set("launcherSearch", query)
-        launcherSearchQuery = nil
-    end
-
-    if imgui.selectable(l10n.tr("lua_widget.media_control.not_set"), cfg.launcher == "") then
-        if cfg.launcher ~= "" then
-            storage.set("launcher", "")
-        end
-        return
-    end
-
-    if query == "" then return end
-
-    if launcherSearchQuery ~= query then
-        local results = {}
-        local seen = {}
-        local function append(items)
-            for _, item in ipairs(items or {}) do
-                local key = string.lower(item.path or item.id or "")
-                if key ~= "" and not seen[key] then
-                    seen[key] = true
-                    results[#results + 1] = item
-                end
+        local mediaTask = model.mediaTasks[tostring(value.taskId)]
+        if mediaTask then
+            model.mediaTasks[tostring(value.taskId)] = nil
+            if not value.ok then
+                model.pendingState = nil
+                widget.log("warn", mediaTask .. " failed: " ..
+                    tostring(value.error))
             end
         end
-        append(desktop.find(query, 40))
-        if desktop.findApplications then
-            append(desktop.findApplications(query, 40))
-        end
-        launcherSearchQuery = query
-        launcherSearchResults = results
-    end
-
-    if #launcherSearchResults == 0 then
-        imgui.text(l10n.tr("lua_widget.media_control.no_search_results"))
         return
     end
 
-    for _, item in ipairs(launcherSearchResults) do
-        local label = (item.title or "") .. " (" .. (item.type or "") .. ")"
-        if imgui.selectable(label, item.path == cfg.launcher) then
-            storage.set("launcher", item.path or "")
-        end
+    if value.kind ~= "action" then return end
+    if value.id == "media.previous" then
+        startMediaAction(model, "media.previous")
+    elseif value.id == "media.toggle" then
+        local pendingState = value.value and value.value.pendingState or nil
+        startMediaAction(model, "media.toggle", pendingState)
+    elseif value.id == "media.next" then
+        startMediaAction(model, "media.next")
+    elseif value.id == "launcher.open" then
+        if not currentSession() then startLauncher(model) end
+    elseif value.id == "launcher.configure" then
+        chooseLauncher()
+    elseif value.id == "launcher.clear" then
+        if currentLauncher() then launcherBinding:clear() end
     end
 end
 
-function onDesktopChanged(reason)
-    launcherSearchQuery = nil
-end
-
-function getContextMenu()
-    return {
-        { id = 1, label = l10n.tr("lua_widget.media_control.configure_launcher"), icon = fluent.settings, iconFont = "fluent" },
+local function menu(_context, _model, request)
+    if request.id ~= "media.menu" then return nil end
+    local launcher = currentLauncher()
+    local items = {
+        {
+            id = "launcher.configure",
+            label = l10n.tr("lua_widget.media_control.configure_launcher"),
+            icon = fluent.settings,
+            iconFont = "fluent",
+        },
     }
+    items[#items + 1] = { type = "separator" }
+    items[#items + 1] = {
+        id = "launcher.current",
+        label = launcher and launcher.title or
+            l10n.tr("lua_widget.media_control.not_set"),
+        checked = true,
+        enabled = false,
+    }
+    if launcher then
+        items[#items + 1] = { type = "separator" }
+        items[#items + 1] = {
+            id = "launcher.clear",
+            label = l10n.tr("lua_widget.media_control.clear_launcher"),
+        }
+    end
+    return ui.menu(items)
 end
 
-function onMenu(id)
-    if id == 1 then widget.openSettings() end
+local function migrateStorage(oldVersion, newVersion)
+    if oldVersion >= 3 or newVersion < 3 then return end
+    storage.remove("launcher")
+    storage.remove("launcherSearch")
+    storage.remove("launcherTitle")
 end
+
+return widget.define({
+    name = l10n.tr("lua_widget.media_control.name"),
+    useCustomStyle = true,
+    followPersonalizationDefault = true,
+    bottomBarHover = true,
+    bg = 0x0F172A,
+    border = 0xFFFFFF,
+    alpha = 0.42,
+    borderAlpha = 0.16,
+    gradientEndA = 0.30,
+    settings = settings,
+    setup = setup,
+    render = render,
+    event = event,
+    menu = menu,
+    migrateStorage = migrateStorage,
+})

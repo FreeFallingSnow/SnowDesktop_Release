@@ -1,16 +1,16 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "5b22d9ef-3802-48a3-8632-dcf9a3c41668",
   "slug": "quick-launcher",
-  "apiVersion": 1,
+  "apiVersion": 2,
   "dataVersion": 1,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "SnowDesktop",
   "license": "GPL-3.0-only",
   "name": "Quick Launcher",
   "nameKey": "lua_widget.quick_launcher.name",
-  "version": "1.0.0",
+  "version": "2.0.4",
   "description": "Searches SnowDesktop items and quickly opens or locates them.",
   "descriptionKey": "lua_widget.quick_launcher.description",
   "locales": {
@@ -20,6 +20,7 @@
       "lua_widget.quick_launcher.query": "搜索词",
       "lua_widget.quick_launcher.search_placeholder": "搜索",
       "lua_widget.quick_launcher.empty_prompt": "输入关键词开始搜索",
+      "lua_widget.quick_launcher.searching": "正在搜索…",
       "lua_widget.quick_launcher.no_matches": "没有匹配项目",
       "lua_widget.quick_launcher.desktop_results": "桌面结果  {0} 项",
       "lua_widget.quick_launcher.application_results": "应用  {0} 项",
@@ -30,6 +31,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "刷新桌面",
       "lua_widget.quick_launcher.match_count": "匹配项：{0}",
       "lua_widget.quick_launcher.preview_query": "旅行",
+      "lua_widget.quick_launcher.preview_result": "旅行日志",
       "lua_widget.common.font_size": "字号",
       "lua_widget.common.text_color": "文字颜色",
       "lua_widget.common.untitled": "（未命名）"
@@ -40,6 +42,7 @@
       "lua_widget.quick_launcher.query": "Search Query",
       "lua_widget.quick_launcher.search_placeholder": "Search",
       "lua_widget.quick_launcher.empty_prompt": "Type to start searching",
+      "lua_widget.quick_launcher.searching": "Searching…",
       "lua_widget.quick_launcher.no_matches": "No Matching Items",
       "lua_widget.quick_launcher.desktop_results": "Desktop Results  {0} items",
       "lua_widget.quick_launcher.application_results": "Apps  {0} items",
@@ -50,6 +53,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Refresh Desktop",
       "lua_widget.quick_launcher.match_count": "Matches: {0}",
       "lua_widget.quick_launcher.preview_query": "Travel",
+      "lua_widget.quick_launcher.preview_result": "Travel Journal",
       "lua_widget.common.font_size": "Font Size",
       "lua_widget.common.text_color": "Text Color",
       "lua_widget.common.untitled": "(Untitled)"
@@ -60,6 +64,7 @@
       "lua_widget.quick_launcher.query": "搜尋詞",
       "lua_widget.quick_launcher.search_placeholder": "搜尋",
       "lua_widget.quick_launcher.empty_prompt": "輸入關鍵字開始搜尋",
+      "lua_widget.quick_launcher.searching": "正在搜尋…",
       "lua_widget.quick_launcher.no_matches": "沒有符合項目",
       "lua_widget.quick_launcher.desktop_results": "桌面結果 {0} 項",
       "lua_widget.quick_launcher.application_results": "應用 {0} 項",
@@ -70,6 +75,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "重新整理桌面",
       "lua_widget.quick_launcher.match_count": "符合的項目：{0}",
       "lua_widget.quick_launcher.preview_query": "旅行",
+      "lua_widget.quick_launcher.preview_result": "旅行日誌",
       "lua_widget.common.font_size": "字型大小",
       "lua_widget.common.text_color": "文字顏色",
       "lua_widget.common.untitled": "（未命名）"
@@ -80,6 +86,7 @@
       "lua_widget.quick_launcher.query": "検索クエリ",
       "lua_widget.quick_launcher.search_placeholder": "検索",
       "lua_widget.quick_launcher.empty_prompt": "入力して検索を開始します",
+      "lua_widget.quick_launcher.searching": "検索中…",
       "lua_widget.quick_launcher.no_matches": "一致するアイテムがありません",
       "lua_widget.quick_launcher.desktop_results": "デスクトップの結果 {0} アイテム",
       "lua_widget.quick_launcher.application_results": "アプリ {0} アイテム",
@@ -90,6 +97,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "デスクトップを更新",
       "lua_widget.quick_launcher.match_count": "一致: {0}",
       "lua_widget.quick_launcher.preview_query": "トラベル",
+      "lua_widget.quick_launcher.preview_result": "旅の記録",
       "lua_widget.common.font_size": "フォント サイズ",
       "lua_widget.common.text_color": "文字色",
       "lua_widget.common.untitled": "(無題)"
@@ -100,6 +108,7 @@
       "lua_widget.quick_launcher.query": "검색어",
       "lua_widget.quick_launcher.search_placeholder": "검색",
       "lua_widget.quick_launcher.empty_prompt": "검색을 시작하려면 입력하세요.",
+      "lua_widget.quick_launcher.searching": "검색 중…",
       "lua_widget.quick_launcher.no_matches": "일치하는 항목이 없습니다.",
       "lua_widget.quick_launcher.desktop_results": "데스크탑 결과 {0} 항목",
       "lua_widget.quick_launcher.application_results": "앱 {0} 항목",
@@ -110,6 +119,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "데스크톱 새로 고침",
       "lua_widget.quick_launcher.match_count": "일치: {0}",
       "lua_widget.quick_launcher.preview_query": "여행",
+      "lua_widget.quick_launcher.preview_result": "여행 일지",
       "lua_widget.common.font_size": "글꼴 크기",
       "lua_widget.common.text_color": "텍스트 색상",
       "lua_widget.common.untitled": "(제목 없음)"
@@ -120,6 +130,7 @@
       "lua_widget.quick_launcher.query": "Suchabfrage",
       "lua_widget.quick_launcher.search_placeholder": "Suche",
       "lua_widget.quick_launcher.empty_prompt": "Geben Sie ein, um die Suche zu starten",
+      "lua_widget.quick_launcher.searching": "Suche läuft…",
       "lua_widget.quick_launcher.no_matches": "Keine passenden Elemente",
       "lua_widget.quick_launcher.desktop_results": "Desktop-Ergebnisse: {0} Elemente",
       "lua_widget.quick_launcher.application_results": "Apps: {0} Elemente",
@@ -130,6 +141,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Desktop aktualisieren",
       "lua_widget.quick_launcher.match_count": "Übereinstimmungen: {0}",
       "lua_widget.quick_launcher.preview_query": "Reisen",
+      "lua_widget.quick_launcher.preview_result": "Reisetagebuch",
       "lua_widget.common.font_size": "Schriftgröße",
       "lua_widget.common.text_color": "Textfarbe",
       "lua_widget.common.untitled": "(Ohne Titel)"
@@ -140,6 +152,7 @@
       "lua_widget.quick_launcher.query": "Requête de recherche",
       "lua_widget.quick_launcher.search_placeholder": "Recherche",
       "lua_widget.quick_launcher.empty_prompt": "Tapez pour commencer la recherche",
+      "lua_widget.quick_launcher.searching": "Recherche en cours…",
       "lua_widget.quick_launcher.no_matches": "Aucun élément correspondant",
       "lua_widget.quick_launcher.desktop_results": "Résultats du bureau : {0} éléments",
       "lua_widget.quick_launcher.application_results": "Applications : {0} éléments",
@@ -150,6 +163,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Actualiser le bureau",
       "lua_widget.quick_launcher.match_count": "Résultats : {0}",
       "lua_widget.quick_launcher.preview_query": "Voyage",
+      "lua_widget.quick_launcher.preview_result": "Carnet de voyage",
       "lua_widget.common.font_size": "Taille de la police",
       "lua_widget.common.text_color": "Couleur du texte",
       "lua_widget.common.untitled": "(Sans titre)"
@@ -160,6 +174,7 @@
       "lua_widget.quick_launcher.query": "Consulta",
       "lua_widget.quick_launcher.search_placeholder": "Buscar",
       "lua_widget.quick_launcher.empty_prompt": "Escriba para comenzar a buscar",
+      "lua_widget.quick_launcher.searching": "Buscando…",
       "lua_widget.quick_launcher.no_matches": "No hay coincidencias",
       "lua_widget.quick_launcher.desktop_results": "Escritorio: {0} elementos",
       "lua_widget.quick_launcher.application_results": "Aplicaciones: {0} elementos",
@@ -170,6 +185,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Actualizar escritorio",
       "lua_widget.quick_launcher.match_count": "Coincidencias: {0}",
       "lua_widget.quick_launcher.preview_query": "Viajes",
+      "lua_widget.quick_launcher.preview_result": "Diario de viaje",
       "lua_widget.common.font_size": "Tamaño de fuente",
       "lua_widget.common.text_color": "Color del texto",
       "lua_widget.common.untitled": "(Sin título)"
@@ -180,6 +196,7 @@
       "lua_widget.quick_launcher.query": "Consulta de búsqueda",
       "lua_widget.quick_launcher.search_placeholder": "Buscar",
       "lua_widget.quick_launcher.empty_prompt": "Escriba para comenzar a buscar",
+      "lua_widget.quick_launcher.searching": "Buscando…",
       "lua_widget.quick_launcher.no_matches": "No hay artículos coincidentes",
       "lua_widget.quick_launcher.desktop_results": "Resultados de escritorio {0} elementos",
       "lua_widget.quick_launcher.application_results": "Aplicaciones {0} artículos",
@@ -190,6 +207,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Actualizar escritorio",
       "lua_widget.quick_launcher.match_count": "Coincidencias: {0}",
       "lua_widget.quick_launcher.preview_query": "Viajes",
+      "lua_widget.quick_launcher.preview_result": "Diario de viaje",
       "lua_widget.common.font_size": "Tamaño de fuente",
       "lua_widget.common.text_color": "Color del texto",
       "lua_widget.common.untitled": "(Sin título)"
@@ -200,6 +218,7 @@
     "lua_widget.quick_launcher.query": "Consulta de pesquisa",
       "lua_widget.quick_launcher.search_placeholder": "Pesquisar",
       "lua_widget.quick_launcher.empty_prompt": "Digite para começar a pesquisar",
+      "lua_widget.quick_launcher.searching": "Pesquisando…",
       "lua_widget.quick_launcher.no_matches": "Nenhum item correspondente",
     "lua_widget.quick_launcher.desktop_results": "Resultados da área de trabalho: {0} itens",
     "lua_widget.quick_launcher.application_results": "Aplicativos: {0} itens",
@@ -210,6 +229,7 @@
       "lua_widget.quick_launcher.refresh_desktop": "Atualizar área de trabalho",
       "lua_widget.quick_launcher.match_count": "Correspondências: {0}",
       "lua_widget.quick_launcher.preview_query": "Viagem",
+      "lua_widget.quick_launcher.preview_result": "Diário de viagem",
       "lua_widget.common.font_size": "Tamanho da fonte",
       "lua_widget.common.text_color": "Cor do texto",
       "lua_widget.common.untitled": "(Sem título)"
@@ -228,10 +248,39 @@
     }
   },
   "permissions": [
-    "desktop.read",
+    "desktop.read"
+  ],
+  "optionalPermissions": [
     "desktop.action",
     "everything.search",
-    "ui.contextMenu",
-    "ui.input"
-  ]
+    "app.discovery",
+    "app.launch"
+  ],
+  "requiredFeatures": [
+    "control.focus",
+    "control.textInput",
+    "data.desktop.changes",
+    "data.subscribe",
+    "draw.immediate",
+    "interaction.contextMenu",
+    "interaction.pointerActions",
+    "interaction.region",
+    "interaction.scroll",
+    "lifecycle.event",
+    "lifecycle.model",
+    "l10n.basic",
+    "schedule.basic",
+    "schedule.visibility",
+    "task.desktop.search",
+    "task.start"
+  ],
+  "optionalFeatures": [
+    "data.app.indexStatus",
+    "task.app.launch",
+    "task.app.search",
+    "task.desktop.refresh",
+    "task.everything.search",
+    "task.shell.item"
+  ],
+  "resources": {}
 }

@@ -1,16 +1,16 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "3a8b02f9-560c-49b9-9b22-bc4405d863ea",
   "slug": "rss-reader",
-  "apiVersion": 1,
+  "apiVersion": 2,
   "dataVersion": 1,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "SnowDesktop",
   "license": "GPL-3.0-only",
   "name": "RSS Reader",
   "nameKey": "lua_widget.rss_reader.name",
-  "version": "2.0.0",
+  "version": "3.0.6",
   "description": "Subscribes to RSS and Atom feeds, lists headlines and dates, and opens articles on double-click.",
   "descriptionKey": "lua_widget.rss_reader.description",
   "locales": {
@@ -31,11 +31,14 @@
       "lua_widget.rss_reader.refresh_now": "立即刷新",
       "lua_widget.rss_reader.clear_cache": "清除缓存并刷新",
       "lua_widget.rss_reader.open_source": "打开源地址",
+      "lua_widget.rss_reader.open_article": "打开文章",
       "lua_widget.rss_reader.preview_feed_title": "今日精选",
       "lua_widget.rss_reader.preview_article_1": "周末去海边，三天两夜这样安排",
       "lua_widget.rss_reader.preview_article_2": "七个不用大改造的收纳办法",
       "lua_widget.rss_reader.preview_article_3": "公路旅行循环播放的歌单",
-      "lua_widget.common.text_color": "文字颜色"
+      "lua_widget.rss_reader.preview_date_1": "2026年8月2日",
+      "lua_widget.rss_reader.preview_date_2": "2026年8月1日",
+      "lua_widget.rss_reader.preview_date_3": "2026年7月31日"
     },
     "en-US": {
       "lua_widget.rss_reader.name": "RSS Reader",
@@ -54,11 +57,14 @@
       "lua_widget.rss_reader.refresh_now": "Refresh Now",
       "lua_widget.rss_reader.clear_cache": "Clear Cache and Refresh",
       "lua_widget.rss_reader.open_source": "Open Feed URL",
+      "lua_widget.rss_reader.open_article": "Open Article",
       "lua_widget.rss_reader.preview_feed_title": "Daily Highlights",
       "lua_widget.rss_reader.preview_article_1": "A Three-Day Weekend by the Coast",
       "lua_widget.rss_reader.preview_article_2": "Seven Small Ways to Tidy Up at Home",
       "lua_widget.rss_reader.preview_article_3": "The Road-Trip Playlist on Repeat",
-      "lua_widget.common.text_color": "Text Color"
+      "lua_widget.rss_reader.preview_date_1": "Aug 2, 2026",
+      "lua_widget.rss_reader.preview_date_2": "Aug 1, 2026",
+      "lua_widget.rss_reader.preview_date_3": "Jul 31, 2026"
     },
     "zh-TW": {
       "lua_widget.rss_reader.name": "RSS 閱讀器",
@@ -77,11 +83,14 @@
       "lua_widget.rss_reader.refresh_now": "立即重新整理",
       "lua_widget.rss_reader.clear_cache": "清除快取並重新整理",
       "lua_widget.rss_reader.open_source": "開啟來源位址",
+      "lua_widget.rss_reader.open_article": "開啟文章",
       "lua_widget.rss_reader.preview_feed_title": "今日精選",
       "lua_widget.rss_reader.preview_article_1": "週末去海邊，三天兩夜這樣安排",
       "lua_widget.rss_reader.preview_article_2": "七個不用大改造的收納辦法",
       "lua_widget.rss_reader.preview_article_3": "公路旅行循環播放的歌單",
-      "lua_widget.common.text_color": "文字顏色"
+      "lua_widget.rss_reader.preview_date_1": "2026年8月2日",
+      "lua_widget.rss_reader.preview_date_2": "2026年8月1日",
+      "lua_widget.rss_reader.preview_date_3": "2026年7月31日"
     },
     "ja-JP": {
       "lua_widget.rss_reader.name": "RSS リーダー",
@@ -100,11 +109,14 @@
       "lua_widget.rss_reader.refresh_now": "今すぐ更新",
       "lua_widget.rss_reader.clear_cache": "キャッシュをクリアして更新",
       "lua_widget.rss_reader.open_source": "フィード URL を開く",
+      "lua_widget.rss_reader.open_article": "記事を開く",
       "lua_widget.rss_reader.preview_feed_title": "毎日のハイライト",
       "lua_widget.rss_reader.preview_article_1": "海岸沿いの 3 日間の週末",
       "lua_widget.rss_reader.preview_article_2": "家を片づける 7 つの小さな方法",
       "lua_widget.rss_reader.preview_article_3": "リピートのロードトリップ プレイリスト",
-      "lua_widget.common.text_color": "文字色"
+      "lua_widget.rss_reader.preview_date_1": "2026年8月2日",
+      "lua_widget.rss_reader.preview_date_2": "2026年8月1日",
+      "lua_widget.rss_reader.preview_date_3": "2026年7月31日"
     },
     "ko-KR": {
       "lua_widget.rss_reader.name": "RSS 리더",
@@ -123,11 +135,14 @@
       "lua_widget.rss_reader.refresh_now": "지금 새로고침",
       "lua_widget.rss_reader.clear_cache": "캐시 지우기 및 새로 고침",
       "lua_widget.rss_reader.open_source": "피드 URL 열기",
+      "lua_widget.rss_reader.open_article": "기사 열기",
       "lua_widget.rss_reader.preview_feed_title": "일일 하이라이트",
       "lua_widget.rss_reader.preview_article_1": "해안에서의 3일간의 주말",
       "lua_widget.rss_reader.preview_article_2": "집에서 정리하는 7가지 작은 방법",
       "lua_widget.rss_reader.preview_article_3": "반복되는 도로 여행 재생 목록",
-      "lua_widget.common.text_color": "텍스트 색상"
+      "lua_widget.rss_reader.preview_date_1": "2026년 8월 2일",
+      "lua_widget.rss_reader.preview_date_2": "2026년 8월 1일",
+      "lua_widget.rss_reader.preview_date_3": "2026년 7월 31일"
     },
     "de-DE": {
       "lua_widget.rss_reader.name": "RSS-Reader",
@@ -146,11 +161,14 @@
       "lua_widget.rss_reader.refresh_now": "Jetzt aktualisieren",
       "lua_widget.rss_reader.clear_cache": "Cache löschen und aktualisieren",
       "lua_widget.rss_reader.open_source": "Feed-URL öffnen",
+      "lua_widget.rss_reader.open_article": "Artikel öffnen",
       "lua_widget.rss_reader.preview_feed_title": "Tägliche Highlights",
       "lua_widget.rss_reader.preview_article_1": "Ein dreitägiges Wochenende an der Küste",
       "lua_widget.rss_reader.preview_article_2": "Sieben kleine Möglichkeiten, zu Hause aufzuräumen",
       "lua_widget.rss_reader.preview_article_3": "Die Road-Trip-Playlist in Wiederholung",
-      "lua_widget.common.text_color": "Textfarbe"
+      "lua_widget.rss_reader.preview_date_1": "2. Aug. 2026",
+      "lua_widget.rss_reader.preview_date_2": "1. Aug. 2026",
+      "lua_widget.rss_reader.preview_date_3": "31. Juli 2026"
     },
     "fr-FR": {
       "lua_widget.rss_reader.name": "Lecteur RSS",
@@ -169,11 +187,14 @@
       "lua_widget.rss_reader.refresh_now": "Actualiser maintenant",
       "lua_widget.rss_reader.clear_cache": "Vider le cache et actualiser",
       "lua_widget.rss_reader.open_source": "Ouvrir l'URL du flux",
+      "lua_widget.rss_reader.open_article": "Ouvrir l’article",
       "lua_widget.rss_reader.preview_feed_title": "Faits saillants du jour",
       "lua_widget.rss_reader.preview_article_1": "Un week-end de trois jours sur la côte",
       "lua_widget.rss_reader.preview_article_2": "Sept petites façons de ranger à la maison",
       "lua_widget.rss_reader.preview_article_3": "La playlist Road-Trip en répétition",
-      "lua_widget.common.text_color": "Couleur du texte"
+      "lua_widget.rss_reader.preview_date_1": "2 août 2026",
+      "lua_widget.rss_reader.preview_date_2": "1 août 2026",
+      "lua_widget.rss_reader.preview_date_3": "31 juillet 2026"
     },
     "es-ES": {
       "lua_widget.rss_reader.name": "Lector RSS",
@@ -192,11 +213,14 @@
       "lua_widget.rss_reader.refresh_now": "Actualizar ahora",
       "lua_widget.rss_reader.clear_cache": "Borrar caché y actualizar",
       "lua_widget.rss_reader.open_source": "Abrir la URL de la fuente",
+      "lua_widget.rss_reader.open_article": "Abrir artículo",
       "lua_widget.rss_reader.preview_feed_title": "Destacados diarios",
       "lua_widget.rss_reader.preview_article_1": "Un fin de semana de tres días en la costa",
       "lua_widget.rss_reader.preview_article_2": "Siete pequeñas formas de ordenar en casa",
       "lua_widget.rss_reader.preview_article_3": "La lista de reproducción del viaje por carretera en repetición",
-      "lua_widget.common.text_color": "Color del texto"
+      "lua_widget.rss_reader.preview_date_1": "2 ago 2026",
+      "lua_widget.rss_reader.preview_date_2": "1 ago 2026",
+      "lua_widget.rss_reader.preview_date_3": "31 jul 2026"
     },
     "es-419": {
       "lua_widget.rss_reader.name": "Lector RSS",
@@ -215,11 +239,14 @@
       "lua_widget.rss_reader.refresh_now": "Actualizar ahora",
       "lua_widget.rss_reader.clear_cache": "Borrar caché y actualizar",
       "lua_widget.rss_reader.open_source": "Abrir la URL del feed",
+      "lua_widget.rss_reader.open_article": "Abrir artículo",
       "lua_widget.rss_reader.preview_feed_title": "Destacados diarios",
       "lua_widget.rss_reader.preview_article_1": "Un fin de semana de tres días en la costa",
       "lua_widget.rss_reader.preview_article_2": "Siete pequeñas formas de ordenar en casa",
       "lua_widget.rss_reader.preview_article_3": "La lista de reproducción del viaje por carretera en repetición",
-      "lua_widget.common.text_color": "Color del texto"
+      "lua_widget.rss_reader.preview_date_1": "2 ago 2026",
+      "lua_widget.rss_reader.preview_date_2": "1 ago 2026",
+      "lua_widget.rss_reader.preview_date_3": "31 jul 2026"
     },
     "pt-BR": {
       "lua_widget.rss_reader.name": "Leitor RSS",
@@ -238,11 +265,14 @@
       "lua_widget.rss_reader.refresh_now": "Atualizar agora",
       "lua_widget.rss_reader.clear_cache": "Limpar cache e atualizar",
     "lua_widget.rss_reader.open_source": "Abrir URL do feed",
+    "lua_widget.rss_reader.open_article": "Abrir artigo",
       "lua_widget.rss_reader.preview_feed_title": "Destaques diários",
       "lua_widget.rss_reader.preview_article_1": "Um fim de semana de três dias na costa",
       "lua_widget.rss_reader.preview_article_2": "Sete pequenas maneiras de arrumar a casa",
       "lua_widget.rss_reader.preview_article_3": "A lista de reprodução da viagem em repetição",
-      "lua_widget.common.text_color": "Cor do texto"
+      "lua_widget.rss_reader.preview_date_1": "2 de ago. de 2026",
+      "lua_widget.rss_reader.preview_date_2": "1 de ago. de 2026",
+      "lua_widget.rss_reader.preview_date_3": "31 de jul. de 2026"
     }
   },
   "defaultSize": {
@@ -257,23 +287,44 @@
     "storage": {
       "previewFeedTitle": "Daily Highlights",
       "previewArticle1Title": "A Three-Day Weekend by the Coast",
-      "previewArticle1Date": "Sun, 02 Aug 2026 10:00:00 GMT",
+      "previewArticle1Date": "2026-08-02",
       "previewArticle2Title": "Seven Small Ways to Tidy Up at Home",
-      "previewArticle2Date": "Sat, 01 Aug 2026 18:30:00 GMT",
+      "previewArticle2Date": "2026-08-01",
       "previewArticle3Title": "The Road-Trip Playlist on Repeat",
-      "previewArticle3Date": "Fri, 31 Jul 2026 09:15:00 GMT"
+      "previewArticle3Date": "2026-07-31"
     },
     "storageKeys": {
       "previewFeedTitle": "lua_widget.rss_reader.preview_feed_title",
       "previewArticle1Title": "lua_widget.rss_reader.preview_article_1",
       "previewArticle2Title": "lua_widget.rss_reader.preview_article_2",
-      "previewArticle3Title": "lua_widget.rss_reader.preview_article_3"
+      "previewArticle3Title": "lua_widget.rss_reader.preview_article_3",
+      "previewArticle1Date": "lua_widget.rss_reader.preview_date_1",
+      "previewArticle2Date": "lua_widget.rss_reader.preview_date_2",
+      "previewArticle3Date": "lua_widget.rss_reader.preview_date_3"
     }
   },
+  "resources": {},
   "permissions": [
-    "network.http",
-    "ui.input",
-    "desktop.action",
-    "ui.contextMenu"
-  ]
+    "network.internet"
+  ],
+  "optionalPermissions": [
+    "shell.launch"
+  ],
+  "requiredFeatures": [
+    "draw.immediate",
+    "interaction.contextMenu",
+    "interaction.pointerActions",
+    "interaction.region",
+    "interaction.scroll",
+    "lifecycle.event",
+    "lifecycle.model",
+    "l10n.basic",
+    "schedule.basic",
+    "schedule.visibility",
+    "task.network.request",
+    "task.shell.openUri",
+    "task.start",
+    "time.basic"
+  ],
+  "optionalFeatures": []
 }

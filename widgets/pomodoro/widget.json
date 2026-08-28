@@ -1,16 +1,16 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "3fbb18cd-7c46-4a9f-9fe3-3e2c19facb23",
   "slug": "pomodoro",
-  "apiVersion": 1,
-  "dataVersion": 1,
+  "apiVersion": 2,
+  "dataVersion": 2,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "SnowDesktop",
   "license": "GPL-3.0-only",
   "name": "Pomodoro",
   "nameKey": "lua_widget.pomodoro.name",
-  "version": "1.0.0",
+  "version": "2.1.9",
   "description": "A Pomodoro timer with focus and break cycles, pause and resume, and customizable durations and colors.",
   "descriptionKey": "lua_widget.pomodoro.description",
   "previewData": {
@@ -51,6 +51,7 @@
       "lua_widget.pomodoro.round_completed": " · 已完成{0}/{1}轮",
       "lua_widget.pomodoro.start": "开始专注",
       "lua_widget.pomodoro.resume": "继续计时",
+      "lua_widget.pomodoro.pause": "暂停计时",
       "lua_widget.pomodoro.stop": "停止计时",
       "lua_widget.pomodoro.skip": "跳过当前阶段",
       "lua_widget.pomodoro.reset_count": "重置计数"
@@ -79,6 +80,7 @@
       "lua_widget.pomodoro.round_completed": " · Completed {0}/{1}",
       "lua_widget.pomodoro.start": "Start Focus",
       "lua_widget.pomodoro.resume": "Resume Timer",
+      "lua_widget.pomodoro.pause": "Pause Timer",
       "lua_widget.pomodoro.stop": "Stop Timer",
       "lua_widget.pomodoro.skip": "Skip Current Stage",
       "lua_widget.pomodoro.reset_count": "Reset Count"
@@ -107,6 +109,7 @@
       "lua_widget.pomodoro.round_completed": "· 已完成{0}/{1}輪",
       "lua_widget.pomodoro.start": "開始專注",
       "lua_widget.pomodoro.resume": "繼續計時",
+      "lua_widget.pomodoro.pause": "暫停計時",
       "lua_widget.pomodoro.stop": "停止計時",
       "lua_widget.pomodoro.skip": "跳過目前階段",
       "lua_widget.pomodoro.reset_count": "重設計數"
@@ -135,6 +138,7 @@
       "lua_widget.pomodoro.round_completed": "・{0}/{1}完成",
       "lua_widget.pomodoro.start": "集中を開始",
       "lua_widget.pomodoro.resume": "タイマーを再開",
+      "lua_widget.pomodoro.pause": "タイマーを一時停止",
       "lua_widget.pomodoro.stop": "タイマーを停止",
       "lua_widget.pomodoro.skip": "現在のステージをスキップ",
       "lua_widget.pomodoro.reset_count": "カウントのリセット"
@@ -163,6 +167,7 @@
       "lua_widget.pomodoro.round_completed": "· {0}/{1} 완료됨",
       "lua_widget.pomodoro.start": "집중 시작",
       "lua_widget.pomodoro.resume": "타이머 재개",
+      "lua_widget.pomodoro.pause": "타이머 일시 중지",
       "lua_widget.pomodoro.stop": "타이머 중지",
       "lua_widget.pomodoro.skip": "현재 단계 건너뛰기",
       "lua_widget.pomodoro.reset_count": "재설정 횟수"
@@ -191,6 +196,7 @@
       "lua_widget.pomodoro.round_completed": "· {0}/{1} abgeschlossen",
       "lua_widget.pomodoro.start": "Fokus starten",
       "lua_widget.pomodoro.resume": "Timer fortsetzen",
+      "lua_widget.pomodoro.pause": "Timer anhalten",
       "lua_widget.pomodoro.stop": "Timer stoppen",
       "lua_widget.pomodoro.skip": "Aktuelle Phase überspringen",
       "lua_widget.pomodoro.reset_count": "Zähler zurücksetzen"
@@ -219,6 +225,7 @@
       "lua_widget.pomodoro.round_completed": "· {0}/{1} terminé(s)",
       "lua_widget.pomodoro.start": "Démarrer la mise au point",
       "lua_widget.pomodoro.resume": "Reprendre la minuterie",
+      "lua_widget.pomodoro.pause": "Mettre le minuteur en pause",
       "lua_widget.pomodoro.stop": "Arrêter la minuterie",
       "lua_widget.pomodoro.skip": "Passer l'étape actuelle",
       "lua_widget.pomodoro.reset_count": "Réinitialiser le compte"
@@ -247,6 +254,7 @@
       "lua_widget.pomodoro.round_completed": "· Completado {0}/{1}",
       "lua_widget.pomodoro.start": "Iniciar enfoque",
       "lua_widget.pomodoro.resume": "Reanudar temporizador",
+      "lua_widget.pomodoro.pause": "Pausar temporizador",
       "lua_widget.pomodoro.stop": "Detener temporizador",
       "lua_widget.pomodoro.skip": "Saltar etapa actual",
       "lua_widget.pomodoro.reset_count": "Restablecer recuento"
@@ -275,6 +283,7 @@
       "lua_widget.pomodoro.round_completed": "· Completado {0}/{1}",
       "lua_widget.pomodoro.start": "Iniciar enfoque",
       "lua_widget.pomodoro.resume": "Reanudar temporizador",
+      "lua_widget.pomodoro.pause": "Pausar temporizador",
       "lua_widget.pomodoro.stop": "Detener temporizador",
       "lua_widget.pomodoro.skip": "Saltar etapa actual",
       "lua_widget.pomodoro.reset_count": "Restablecer recuento"
@@ -303,6 +312,7 @@
       "lua_widget.pomodoro.round_completed": "· {0}/{1}",
     "lua_widget.pomodoro.start": "Iniciar foco",
       "lua_widget.pomodoro.resume": "Retomar temporizador",
+      "lua_widget.pomodoro.pause": "Pausar temporizador",
       "lua_widget.pomodoro.stop": "Parar temporizador",
       "lua_widget.pomodoro.skip": "Pular estágio atual",
       "lua_widget.pomodoro.reset_count": "Redefinir contagem"
@@ -316,9 +326,25 @@
     "columns": 2,
     "rows": 2
   },
-  "permissions": [
-    "ui.input",
-    "ui.contextMenu",
-    "ui.notify"
+  "resources": {},
+  "permissions": [],
+  "optionalPermissions": [
+    "notification.post"
+  ],
+  "requiredFeatures": [
+    "interaction.contextMenu",
+    "layout.relativeUnits",
+    "lifecycle.event",
+    "lifecycle.model",
+    "l10n.basic",
+    "schedule.basic",
+    "schedule.visibility",
+    "time.basic",
+    "view.statusVisuals",
+    "view.tree.core"
+  ],
+  "optionalFeatures": [
+    "task.notification.show",
+    "task.start"
   ]
 }

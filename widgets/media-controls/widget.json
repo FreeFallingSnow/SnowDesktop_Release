@@ -1,16 +1,16 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "9ccc7bd1-2a5a-473a-9bf7-a7d9ed5605ef",
   "slug": "media-controls",
-  "apiVersion": 1,
-  "dataVersion": 1,
+  "apiVersion": 2,
+  "dataVersion": 3,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "SnowDesktop",
   "license": "GPL-3.0-only",
   "name": "Media Controls",
   "nameKey": "lua_widget.media_control.name",
-  "version": "1.0.0",
+  "version": "2.2.2",
   "description": "Displays and controls the current Windows media session.",
   "descriptionKey": "lua_widget.media_control.description",
   "locales": {
@@ -23,7 +23,13 @@
       "lua_widget.media_control.select_launcher": "搜索并选择启动项",
       "lua_widget.media_control.not_set": "（不设置）",
       "lua_widget.media_control.configure_launcher": "设置启动项",
-      "lua_widget.media_control.no_search_results": "没有匹配的桌面项目"
+      "lua_widget.media_control.clear_launcher": "清除启动项",
+      "lua_widget.media_control.no_search_results": "没有匹配的应用",
+      "lua_widget.media_control.show_artwork": "显示封面",
+      "lua_widget.media_control.previous": "上一曲",
+      "lua_widget.media_control.play": "播放",
+      "lua_widget.media_control.pause": "暂停",
+      "lua_widget.media_control.next": "下一曲"
     },
     "en-US": {
       "lua_widget.media_control.name": "Media Controls",
@@ -34,7 +40,13 @@
       "lua_widget.media_control.select_launcher": "Search and Select a Launcher",
       "lua_widget.media_control.not_set": "(Not Set)",
       "lua_widget.media_control.configure_launcher": "Configure Launcher",
-      "lua_widget.media_control.no_search_results": "No matching desktop items"
+      "lua_widget.media_control.clear_launcher": "Clear Launcher",
+      "lua_widget.media_control.no_search_results": "No matching applications",
+      "lua_widget.media_control.show_artwork": "Show Artwork",
+      "lua_widget.media_control.previous": "Previous",
+      "lua_widget.media_control.play": "Play",
+      "lua_widget.media_control.pause": "Pause",
+      "lua_widget.media_control.next": "Next"
     },
     "zh-TW": {
       "lua_widget.media_control.name": "媒體控制",
@@ -45,7 +57,13 @@
       "lua_widget.media_control.select_launcher": "搜尋並選擇啟動程式",
       "lua_widget.media_control.not_set": "（不設定）",
       "lua_widget.media_control.configure_launcher": "設定啟動程式",
-      "lua_widget.media_control.no_search_results": "沒有相符的桌面項目"
+      "lua_widget.media_control.clear_launcher": "清除啟動程式",
+      "lua_widget.media_control.no_search_results": "沒有相符的應用程式",
+      "lua_widget.media_control.show_artwork": "顯示封面",
+      "lua_widget.media_control.previous": "上一首",
+      "lua_widget.media_control.play": "播放",
+      "lua_widget.media_control.pause": "暫停",
+      "lua_widget.media_control.next": "下一首"
     },
     "ja-JP": {
       "lua_widget.media_control.name": "メディア コントロール",
@@ -56,7 +74,13 @@
       "lua_widget.media_control.select_launcher": "ランチャーを検索して選択します",
       "lua_widget.media_control.not_set": "(未設定)",
       "lua_widget.media_control.configure_launcher": "ランチャーの構成",
-      "lua_widget.media_control.no_search_results": "一致するデスクトップ項目はありません"
+      "lua_widget.media_control.clear_launcher": "ランチャーをクリア",
+      "lua_widget.media_control.no_search_results": "一致するアプリケーションはありません",
+      "lua_widget.media_control.show_artwork": "カバーアートを表示",
+      "lua_widget.media_control.previous": "前へ",
+      "lua_widget.media_control.play": "再生",
+      "lua_widget.media_control.pause": "一時停止",
+      "lua_widget.media_control.next": "次へ"
     },
     "ko-KR": {
       "lua_widget.media_control.name": "미디어 컨트롤",
@@ -67,7 +91,13 @@
       "lua_widget.media_control.select_launcher": "실행기 검색 및 선택",
       "lua_widget.media_control.not_set": "(설정되지 않음)",
       "lua_widget.media_control.configure_launcher": "실행기 설정",
-      "lua_widget.media_control.no_search_results": "일치하는 데스크탑 항목이 없습니다."
+      "lua_widget.media_control.clear_launcher": "실행기 지우기",
+      "lua_widget.media_control.no_search_results": "일치하는 애플리케이션이 없습니다.",
+      "lua_widget.media_control.show_artwork": "앨범 아트 표시",
+      "lua_widget.media_control.previous": "이전",
+      "lua_widget.media_control.play": "재생",
+      "lua_widget.media_control.pause": "일시 정지",
+      "lua_widget.media_control.next": "다음"
     },
     "de-DE": {
       "lua_widget.media_control.name": "Mediensteuerelemente",
@@ -78,7 +108,13 @@
       "lua_widget.media_control.select_launcher": "Startprogramm suchen und auswählen",
       "lua_widget.media_control.not_set": "(nicht eingestellt)",
       "lua_widget.media_control.configure_launcher": "Startprogramm konfigurieren",
-      "lua_widget.media_control.no_search_results": "Keine passenden Desktop-Elemente"
+      "lua_widget.media_control.clear_launcher": "Startprogramm entfernen",
+      "lua_widget.media_control.no_search_results": "Keine passenden Anwendungen",
+      "lua_widget.media_control.show_artwork": "Cover anzeigen",
+      "lua_widget.media_control.previous": "Zurück",
+      "lua_widget.media_control.play": "Wiedergabe",
+      "lua_widget.media_control.pause": "Pause",
+      "lua_widget.media_control.next": "Weiter"
     },
     "fr-FR": {
       "lua_widget.media_control.name": "Contrôles multimédias",
@@ -89,7 +125,13 @@
       "lua_widget.media_control.select_launcher": "Rechercher et sélectionner un lanceur",
       "lua_widget.media_control.not_set": "(Non défini)",
       "lua_widget.media_control.configure_launcher": "Configurer le lanceur",
-      "lua_widget.media_control.no_search_results": "Aucun élément de bureau correspondant"
+      "lua_widget.media_control.clear_launcher": "Effacer le lanceur",
+      "lua_widget.media_control.no_search_results": "Aucune application correspondante",
+      "lua_widget.media_control.show_artwork": "Afficher la pochette",
+      "lua_widget.media_control.previous": "Précédent",
+      "lua_widget.media_control.play": "Lecture",
+      "lua_widget.media_control.pause": "Pause",
+      "lua_widget.media_control.next": "Suivant"
     },
     "es-ES": {
       "lua_widget.media_control.name": "Controles multimedia",
@@ -100,7 +142,13 @@
       "lua_widget.media_control.select_launcher": "Busca y selecciona un iniciador",
       "lua_widget.media_control.not_set": "(No establecido)",
       "lua_widget.media_control.configure_launcher": "Configurar el iniciador",
-      "lua_widget.media_control.no_search_results": "No hay elementos del escritorio que coincidan"
+      "lua_widget.media_control.clear_launcher": "Borrar el iniciador",
+      "lua_widget.media_control.no_search_results": "No hay aplicaciones que coincidan",
+      "lua_widget.media_control.show_artwork": "Mostrar portada",
+      "lua_widget.media_control.previous": "Anterior",
+      "lua_widget.media_control.play": "Reproducir",
+      "lua_widget.media_control.pause": "Pausa",
+      "lua_widget.media_control.next": "Siguiente"
     },
     "es-419": {
       "lua_widget.media_control.name": "Controles multimedia",
@@ -111,7 +159,13 @@
       "lua_widget.media_control.select_launcher": "Busque y seleccione un iniciador",
       "lua_widget.media_control.not_set": "(No establecido)",
       "lua_widget.media_control.configure_launcher": "Configurar el lanzador",
-      "lua_widget.media_control.no_search_results": "No hay elementos de escritorio coincidentes"
+      "lua_widget.media_control.clear_launcher": "Borrar el lanzador",
+      "lua_widget.media_control.no_search_results": "No hay aplicaciones coincidentes",
+      "lua_widget.media_control.show_artwork": "Mostrar carátula",
+      "lua_widget.media_control.previous": "Anterior",
+      "lua_widget.media_control.play": "Reproducir",
+      "lua_widget.media_control.pause": "Pausa",
+      "lua_widget.media_control.next": "Siguiente"
     },
     "pt-BR": {
       "lua_widget.media_control.name": "Controles de mídia",
@@ -122,7 +176,13 @@
     "lua_widget.media_control.select_launcher": "Pesquisar e selecionar um iniciador",
       "lua_widget.media_control.not_set": "(Não definido)",
       "lua_widget.media_control.configure_launcher": "Configurar o iniciador",
-    "lua_widget.media_control.no_search_results": "Nenhum item correspondente na área de trabalho"
+      "lua_widget.media_control.clear_launcher": "Limpar o iniciador",
+      "lua_widget.media_control.no_search_results": "Nenhum aplicativo correspondente",
+      "lua_widget.media_control.show_artwork": "Mostrar capa",
+      "lua_widget.media_control.previous": "Anterior",
+      "lua_widget.media_control.play": "Reproduzir",
+      "lua_widget.media_control.pause": "Pausar",
+      "lua_widget.media_control.next": "Próxima"
     }
   },
   "defaultSize": {
@@ -137,11 +197,45 @@
     "columns": 3,
     "rows": 1
   },
+  "resources": {},
+  "slots": {
+    "idlePlayer": {
+      "kind": "binding",
+      "accepts": [
+        "app.reference"
+      ],
+      "operation": "reference",
+      "replacePolicy": "allow",
+      "allowClear": true
+    }
+  },
   "permissions": [
-    "media.read",
+    "media.read"
+  ],
+  "optionalPermissions": [
     "media.action",
-    "desktop.action",
-    "desktop.read",
-    "ui.input"
+    "app.launch"
+  ],
+  "requiredFeatures": [
+    "data.media.current",
+    "data.media.artwork",
+    "data.subscribe",
+    "draw.advanced",
+    "draw.immediate",
+    "interaction.contextMenu",
+    "interaction.pointerActions",
+    "interaction.region",
+    "lifecycle.event",
+    "lifecycle.model",
+    "l10n.basic",
+    "settings.appReference",
+    "slots.hostPicker",
+    "slots.model",
+    "slots.mutation.userGesture",
+    "task.media.control",
+    "task.start"
+  ],
+  "optionalFeatures": [
+    "task.app.launch"
   ]
 }

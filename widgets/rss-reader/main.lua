@@ -1,7 +1,5 @@
-name = l10n.tr("lua_widget.rss_reader.name")
-useCustomStyle = true
-followPersonalizationDefault = true
-bottomBarHover = false
+-- rss-reader/main.lua - API v2 bounded network task and virtual feed list
+local descriptor
 
 local fluent = {
     refresh = utf8.char(0xF13D),
@@ -9,391 +7,394 @@ local fluent = {
     open = utf8.char(0xF582),
 }
 
-bg = 0x0F172A
-border = 0xFFFFFF
-alpha = 0.38
-borderAlpha = 0.16
-gradientEndA = 0.28
-textColor = 0xFFFFFF
-local articles = {}
-local feedTitle = ""
-local loading = false
-local lastError = ""
-local lastUrl = nil
-local lastInterval = nil
-local lastMaxItems = nil
+local DEFAULT_URL = "https://www.ithome.com/rss/"
 
-feedTitle = storage.get("previewFeedTitle") or feedTitle
-for index = 1, 12 do
-    local title = storage.get("previewArticle" .. tostring(index) .. "Title")
-    if title and title ~= "" then
-        articles[#articles + 1] = {
+local settings = {
+    fields = {
+        { key = "url", label = l10n.tr("lua_widget.rss_reader.url"),
+            type = "text", default = DEFAULT_URL },
+        { key = "interval",
+            label = l10n.tr("lua_widget.rss_reader.refresh_interval"),
+            type = "int", default = 1800, min = 60, max = 3600 },
+        { key = "maxItems",
+            label = l10n.tr("lua_widget.rss_reader.max_items"),
+            type = "int", default = 30, min = 10, max = 100 },
+        { key = "fontSize",
+            label = l10n.tr("lua_widget.rss_reader.article_font_size"),
+            type = "int", default = 15, min = 10, max = 24 },
+    },
+}
+
+local function config()
+    return {
+        url = storage.get("url") or DEFAULT_URL,
+        interval = math.max(60, math.min(3600,
+            tonumber(storage.get("interval")) or 1800)),
+        maxItems = math.max(10, math.min(100,
+            tonumber(storage.get("maxItems")) or 30)),
+        fontSize = math.max(10, math.min(24,
+            tonumber(storage.get("fontSize")) or 15)),
+    }
+end
+
+local function palette(context)
+    if context.theme and context.theme.mode == "light" then
+        return {
+            header = 0x0F172A, count = 0x334155, divider = 0x334155,
+            number = 0x475569, title = 0x1E293B, date = 0x64748B,
+            status = 0x334155, error = 0xB91C1C, card = 0x000000,
+        }
+    end
+    return {
+        header = 0xF8FAFC, count = 0xF1F5F9, divider = 0xFFFFFF,
+        number = 0xFFFFFF, title = 0xF1F5F9, date = 0x94A3B8,
+        status = 0xF1F5F9, error = 0xFF8B8B, card = 0xFFFFFF,
+    }
+end
+
+local function decodeText(value)
+    return (value or ""):gsub("<!%[CDATA%[(.-)%]%]>", "%1")
+        :gsub("<[^>]+>", "")
+        :gsub("&lt;", "<"):gsub("&gt;", ">")
+        :gsub("&amp;", "&"):gsub("&quot;", "\"")
+        :gsub("&#39;", "'")
+end
+
+local function parseRssItem(xml)
+    return {
+        title = decodeText(xml:match("<title>(.-)</title>")),
+        link = decodeText(xml:match("<link>(.-)</link>")),
+        description = decodeText(xml:match("<description>(.-)</description>")),
+        date = decodeText(xml:match("<pubDate>(.-)</pubDate>") or
+            xml:match("<dc:date>(.-)</dc:date>")),
+    }
+end
+
+local function parseAtomEntry(xml)
+    local link = xml:match('<link[^>]+href="([^"]*)"') or
+        xml:match("<link[^>]+href='([^']*)'") or ""
+    return {
+        title = decodeText(xml:match("<title[^>]*>(.-)</title>")),
+        link = decodeText(link),
+        description = decodeText(xml:match("<summary[^>]*>(.-)</summary>") or
+            xml:match("<content[^>]*>(.-)</content>")),
+        date = decodeText(xml:match("<published>(.-)</published>") or
+            xml:match("<updated>(.-)</updated>")),
+    }
+end
+
+local function parseFeed(body, maximum)
+    local title = decodeText(body:match("<channel>.-<title>(.-)</title>") or
+        body:match("<feed[^>]*>.-<title[^>]*>(.-)</title>"))
+    local items = {}
+    local atom = false
+    for xml in body:gmatch("<entry[^>]*>(.-)</entry>") do
+        atom = true
+        local item = parseAtomEntry(xml)
+        if item.title ~= "" then items[#items + 1] = item end
+        if #items >= maximum then break end
+    end
+    if not atom then
+        for xml in body:gmatch("<item[^>]*>(.-)</item>") do
+            local item = parseRssItem(xml)
+            if item.title ~= "" then items[#items + 1] = item end
+            if #items >= maximum then break end
+        end
+    end
+    return title, items
+end
+
+local function loadPreview(model)
+    model.feedTitle = storage.get("previewFeedTitle") or ""
+    for index = 1, 12 do
+        local title = storage.get("previewArticle" .. index .. "Title")
+        if not title or title == "" then break end
+        model.articles[#model.articles + 1] = {
             title = title,
-            date = storage.get("previewArticle" .. tostring(index) .. "Date") or "",
-            link = storage.get("previewArticle" .. tostring(index) .. "Link") or "",
-            desc = storage.get("previewArticle" .. tostring(index) .. "Description") or "",
+            date = "",
+            displayDate = storage.get(
+                "previewArticle" .. index .. "Date") or "",
+            link = storage.get("previewArticle" .. index .. "Link") or "",
+            description = storage.get(
+                "previewArticle" .. index .. "Description") or "",
         }
     end
 end
 
-local function resolveTextColor()
-    local tc = tonumber(storage.get("textColor")) or textColor
-    local follows = storage.get("followPersonalization") == "1"
-        or storage.get("followPersonalization") == "true"
-    if follows then
-        local theme = widget.theme()
-        if theme then
-            tc = (theme.contentTheme == 1) and 0x000000 or 0xFFFFFF
-        end
-    end
-    return tc
-end
-
-local palettes = {
-    dark = {
-        headerText  = 0xF8FAFC,
-        countText   = 0xF1F5F9,
-        divColor    = 0xFFFFFF,
-        numberText  = 0xFFFFFF,
-        titleText   = 0xF1F5F9,
-        dateText    = 0x94A3B8,
-        loadingText = 0xF1F5F9,
-        errorText   = 0xFF8B8B,
-        emptyText   = 0xF1F5F9,
-    },
-    light = {
-        headerText  = 0x0F172A,
-        countText   = 0x334155,
-        divColor    = 0x334155,
-        numberText  = 0x475569,
-        titleText   = 0x1E293B,
-        dateText    = 0x94A3B8,
-        loadingText = 0x334155,
-        errorText   = 0xDC2626,
-        emptyText   = 0x334155,
-    },
-}
-
-local function getPalette()
-    local theme = widget.theme()
-    if theme and theme.contentTheme == 1 then
-        return palettes.light
-    end
-    return palettes.dark
-end
-
-settings = {
-    fields = {
-        { key = "url", label = l10n.tr("lua_widget.rss_reader.url"), type = "text", default = "https://www.ithome.com/rss/" },
-        { key = "interval", label = l10n.tr("lua_widget.rss_reader.refresh_interval"), type = "int", default = 1800, min = 60, max = 3600 },
-        { key = "maxItems", label = l10n.tr("lua_widget.rss_reader.max_items"), type = "int", default = 30, min = 10, max = 100 },
-        { key = "fontSize", label = l10n.tr("lua_widget.rss_reader.article_font_size"), type = "int", default = 15, min = 10, max = 24 },
-        { key = "textColor", label = l10n.tr("lua_widget.common.text_color"), type = "color", default = 0xFFFFFF },
-    }
-}
-
-local function readConfig()
-    return {
-        url = storage.get("url") or "https://www.ithome.com/rss/",
-        interval = tonumber(storage.get("interval")) or 1800,
-        maxItems = tonumber(storage.get("maxItems")) or 30,
-        fontSize = math.max(10, math.min(24, tonumber(storage.get("fontSize")) or 15)),
-    }
-end
-
-local function articleLayout(fontSize)
-    local secondaryFontSize = math.max(9, fontSize - 2)
-    local secondaryTop = fontSize + 13
-    local itemHeight = math.max(48, secondaryTop + secondaryFontSize + 7)
-    return itemHeight, secondaryFontSize, secondaryTop
-end
-
-local function headerLayout(fontSize)
-    local headerFontSize = math.min(28, fontSize + 2)
-    local headerHeight = math.max(24, headerFontSize + 8)
-    local listTop = 11 + headerHeight + 8
-    return headerFontSize, headerHeight, listTop
-end
-
-local function articleListGeometry(fontSize)
-    local w = layout.width()
-    local h = layout.height()
-    local padX = layout.cu(14)
-    local _, _, listTopCu = headerLayout(fontSize)
-    local itemHeightCu = articleLayout(fontSize)
-    local listTop = layout.cu(listTopCu)
-    -- The host reserves this area for moving/resizing the widget. Keeping the
-    -- list above it makes the visible rows and their clickable area identical.
-    local listBottom = h - layout.cu(layout.barHeight() + 2)
-    return padX, listTop, w - padX, listBottom, layout.cu(itemHeightCu)
-end
-
-local function currentArticleRange(fontSize)
-    local listLeft, listTop, listRight, listBottom, itemH =
-        articleListGeometry(fontSize)
-    local range = ui.virtualList("articles", listLeft, listTop,
-        math.max(1, listRight - listLeft),
-        math.max(1, listBottom - listTop), itemH, #articles)
-    return range, listLeft, listTop, listRight, listBottom, itemH
-end
-
-local function clearCache()
-    articles = {}
-    feedTitle = ""
-    lastError = ""
-end
-
-local function parseItem(itemXml)
-    local title = itemXml:match("<title><!%[CDATA%[(.-)%]%]></title>")
-        or itemXml:match("<title>(.-)</title>") or ""
-    local link = itemXml:match("<link>(.-)</link>") or ""
-    local desc = itemXml:match("<description><!%[CDATA%[(.-)%]%]></description>")
-        or itemXml:match("<description>(.-)</description>") or ""
-    local date = itemXml:match("<pubDate>(.-)</pubDate>")
-        or itemXml:match("<dc:date>(.-)</dc:date>") or ""
-    -- Strip HTML tags from description
-    desc = desc:gsub("<[^>]+>", ""):gsub("&lt;", "<"):gsub("&gt;", ">"):gsub("&amp;", "&"):gsub("&quot;", "\""):gsub("&#39;", "'")
-    -- Clean title
-    title = title:gsub("<[^>]+>", ""):gsub("&lt;", "<"):gsub("&gt;", ">"):gsub("&amp;", "&"):gsub("&quot;", "\""):gsub("&#39;", "'")
-    return { title = title, link = link, desc = desc, date = date }
-end
-
-local function parseAtom(itemXml)
-    local title = itemXml:match("<title>(.-)</title>") or ""
-    local link = ""
-    for href in itemXml:gmatch('<link[^>]+href="([^"]*)"') do link = href; break end
-    if link == "" then link = itemXml:match("<link[^>]*href='([^']*)'") or "" end
-    local desc = itemXml:match("<summary>(.-)</summary>")
-        or itemXml:match("<content[^>]*>(.-)</content>") or ""
-    local date = itemXml:match("<published>(.-)</published>")
-        or itemXml:match("<updated>(.-)</updated>") or ""
-    desc = desc:gsub("<[^>]+>", ""):gsub("&lt;", "<"):gsub("&gt;", ">"):gsub("&amp;", "&")
-    title = title:gsub("<[^>]+>", ""):gsub("&lt;", "<"):gsub("&gt;", ">"):gsub("&amp;", "&")
-    return { title = title, link = link, desc = desc, date = date }
-end
-
-local function fetch()
-    if loading then return end
-    loading = true
-    local cfg = readConfig()
-    if cfg.url == "" then loading = false; return end
-    local id = http.request({
+local function fetch(model, bypassCache)
+    if model.requestId then return end
+    local cfg = config()
+    if cfg.url == "" then return end
+    local requestId, requestError = task.start("network.request", {
         url = cfg.url,
-        method = "GET",
         timeoutMs = 15000,
-        cacheSeconds = 120,
-        headers = { ["User-Agent"] = "SnowDesktop RSS Reader" }
+        cacheSeconds = bypassCache and 0 or 120,
+        maxBytes = 1024 * 1024,
     })
-    if not id then
-        loading = false
-        lastError = l10n.tr("lua_widget.rss_reader.request_failed")
+    if requestId then
+        model.requestId = requestId
+        model.loading = true
+        model.lastFetchMs = time.monotonic()
+        model.error = nil
+    else
+        model.loading = false
+        model.error = requestError or "requestRejected"
     end
 end
 
-local function syncConfig(startTimer)
-    local cfg = readConfig()
-    local hadConfig = lastUrl ~= nil
-    local urlChanged = hadConfig and cfg.url ~= lastUrl
-    local intervalChanged = hadConfig and cfg.interval ~= lastInterval
-    local maxItemsChanged = hadConfig and cfg.maxItems ~= lastMaxItems
+local function clear(model)
+    model.articles = {}
+    model.feedTitle = ""
+    model.error = nil
+    interaction.setScrollOffset("rss.scroll", 0)
+end
 
-    lastUrl = cfg.url
-    lastInterval = cfg.interval
-    lastMaxItems = cfg.maxItems
+local function registerRegion(key, shape, events, label, enabled)
+    interaction.region({
+        key = key, shape = shape,
+        cursor = enabled == false and "default" or "hand",
+        enabled = enabled ~= false,
+        events = events,
+        accessibility = { role = "button", label = label },
+    })
+end
 
-    if startTimer or intervalChanged then
-        widget.cancelTimer("rss-refresh")
-        widget.setTimer("rss-refresh", cfg.interval * 1000, true)
+local function setup(context)
+    local model = {
+        articles = {}, feedTitle = "", loading = false,
+        error = nil, requestId = nil, lastFetchMs = 0,
+    }
+    widget.setTitle(l10n.tr("lua_widget.rss_reader.name"))
+    schedule.every("rss-refresh", 60000, { whenHidden = "pause" })
+    if context.preview then loadPreview(model) else fetch(model, false) end
+    return model
+end
+
+local function render(context, model)
+    local cfg = config()
+    local colors = palette(context)
+    local width = layout.width()
+    local height = layout.height()
+    local pad = layout.cu(14)
+    local headerTop = layout.cu(10)
+    local headerFont = layout.fontCu(math.min(28, cfg.fontSize + 2))
+    local smallFont = layout.fontCu(math.max(9, cfg.fontSize - 2))
+    local title = model.feedTitle ~= "" and model.feedTitle or "RSS"
+    widget.setTitle(model.feedTitle ~= "" and model.feedTitle or
+        l10n.tr("lua_widget.rss_reader.name"))
+
+    local countText = l10n.tr("lua_widget.rss_reader.article_count",
+        tostring(#model.articles))
+    local countMetrics = draw.measureText(countText, smallFont, width, false)
+    draw.text(pad, headerTop, title, headerFont, colors.header,
+        math.max(1, width - pad * 2 - countMetrics.width - layout.cu(10)),
+        false, true)
+    draw.text(width - pad - countMetrics.width, headerTop + layout.cu(4),
+        countText, smallFont, colors.count, countMetrics.width + 1,
+        false, true)
+    local headerBottom = headerTop + layout.cu(cfg.fontSize + 14)
+    draw.line(pad, headerBottom, width - pad, headerBottom,
+        layout.cu(1), colors.divider, 0.10)
+
+    local listTop = headerBottom + layout.cu(7)
+    local listBottom = height - layout.cu(2)
+    local viewportHeight = math.max(1, listBottom - listTop)
+    local viewport = { type = "rect", x = pad, y = listTop,
+        width = width - pad * 2, height = viewportHeight }
+    local scrollViewport = { type = "rect", x = pad, y = listTop,
+        width = width - pad, height = viewportHeight }
+    interaction.region({
+        key = "rss.surface", shape = viewport,
+        events = { contextMenu = {
+            id = "rss.menu", scope = "component" } },
+        accessibility = { role = "list", label = descriptor.name },
+    })
+
+    if model.loading and #model.articles == 0 then
+        draw.text(pad, listTop + viewportHeight * 0.34,
+            l10n.tr("lua_widget.rss_reader.loading"),
+            layout.fontCu(13), colors.status, width - pad * 2, true, true)
+        return
     end
-
-    if urlChanged or maxItemsChanged then
-        clearCache()
-        fetch()
+    if model.error and #model.articles == 0 then
+        draw.text(pad, listTop + viewportHeight * 0.27,
+            l10n.tr("lua_widget.rss_reader.request_failed"),
+            layout.fontCu(12), colors.error, width - pad * 2, false, false)
+        draw.text(pad, listTop + viewportHeight * 0.27 + layout.cu(36),
+            l10n.tr("lua_widget.rss_reader.settings_hint"),
+            layout.fontCu(11), colors.status, width - pad * 2, false, true)
+        return
     end
-
-    return cfg
-end
-
-function onVisible()
-    syncConfig(true)
-    if #articles == 0 then fetch() end
-end
-
-function onHidden()
-    widget.cancelTimer("rss-refresh")
-end
-
-function onTimer(name)
-    if name == "rss-refresh" then fetch() end
-end
-
-function onHttpResponse(id, response)
-    loading = false
-    if not response.ok then
-        lastError = response.error ~= "" and response.error or ("HTTP " .. tostring(response.status))
+    if #model.articles == 0 then
+        draw.text(pad, listTop + layout.cu(22),
+            l10n.tr("lua_widget.rss_reader.no_articles"),
+            layout.fontCu(12), colors.status, width - pad * 2, true, true)
         return
     end
 
-    local body = response.body
-    if body == "" then lastError = l10n.tr("lua_widget.rss_reader.empty_response"); return end
-
-    -- Parse feed channel title
-    local ft = body:match("<channel>.-<title>(.-)</title>")
-        or body:match("<feed>.-<title>(.-)</title>") or ""
-    ft = ft:gsub("<[^>]+>", ""):gsub("&lt;", "<"):gsub("&gt;", ">"):gsub("&amp;", "&")
-    feedTitle = ft
-
-    -- Parse items
-    local parsed = {}
-    local cfg = readConfig()
-
-    -- Try Atom first (entries)
-    local isAtom = false
-    for entry in body:gmatch("<entry>(.-)</entry>") do
-        isAtom = true
-        if #parsed >= cfg.maxItems then break end
-        local item = parseAtom(entry)
-        if item.title ~= "" then parsed[#parsed + 1] = item end
-    end
-
-    -- Try RSS items
-    if not isAtom then
-        for itemXml in body:gmatch("<item>(.-)</item>") do
-            if #parsed >= cfg.maxItems then break end
-            local item = parseItem(itemXml)
-            if item.title ~= "" then parsed[#parsed + 1] = item end
+    local rowHeight = layout.cu(math.max(48, cfg.fontSize * 2 + 22))
+    local scroll = interaction.scroll({
+        key = "rss.scroll", shape = scrollViewport,
+        contentHeight = math.ceil(#model.articles * rowHeight),
+    })
+    local first = math.max(1, math.floor(scroll.offset / rowHeight) + 1)
+    local last = math.min(#model.articles,
+        math.ceil((scroll.offset + viewportHeight) / rowHeight))
+    local numberWidth = layout.cu(22)
+    local textX = pad + numberWidth + layout.cu(6)
+    local textWidth = math.max(1, width - textX - pad)
+    draw.pushClip(pad, listTop, width - pad * 2, viewportHeight)
+    for index = first, last do
+        local article = model.articles[index]
+        local y = listTop + (index - 1) * rowHeight - scroll.offset
+        local key = "rss.article." .. tostring(index)
+        if interaction.isHovered(key) then
+            draw.rect(pad, y, width - pad * 2, rowHeight - layout.cu(2),
+                colors.card, layout.cu(7), 0.07)
         end
-    end
-
-    articles = parsed
-    lastError = #parsed == 0 and l10n.tr("lua_widget.rss_reader.no_articles_parsed") or ""
-end
-
-function render()
-    local cfg = syncConfig(false)
-    widget.setTitle(feedTitle ~= "" and feedTitle or l10n.tr("lua_widget.rss_reader.name"))
-    local w = layout.width()
-    local h = layout.height()
-    local padX = layout.cu(14)
-    local headerTop = layout.cu(11)
-    local headerFontSize, headerHeightCu = headerLayout(cfg.fontSize)
-    local headerHeight = layout.cu(headerHeightCu)
-    local _, listTop, _, listBottom, itemH = articleListGeometry(cfg.fontSize)
-    local _, secondaryFontSize, secondaryTopCu = articleLayout(cfg.fontSize)
-    local numberW = layout.cu(20)
-    local textX = padX + numberW + layout.cu(5)
-    local textW = math.max(layout.cu(40), w - textX - padX)
-    local pal = getPalette()
-
-    if loading and #articles == 0 then
-        draw.text(padX, h * 0.34, l10n.tr("lua_widget.rss_reader.loading"), layout.fontCu(13), pal.loadingText,
-            w - padX * 2, true, true)
-        return
-    end
-    if lastError ~= "" and #articles == 0 then
-        draw.text(padX, h * 0.27, lastError, layout.fontCu(12), pal.errorText,
-            w - padX * 2, false, false)
-        draw.text(padX, h * 0.27 + layout.cu(34), l10n.tr("lua_widget.rss_reader.settings_hint"),
-            layout.fontCu(11), pal.loadingText, w - padX * 2, false, true)
-        return
-    end
-
-    local countText = l10n.tr("lua_widget.rss_reader.article_count", #articles)
-    local countFontSize = secondaryFontSize
-    local countMetrics = draw.measureText(countText, layout.fontCu(countFontSize), w, false)
-    local countW = math.max(layout.cu(52), math.ceil(countMetrics.width))
-    draw.text(padX, headerTop, feedTitle ~= "" and feedTitle or "RSS",
-        layout.fontCu(headerFontSize), pal.headerText,
-        w - padX * 2 - countW - layout.cu(6), false, true)
-    local countTop = headerTop + layout.cu(math.max(0, (headerFontSize - countFontSize) / 2))
-    draw.text(w - layout.cu(14) - countMetrics.width, countTop, countText,
-        layout.fontCu(countFontSize), pal.countText, countMetrics.width + 1, false, true)
-    draw.line(padX, headerTop + headerHeight, w - padX,
-        headerTop + headerHeight, layout.cu(1), pal.divColor, 0.10)
-
-    local visible = currentArticleRange(cfg.fontSize)
-
-    draw.pushClip(padX, listTop, w - padX * 2, math.max(1, listBottom - listTop))
-    for i = visible.first, visible.last do
-        local a = articles[i]
-        if a then
-            local y = listTop + (i - 1) * itemH - visible.offset
-            local numberText = tostring(i)
-            local numberMetrics = draw.measureText(numberText, layout.fontCu(13), numberW, true)
-            draw.text(padX + (numberW - numberMetrics.width) / 2,
-                y + (itemH - numberMetrics.height) / 2,
-                numberText, layout.fontCu(13), pal.numberText, numberW, true, true)
-            draw.text(textX, y + layout.cu(4), a.title, layout.fontCu(cfg.fontSize), pal.titleText,
-                textW, false, true)
-            local dateShort = a.date:match("(%d%d? .%l%l%l? %d%d%d%d)") or a.date:sub(1, 16)
-            if dateShort == "" then dateShort = a.date:sub(1, 10) end
-            draw.text(textX, y + layout.cu(secondaryTopCu),
-                dateShort ~= "" and dateShort or a.link:sub(1, 36),
-                layout.fontCu(secondaryFontSize), pal.dateText, textW, false, true)
-            draw.line(textX, y + itemH - layout.cu(1), w - padX,
-                y + itemH - layout.cu(1), layout.cu(1), pal.divColor, 0.07)
-        end
+        registerRegion(key, { type = "roundedRect", x = pad, y = y,
+            width = width - pad * 2, height = rowHeight - layout.cu(2),
+            radius = layout.cu(7) }, {
+            doubleClick = { id = "rss.open", value = article.link },
+            contextMenu = { id = "rss.menu", value = article.link },
+        }, article.title, article.link ~= "")
+        local number = tostring(index)
+        local numberMetrics = draw.measureText(number,
+            layout.fontCu(13), numberWidth, true)
+        draw.text(pad + math.max(0, (numberWidth - numberMetrics.width) / 2),
+            y + layout.cu(14), number, layout.fontCu(13), colors.number,
+            numberWidth, true, true)
+        draw.text(textX, y + layout.cu(4), article.title,
+            layout.fontCu(cfg.fontSize), colors.title, textWidth, false, true)
+        local shortDate = article.displayDate or
+            article.date:match("(%d%d? .%l%l%l? %d%d%d%d)") or
+            article.date:sub(1, 16)
+        if shortDate == "" then shortDate = article.link:sub(1, 42) end
+        draw.text(textX, y + rowHeight - layout.cu(22), shortDate,
+            smallFont, colors.date, textWidth, false, true)
+        draw.line(textX, y + rowHeight - layout.cu(1), width - pad,
+            y + rowHeight - layout.cu(1), layout.cu(1),
+            colors.divider, 0.07)
     end
     draw.popClip()
+end
 
-    if #articles == 0 then
-        draw.text(padX, listTop + layout.cu(22), l10n.tr("lua_widget.rss_reader.no_articles"),
-            layout.fontCu(12), pal.emptyText, w - padX * 2, true, true)
+local function openUri(model, url)
+    if not url or url == "" or not widget.hasPermission("shell.launch") then
+        return
+    end
+    local taskId, taskError = task.start("shell.openUri", { url = url })
+    if taskId then
+        model.openTaskId = taskId
+    else
+        widget.log("warn", "shell.openUri rejected: " .. tostring(taskError))
     end
 end
 
-function onDoubleClick(x, y)
-    local cfg = readConfig()
-    local range, listLeft, listTop, listRight, listBottom, itemH =
-        currentArticleRange(cfg.fontSize)
-    if x < listLeft or x >= listRight or
-        y < listTop or y >= listBottom or itemH <= 0 then
+local function event(_context, model, value)
+    if value.kind == "environment" then
+        widget.setTitle(model.feedTitle ~= "" and model.feedTitle or
+            l10n.tr("lua_widget.rss_reader.name"))
+        return
+    elseif value.kind == "schedule" and value.id == "rss-refresh" then
+        local cfg = config()
+        if not model.requestId and
+            time.monotonic() - model.lastFetchMs >= cfg.interval * 1000 then
+            fetch(model, false)
+        end
+        return
+    elseif value.kind == "task.complete" then
+        if value.taskId == model.requestId then
+            model.requestId = nil
+            model.loading = false
+            if value.ok and value.value then
+                if value.value.body == "" then
+                    model.error = "emptyResponse"
+                else
+                    local feedTitle, articles = parseFeed(
+                        value.value.body, config().maxItems)
+                    model.feedTitle = feedTitle
+                    model.articles = articles
+                    model.error = #articles == 0 and "parseFailed" or nil
+                    interaction.setScrollOffset("rss.scroll", 0)
+                end
+            else
+                model.error = value.error or "networkError"
+            end
+        elseif value.taskId == model.openTaskId then
+            model.openTaskId = nil
+            if not value.ok then
+                widget.log("warn", "shell.openUri failed: " ..
+                    tostring(value.error))
+            end
+        end
+        return
+    elseif value.kind ~= "action" then
         return
     end
 
-    local offset = tonumber(range.offset) or 0
-    local index = math.floor((y - listTop + offset) / itemH) + 1
-    if index < (range.first or 1) or
-        index > (range.last or 0) then
-        return
-    end
-
-    local itemTop = listTop + (index - 1) * itemH - offset
-    if y < itemTop or y >= math.min(itemTop + itemH, listBottom) then
-        return
-    end
-
-    local article = articles[index]
-    if article and article.link ~= "" then
-        desktop.open(article.link)
+    local url = value.value and tostring(value.value) or nil
+    if value.id == "rss.refresh" then
+        fetch(model, true)
+    elseif value.id == "rss.clear" then
+        clear(model)
+        fetch(model, true)
+    elseif value.id == "rss.open" then
+        openUri(model, url)
+    elseif value.id == "rss.openSource" then
+        openUri(model, config().url)
     end
 end
 
-function imguiRender()
-    syncConfig(false)
-    if imgui.button(l10n.tr("lua_widget.rss_reader.refresh_now")) then fetch() end
-
-    imgui.sameLine()
-    if imgui.button(l10n.tr("lua_widget.rss_reader.clear_cache")) then
-        clearCache()
-        fetch()
+local function menu(_context, _model, request)
+    if request.id ~= "rss.menu" then return nil end
+    local articleUrl = request.value and tostring(request.value) or nil
+    local canOpen = widget.hasPermission("shell.launch")
+    if articleUrl and articleUrl ~= "" then
+        return ui.menu({
+            { id = "rss.open",
+                label = l10n.tr("lua_widget.rss_reader.open_article"),
+                icon = fluent.open, iconFont = "fluent",
+                enabled = canOpen },
+        })
     end
-end
-
-function getContextMenu()
-    return {
-        { id = 1, label = l10n.tr("lua_widget.rss_reader.refresh_now"), icon = fluent.refresh, iconFont = "fluent" },
-        { id = 2, label = l10n.tr("lua_widget.rss_reader.clear_cache"), icon = fluent.clear, iconFont = "fluent" },
-        { separator = true },
-        { id = 3, label = l10n.tr("lua_widget.rss_reader.open_source"), icon = fluent.open, iconFont = "fluent" },
+    local items = {
+        { id = "rss.refresh",
+            label = l10n.tr("lua_widget.rss_reader.refresh_now"),
+            icon = fluent.refresh, iconFont = "fluent" },
+        { id = "rss.clear",
+            label = l10n.tr("lua_widget.rss_reader.clear_cache"),
+            icon = fluent.clear, iconFont = "fluent" },
     }
+    items[#items + 1] = { type = "separator" }
+    items[#items + 1] = { id = "rss.openSource",
+        label = l10n.tr("lua_widget.rss_reader.open_source"),
+        icon = fluent.open, iconFont = "fluent", enabled = canOpen }
+    return ui.menu(items)
 end
 
-function onMenu(id)
-    if id == 1 then fetch()
-    elseif id == 2 then clearCache(); fetch()
-    elseif id == 3 then
-        local cfg = readConfig()
-        if cfg.url ~= "" then desktop.open(cfg.url) end
-    end
+local function dispose(_context, model)
+    if model.requestId then task.cancel(model.requestId) end
+    if model.openTaskId then task.cancel(model.openTaskId) end
+    schedule.cancel("rss-refresh")
 end
+
+descriptor = {
+    name = l10n.tr("lua_widget.rss_reader.name"),
+    useCustomStyle = true,
+    followPersonalizationDefault = true,
+    bottomBarHover = false,
+    bg = 0x0F172A,
+    border = 0xFFFFFF,
+    alpha = 0.38,
+    borderAlpha = 0.16,
+    gradientEndA = 0.28,
+    settings = settings,
+    setup = setup,
+    render = render,
+    event = event,
+    menu = menu,
+    dispose = dispose,
+}
+
+return widget.define(descriptor)

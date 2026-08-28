@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "8a1c7607-56f6-4f97-81ed-ab0a5d95cd8b",
   "slug": "reminders",
-  "apiVersion": 1,
-  "dataVersion": 1,
+  "apiVersion": 2,
+  "dataVersion": 3,
   "entry": "main.lua",
-  "minHostVersion": "1.0.1.0",
+  "minHostVersion": "1.0.4.0",
   "author": "SnowDesktop",
   "license": "GPL-3.0-only",
   "name": "ToDo List",
@@ -13,12 +13,12 @@
   "titleKeys": [
     "lua_widget.reminders.legacy_name"
   ],
-  "version": "1.0.0",
+  "version": "2.0.6",
   "description": "An interactive local ToDo list with quick add, completion, editing, and filtering.",
   "descriptionKey": "lua_widget.reminders.description",
   "locales": {
     "zh-CN": {
-      "lua_widget.reminders.name": "ToDo 清單",
+      "lua_widget.reminders.name": "ToDo 清单",
       "lua_widget.reminders.legacy_name": "提醒事项",
       "lua_widget.reminders.description": "可快速添加、勾选、编辑和筛选的本地 ToDo 清单。",
       "lua_widget.reminders.show_completed": "显示已完成待办",
@@ -29,6 +29,7 @@
       "lua_widget.reminders.completed_hidden": "已完成待办已隐藏",
       "lua_widget.reminders.untitled": "未命名待办",
       "lua_widget.reminders.add_task": "添加待办",
+      "lua_widget.reminders.edit_selected": "编辑所选待办",
       "lua_widget.reminders.delete_selected": "删除所选待办",
       "lua_widget.reminders.clear_completed": "清除已完成待办",
       "lua_widget.reminders.complete_all": "所有待办标记为已完成",
@@ -50,6 +51,7 @@
       "lua_widget.reminders.completed_hidden": "Completed ToDos Are Hidden",
       "lua_widget.reminders.untitled": "Untitled ToDo",
       "lua_widget.reminders.add_task": "Add ToDo",
+      "lua_widget.reminders.edit_selected": "Edit Selected ToDo",
       "lua_widget.reminders.delete_selected": "Delete Selected ToDo",
       "lua_widget.reminders.clear_completed": "Clear Completed ToDos",
       "lua_widget.reminders.complete_all": "Mark All ToDos as Completed",
@@ -71,6 +73,7 @@
       "lua_widget.reminders.completed_hidden": "已完成待辦事項已隱藏",
       "lua_widget.reminders.untitled": "未命名待辦",
       "lua_widget.reminders.add_task": "新增待辦事項",
+      "lua_widget.reminders.edit_selected": "編輯所選待辦",
       "lua_widget.reminders.delete_selected": "刪除所選待辦",
       "lua_widget.reminders.clear_completed": "清除已完成待辦",
       "lua_widget.reminders.complete_all": "所有待辦標記為已完成",
@@ -92,13 +95,14 @@
       "lua_widget.reminders.completed_hidden": "完了した ToDo を非表示にする",
       "lua_widget.reminders.untitled": "無題の ToDo",
       "lua_widget.reminders.add_task": "ToDo を追加",
+      "lua_widget.reminders.edit_selected": "選択した ToDo を編集",
       "lua_widget.reminders.delete_selected": "選択した ToDo を削除",
       "lua_widget.reminders.clear_completed": "完了した ToDo をクリアする",
       "lua_widget.reminders.complete_all": "すべての ToDo を完了としてマークする",
       "lua_widget.reminders.reopen_all": "すべての ToDo を未完了としてマークする",
-      "lua_widget.reminders.preview_task_1": "花を摘む",
+      "lua_widget.reminders.preview_task_1": "花を買う",
       "lua_widget.reminders.preview_task_2": "金曜日のディナーを予約する",
-      "lua_widget.reminders.preview_task_3": "週末用パック",
+      "lua_widget.reminders.preview_task_3": "週末の荷造りをする",
       "lua_widget.common.font_size": "フォント サイズ"
     },
     "ko-KR": {
@@ -113,13 +117,14 @@
       "lua_widget.reminders.completed_hidden": "완료된 할 일이 숨겨져 있음",
       "lua_widget.reminders.untitled": "제목 없는 할 일",
       "lua_widget.reminders.add_task": "할 일 추가",
+      "lua_widget.reminders.edit_selected": "선택한 할 일 편집",
       "lua_widget.reminders.delete_selected": "선택한 할 일 삭제",
       "lua_widget.reminders.clear_completed": "완료된 할 일 지우기",
       "lua_widget.reminders.complete_all": "모든 할 일을 완료로 표시",
       "lua_widget.reminders.reopen_all": "모든 할 일을 미완료로 표시",
-      "lua_widget.reminders.preview_task_1": "꽃을 줍다",
-      "lua_widget.reminders.preview_task_2": "금요일 저녁 식사 예약\n주말용",
-      "lua_widget.reminders.preview_task_3": "팩",
+      "lua_widget.reminders.preview_task_1": "꽃 사기",
+      "lua_widget.reminders.preview_task_2": "금요일 저녁 예약하기",
+      "lua_widget.reminders.preview_task_3": "주말 짐 싸기",
       "lua_widget.common.font_size": "글꼴 크기"
     },
     "de-DE": {
@@ -134,13 +139,14 @@
       "lua_widget.reminders.completed_hidden": "Abgeschlossene Aufgaben sind ausgeblendet",
       "lua_widget.reminders.untitled": "Aufgabe ohne Titel",
       "lua_widget.reminders.add_task": "Aufgabe hinzufügen",
+      "lua_widget.reminders.edit_selected": "Ausgewählte Aufgabe bearbeiten",
       "lua_widget.reminders.delete_selected": "Ausgewählte Aufgabe löschen",
       "lua_widget.reminders.clear_completed": "Erledigte Aufgaben löschen",
       "lua_widget.reminders.complete_all": "Alle Aufgaben als erledigt markieren",
       "lua_widget.reminders.reopen_all": "Alle Aufgaben als unvollständig markieren",
-      "lua_widget.reminders.preview_task_1": "Blumen einsammeln",
-      "lua_widget.reminders.preview_task_2": "Abendessen für Freitag reservieren",
-      "lua_widget.reminders.preview_task_3": "Für das Wochenende packen",
+      "lua_widget.reminders.preview_task_1": "Blumen kaufen",
+      "lua_widget.reminders.preview_task_2": "Tisch für Freitagabend reservieren",
+      "lua_widget.reminders.preview_task_3": "Fürs Wochenende packen",
       "lua_widget.common.font_size": "Schriftgröße"
     },
     "fr-FR": {
@@ -155,13 +161,14 @@
       "lua_widget.reminders.completed_hidden": "Les tâches terminées sont masquées",
       "lua_widget.reminders.untitled": "Tâche sans titre",
       "lua_widget.reminders.add_task": "Ajouter une tâche",
+      "lua_widget.reminders.edit_selected": "Modifier la tâche sélectionnée",
       "lua_widget.reminders.delete_selected": "Supprimer la tâche sélectionnée",
       "lua_widget.reminders.clear_completed": "Effacer les tâches terminées",
       "lua_widget.reminders.complete_all": "Marquer toutes les tâches comme terminées",
       "lua_widget.reminders.reopen_all": "Marquer toutes les tâches comme incomplètes",
-      "lua_widget.reminders.preview_task_1": "Ramasser des fleurs",
-      "lua_widget.reminders.preview_task_2": "Réservez le dîner pour vendredi",
-      "lua_widget.reminders.preview_task_3": "Pack pour le week-end",
+      "lua_widget.reminders.preview_task_1": "Acheter des fleurs",
+      "lua_widget.reminders.preview_task_2": "Réserver une table pour vendredi",
+      "lua_widget.reminders.preview_task_3": "Faire sa valise pour le week-end",
       "lua_widget.common.font_size": "Taille de la police"
     },
     "es-ES": {
@@ -176,13 +183,14 @@
       "lua_widget.reminders.completed_hidden": "Las tareas completadas están ocultas",
       "lua_widget.reminders.untitled": "Tarea sin título",
       "lua_widget.reminders.add_task": "Añadir tarea",
+      "lua_widget.reminders.edit_selected": "Editar la tarea seleccionada",
       "lua_widget.reminders.delete_selected": "Eliminar tareas seleccionadas",
       "lua_widget.reminders.clear_completed": "Borrar tareas completadas",
       "lua_widget.reminders.complete_all": "Marcar todas las tareas como completadas",
       "lua_widget.reminders.reopen_all": "Marcar todas las tareas como incompletas",
-      "lua_widget.reminders.preview_task_1": "Recoger flores",
-      "lua_widget.reminders.preview_task_2": "Reservar cena para el viernes",
-      "lua_widget.reminders.preview_task_3": "Preparar el equipaje para el fin de semana",
+      "lua_widget.reminders.preview_task_1": "Comprar flores",
+      "lua_widget.reminders.preview_task_2": "Reservar mesa para el viernes",
+      "lua_widget.reminders.preview_task_3": "Hacer la maleta para el fin de semana",
       "lua_widget.common.font_size": "Tamaño de fuente"
     },
     "es-419": {
@@ -197,13 +205,14 @@
       "lua_widget.reminders.completed_hidden": "Las tareas pendientes completadas están ocultas",
       "lua_widget.reminders.untitled": "Tareas pendientes sin título",
       "lua_widget.reminders.add_task": "Agregar tareas pendientes",
+      "lua_widget.reminders.edit_selected": "Editar la tarea pendiente seleccionada",
       "lua_widget.reminders.delete_selected": "Eliminar tareas pendientes seleccionadas",
       "lua_widget.reminders.clear_completed": "Borrar tareas pendientes completadas",
       "lua_widget.reminders.complete_all": "Marcar todas las tareas pendientes como completadas",
       "lua_widget.reminders.reopen_all": "Marcar todas las tareas pendientes como incompletas",
-      "lua_widget.reminders.preview_task_1": "Recoger flores",
-      "lua_widget.reminders.preview_task_2": "Reservar cena para el viernes",
-      "lua_widget.reminders.preview_task_3": "Preparar el equipaje para el fin de semana",
+      "lua_widget.reminders.preview_task_1": "Comprar flores",
+      "lua_widget.reminders.preview_task_2": "Reservar mesa para el viernes",
+      "lua_widget.reminders.preview_task_3": "Hacer la maleta para el fin de semana",
       "lua_widget.common.font_size": "Tamaño de fuente"
     },
     "pt-BR": {
@@ -218,13 +227,14 @@
       "lua_widget.reminders.completed_hidden": "Tarefas concluídas estão ocultas",
       "lua_widget.reminders.untitled": "Tarefa sem título",
       "lua_widget.reminders.add_task": "Adicionar tarefa",
+      "lua_widget.reminders.edit_selected": "Editar tarefa selecionada",
       "lua_widget.reminders.delete_selected": "Excluir tarefa selecionada",
       "lua_widget.reminders.clear_completed": "Limpar tarefas concluídas",
       "lua_widget.reminders.complete_all": "Marcar todas as tarefas como concluídas",
       "lua_widget.reminders.reopen_all": "Marcar todas as tarefas como incompletas",
-      "lua_widget.reminders.preview_task_1": "Pegue flores",
-      "lua_widget.reminders.preview_task_2": "Reserve o jantar para sexta-feira",
-    "lua_widget.reminders.preview_task_3": "Faça as malas para o fim de semana",
+      "lua_widget.reminders.preview_task_1": "Comprar flores",
+      "lua_widget.reminders.preview_task_2": "Reservar uma mesa para sexta-feira",
+      "lua_widget.reminders.preview_task_3": "Fazer as malas para o fim de semana",
       "lua_widget.common.font_size": "Tamanho da fonte"
     }
   },
@@ -256,8 +266,21 @@
       "task_3_text": "lua_widget.reminders.preview_task_3"
     }
   },
-  "permissions": [
-    "ui.input",
-    "ui.contextMenu"
-  ]
+  "resources": {},
+  "permissions": [],
+  "optionalPermissions": [],
+  "requiredFeatures": [
+    "control.focus",
+    "control.textInput",
+    "draw.immediate",
+    "interaction.contextMenu",
+    "interaction.pointerActions",
+    "interaction.region",
+    "interaction.scroll",
+    "lifecycle.event",
+    "lifecycle.model",
+    "l10n.basic",
+    "storage.transaction"
+  ],
+  "optionalFeatures": []
 }

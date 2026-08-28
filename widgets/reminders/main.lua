@@ -1,8 +1,5 @@
-name = l10n.tr("lua_widget.reminders.name")
-useCustomStyle = true
-followPersonalizationDefault = true
-showTitle = false
-bottomBarHover = false
+-- reminders/main.lua - API v2 transactional local ToDo list
+local descriptor
 
 local fluent = {
     addTask = utf8.char(0xF788),
@@ -10,21 +7,12 @@ local fluent = {
     clear = utf8.char(0xF201),
     complete = utf8.char(0xE309),
     reset = utf8.char(0xF19F),
+    edit = utf8.char(0xE70F),
 }
 
-bg = 0x151A21
-border = 0xFFFFFF
-alpha = 0.42
-borderAlpha = 0.18
-gradientEndA = 0.28
-
 local MAX_TASKS = 200
-local rowHits = {}
-local addHit = nil
-local editingTaskId = nil
-local focusEditingTaskId = nil
 
-settings = {
+local settings = {
     fields = {
         {
             key = "showCompleted",
@@ -40,7 +28,7 @@ settings = {
             min = 11,
             max = 20,
         },
-    }
+    },
 }
 
 local function trim(value)
@@ -51,7 +39,7 @@ local function taskTextKey(id)
     return "task_" .. id .. "_text"
 end
 
-local function taskDoneKey(id)
+local function legacyTaskDoneKey(id)
     return "task_" .. id .. "_done"
 end
 
@@ -66,31 +54,48 @@ local function loadOrder()
     return ids
 end
 
-local function saveOrder(ids)
-    local value = table.concat(ids, ",")
-    if value == "" then
-        storage.remove("order")
-    else
-        storage.set("order", value)
+local function loadDoneIds()
+    local done = {}
+    local raw = storage.get("doneIds") or ""
+    for id in string.gmatch(raw, "[^,]+") do
+        if string.match(id, "^%d+$") then done[id] = true end
     end
+    return done
+end
+
+local function setOrRemove(tx, key, value)
+    if value == "" then tx:remove(key) else tx:set(key, value) end
+end
+
+local function saveOrder(tx, ids)
+    setOrRemove(tx, "order", table.concat(ids, ","))
+end
+
+local function saveDoneIds(tx, ids, done)
+    local ordered = {}
+    for _, id in ipairs(ids) do
+        if done[id] then ordered[#ordered + 1] = id end
+    end
+    setOrRemove(tx, "doneIds", table.concat(ordered, ","))
 end
 
 local function loadTasks(includeCompleted)
-    local tasks = {}
+    local pending = {}
+    local completed = {}
+    local done = loadDoneIds()
     for _, id in ipairs(loadOrder()) do
         local text = storage.get(taskTextKey(id))
         if text ~= nil then
-            local done = storage.get(taskDoneKey(id)) == "1"
-            if includeCompleted or not done then
-                tasks[#tasks + 1] = {
-                    id = id,
-                    text = text,
-                    done = done,
-                }
+            local task = { id = id, text = text, done = done[id] == true }
+            if task.done then
+                if includeCompleted then completed[#completed + 1] = task end
+            else
+                pending[#pending + 1] = task
             end
         end
     end
-    return tasks
+    for _, task in ipairs(completed) do pending[#pending + 1] = task end
+    return pending
 end
 
 local function taskCounts()
@@ -106,7 +111,7 @@ end
 local function addDraft()
     local text = trim(storage.get("draft") or "")
     local ids = loadOrder()
-    if text == "" or #ids >= MAX_TASKS then return end
+    if text == "" or #ids >= MAX_TASKS then return false end
 
     local nextId = math.max(1, tonumber(storage.get("nextId")) or 1)
     local id = tostring(nextId)
@@ -114,89 +119,113 @@ local function addDraft()
         nextId = nextId + 1
         id = tostring(nextId)
     end
-
-    storage.set(taskTextKey(id), text)
-    storage.set(taskDoneKey(id), "0")
     ids[#ids + 1] = id
-    saveOrder(ids)
-    storage.set("nextId", tostring(nextId + 1))
-    storage.remove("draft")
-    storage.remove("selectedId")
+    storage.transaction(function(tx)
+        tx:set(taskTextKey(id), text)
+        saveOrder(tx, ids)
+        tx:set("nextId", tostring(nextId + 1))
+        tx:remove("draft")
+    end)
+    return true
 end
 
 local function toggleTask(id)
-    local key = taskDoneKey(id)
-    storage.set(key, storage.get(key) == "1" and "0" or "1")
+    local ids = loadOrder()
+    local done = loadDoneIds()
+    done[id] = not done[id]
+    storage.transaction(function(tx)
+        saveDoneIds(tx, ids, done)
+    end)
 end
 
 local function deleteTask(id)
+    local ids = loadOrder()
+    local done = loadDoneIds()
     local kept = {}
-    for _, current in ipairs(loadOrder()) do
+    for _, current in ipairs(ids) do
         if current ~= id then kept[#kept + 1] = current end
     end
-    storage.remove(taskTextKey(id))
-    storage.remove(taskDoneKey(id))
-    if storage.get("selectedId") == id then
-        storage.remove("selectedId")
-    end
-    saveOrder(kept)
+    done[id] = nil
+    storage.transaction(function(tx)
+        tx:remove(taskTextKey(id))
+        saveOrder(tx, kept)
+        saveDoneIds(tx, kept, done)
+    end)
 end
 
 local function clearCompleted()
+    local ids = loadOrder()
+    local done = loadDoneIds()
     local kept = {}
-    for _, id in ipairs(loadOrder()) do
-        if storage.get(taskDoneKey(id)) == "1" then
-            storage.remove(taskTextKey(id))
-            storage.remove(taskDoneKey(id))
-            if storage.get("selectedId") == id then
-                storage.remove("selectedId")
-            end
+    local removed = {}
+    for _, id in ipairs(ids) do
+        if done[id] then
+            removed[#removed + 1] = id
         else
             kept[#kept + 1] = id
         end
     end
-    saveOrder(kept)
+    storage.transaction(function(tx)
+        for _, id in ipairs(removed) do tx:remove(taskTextKey(id)) end
+        saveOrder(tx, kept)
+        tx:remove("doneIds")
+    end)
 end
 
-local function setAllCompleted(done)
-    for _, id in ipairs(loadOrder()) do
-        storage.set(taskDoneKey(id), done and "1" or "0")
+local function setAllCompleted(doneValue)
+    local ids = loadOrder()
+    local done = {}
+    if doneValue then
+        for _, id in ipairs(ids) do done[id] = true end
     end
+    storage.transaction(function(tx)
+        saveDoneIds(tx, ids, done)
+    end)
+end
+
+local function migrateStorage(oldVersion, newVersion)
+    local migrateDoneState = oldVersion < 2 and newVersion >= 2
+    local migrateSelectionState = oldVersion < 3 and newVersion >= 3
+    if not migrateDoneState and not migrateSelectionState then return end
+
+    local ids = {}
+    local done = {}
+    if migrateDoneState then
+        ids = loadOrder()
+        for _, id in ipairs(ids) do
+            if storage.get(legacyTaskDoneKey(id)) == "1" then
+                done[id] = true
+            end
+        end
+    end
+    storage.transaction(function(tx)
+        if migrateDoneState then
+            for _, id in ipairs(ids) do
+                tx:remove(legacyTaskDoneKey(id))
+            end
+            saveDoneIds(tx, ids, done)
+        end
+        if migrateSelectionState then tx:remove("selectedId") end
+    end)
 end
 
 local function getPalette()
     local theme = widget.theme()
     if theme and theme.contentTheme == 1 then
         return {
-            text = 0x000000,
-            muted = 0x000000,
-            completed = 0x6F6F6F,
-            accent = 0x000000,
-            add = 0x000000,
-            card = 0x000000,
-            divider = 0x000000,
-            inputText = 0x000000,
-            placeholder = 0x000000,
-            inputBg = 0x000000,
-            inputBorder = 0x000000,
-            inputFocus = 0x000000,
-            delete = 0x000000,
+            text = 0x000000, muted = 0x000000, completed = 0x6F6F6F,
+            accent = 0x000000, add = 0x000000, card = 0x000000,
+            inputText = 0x000000, placeholder = 0x000000,
+            inputBg = 0x000000, inputBorder = 0x000000,
+            inputFocus = 0x000000, delete = 0x000000,
         }
     end
     return {
-        text = 0xFFFFFF,
-        muted = 0xFFFFFF,
-        completed = 0xA8A8A8,
-        accent = 0xFFFFFF,
-        add = 0xFFFFFF,
-        card = 0xFFFFFF,
-        divider = 0xFFFFFF,
-        inputText = 0xFFFFFF,
-        placeholder = 0xFFFFFF,
-        inputBg = 0xFFFFFF,
-        inputBorder = 0xFFFFFF,
-        inputFocus = 0xFFFFFF,
-        delete = 0xFFFFFF,
+        text = 0xFFFFFF, muted = 0xFFFFFF, completed = 0xA8A8A8,
+        accent = 0xFFFFFF, add = 0xFFFFFF, card = 0xFFFFFF,
+        inputText = 0xFFFFFF, placeholder = 0xFFFFFF,
+        inputBg = 0xFFFFFF, inputBorder = 0xFFFFFF,
+        inputFocus = 0xFFFFFF, delete = 0xFFFFFF,
     }
 end
 
@@ -208,46 +237,48 @@ local function showCompleted()
     return storage.get("showCompleted") ~= "0"
 end
 
-local function pointIn(rect, x, y)
-    return x >= rect.x and x <= rect.x + rect.w
-        and y >= rect.y and y <= rect.y + rect.h
-end
-
-local function findRowHit(x, y)
-    for _, hit in ipairs(rowHits) do
-        if pointIn(hit.row, x, y) then return hit end
-    end
-    return nil
-end
-
-function render()
+local function setup()
     widget.setTitle(l10n.tr("lua_widget.reminders.name"))
-    rowHits = {}
-    addHit = nil
+    return { editingTaskId = nil, selectedId = nil }
+end
 
+local function registerRegion(key, shape, cursor, events, accessibility,
+    enabled)
+    interaction.region({
+        key = key,
+        shape = shape,
+        cursor = cursor,
+        events = events,
+        accessibility = accessibility,
+        enabled = enabled ~= false,
+    })
+end
+
+local function render(context, model)
+    if not context.selected then
+        model.selectedId = nil
+        model.editingTaskId = nil
+    end
     local w = layout.width()
     local h = layout.height()
     local pad = layout.cu(14)
     local gap = layout.cu(7)
     local palette = getPalette()
-    local accent = palette.accent
     local fontSize = layout.fontCu(currentFontSize())
     local smallFont = layout.fontCu(math.max(10, currentFontSize() - 3))
     local total = taskCounts()
-    local hostSelected = widget.info().selected == true
-    if not hostSelected then
-        editingTaskId = nil
-        focusEditingTaskId = nil
-    end
 
     local inputY = pad
     local inputH = layout.cu(34)
     local addSize = layout.cu(36)
-    local inputW = math.max(layout.cu(28),
-        w - pad * 2 - addSize - gap)
-    ui.textInput("new-task", "draft", pad, inputY, inputW, inputH, {
+    local inputW = math.max(layout.cu(28), w - pad * 2 - addSize - gap)
+    control.textInput({
+        key = "new-task",
+        storageKey = "draft",
+        shape = { type = "rect", x = pad, y = inputY,
+            width = inputW, height = inputH },
         placeholder = l10n.tr("lua_widget.reminders.add_placeholder"),
-        fontSize = layout.fontCu(currentFontSize()),
+        fontSize = fontSize,
         textColor = palette.inputText,
         placeholderColor = palette.placeholder,
         backgroundColor = palette.inputBg,
@@ -262,292 +293,316 @@ function render()
         borderThickness = layout.cu(1),
         selectAll = false,
         liveUpdate = true,
+        maxBytes = 4096,
     })
 
-    local addEnabled = trim(storage.get("draft") or "") ~= ""
-        and total < MAX_TASKS
+    local addEnabled = trim(storage.get("draft") or "") ~= "" and
+        total < MAX_TASKS
     local addX = pad + inputW + gap
     local addY = inputY + (inputH - addSize) / 2
+    local addKey = "task.add"
+    local addHovered = interaction.isHovered(addKey)
+    if addHovered and addEnabled then
+        draw.circle(addX + addSize / 2, addY + addSize / 2,
+            addSize / 2, palette.add, 0.10)
+    end
     local addCx = addX + addSize / 2
     local addCy = addY + addSize / 2
     draw.line(addCx - addSize * 0.27, addCy,
-        addCx + addSize * 0.27, addCy,
-        layout.cu(3), palette.add, 1.0)
+        addCx + addSize * 0.27, addCy, layout.cu(3), palette.add,
+        addEnabled and 1.0 or 0.28)
     draw.line(addCx, addCy - addSize * 0.27,
-        addCx, addCy + addSize * 0.27,
-        layout.cu(3), palette.add, 1.0)
-    addHit = {
-        x = addX - layout.cu(3),
-        y = addY - layout.cu(3),
-        w = addSize + layout.cu(6),
-        h = addSize + layout.cu(6),
-        enabled = addEnabled,
-    }
+        addCx, addCy + addSize * 0.27, layout.cu(3), palette.add,
+        addEnabled and 1.0 or 0.28)
+    registerRegion(addKey, {
+        type = "circle", x = addCx, y = addCy, radius = addSize / 2,
+    }, "hand", { click = { id = "task.add" } }, {
+        role = "button", label = l10n.tr("lua_widget.reminders.add_task"),
+    }, addEnabled)
 
     local listTop = inputY + inputH + layout.cu(12)
-    local bottomBarH = layout.cu(layout.barHeight())
-    local listBottom = h - bottomBarH - layout.cu(7)
+    local listBottom = h - layout.cu(7)
     local viewportH = math.max(1, listBottom - listTop)
+    local viewportShape = { type = "rect", x = pad, y = listTop,
+        width = w - pad * 2, height = viewportH }
+    registerRegion("tasks.background", viewportShape, "default", {
+        click = { id = "task.clearSelection" },
+        contextMenu = { id = "task.menu", scope = "component" },
+    }, { role = "list", label = l10n.tr("lua_widget.reminders.name") })
+
     local rowH = layout.cu(math.max(43, currentFontSize() + 27))
     local rowGap = layout.cu(5)
     local cardH = rowH - rowGap
     local tasks = loadTasks(showCompleted())
-
     if #tasks == 0 then
-        local hint = total > 0
-            and l10n.tr("lua_widget.reminders.completed_hidden")
-            or l10n.tr("lua_widget.reminders.empty_hint")
-        local emptyTitle = total > 0
-            and l10n.tr("lua_widget.reminders.all_done")
-            or l10n.tr("lua_widget.reminders.empty")
+        local hint = total > 0 and
+            l10n.tr("lua_widget.reminders.completed_hidden") or
+            l10n.tr("lua_widget.reminders.empty_hint")
+        local emptyTitle = total > 0 and
+            l10n.tr("lua_widget.reminders.all_done") or
+            l10n.tr("lua_widget.reminders.empty")
         local emptyIconSize = layout.cu(42)
         local emptyBlockH = layout.cu(88)
-        local emptyTop = listTop + math.max(0,
-            (viewportH - emptyBlockH) / 2)
+        local emptyTop = listTop + math.max(0, (viewportH - emptyBlockH) / 2)
         local emptyCy = emptyTop + emptyIconSize / 2
-        draw.circle(w / 2, emptyCy, emptyIconSize / 2, accent, 0.13)
+        draw.circle(w / 2, emptyCy, emptyIconSize / 2, palette.accent, 0.13)
         draw.line(w / 2 - emptyIconSize * 0.22, emptyCy,
             w / 2 - emptyIconSize * 0.05, emptyCy + emptyIconSize * 0.17,
-            layout.cu(2.0), accent, 0.82)
+            layout.cu(2.0), palette.accent, 0.82)
         draw.line(w / 2 - emptyIconSize * 0.05,
             emptyCy + emptyIconSize * 0.17,
             w / 2 + emptyIconSize * 0.27,
             emptyCy - emptyIconSize * 0.22,
-            layout.cu(2.0), accent, 0.82)
-
-        local emptyTitleMetrics = draw.measureText(emptyTitle, fontSize, 0, true)
+            layout.cu(2.0), palette.accent, 0.82)
+        local titleMetrics = draw.measureText(emptyTitle, fontSize, 0, true)
         local hintMetrics = draw.measureText(hint, smallFont, 0, false)
-        draw.text(math.max(pad, (w - emptyTitleMetrics.width) / 2),
-            emptyCy + layout.cu(29), emptyTitle, fontSize,
-            palette.text, math.min(w - pad * 2, emptyTitleMetrics.width + layout.cu(2)),
-            true, true)
+        draw.text(math.max(pad, (w - titleMetrics.width) / 2),
+            emptyCy + layout.cu(29), emptyTitle, fontSize, palette.text,
+            math.min(w - pad * 2, titleMetrics.width + layout.cu(2)), true,
+            true)
         draw.text(math.max(pad, (w - hintMetrics.width) / 2),
-            emptyCy + layout.cu(53), hint, smallFont,
-            palette.muted, math.min(w - pad * 2, hintMetrics.width + layout.cu(2)),
-            false, true)
+            emptyCy + layout.cu(53), hint, smallFont, palette.muted,
+            math.min(w - pad * 2, hintMetrics.width + layout.cu(2)), false,
+            true)
         return
     end
 
-    local range = ui.virtualList("tasks", pad, listTop, w - pad * 2,
-        viewportH, rowH, #tasks)
-    local selectedId = storage.get("selectedId")
+    local scroll = interaction.scroll({
+        key = "tasks.scroll",
+        shape = viewportShape,
+        contentHeight = math.ceil(#tasks * rowH),
+    })
+    local first = math.max(1, math.floor(scroll.offset / rowH) + 1)
+    local last = math.min(#tasks,
+        math.ceil((scroll.offset + viewportH) / rowH))
+    local selectedId = model.selectedId
 
     draw.pushClip(pad, listTop, w - pad * 2, viewportH)
-    for index = range.first, range.last do
+    for index = first, last do
         local task = tasks[index]
-        local y = listTop + (index - 1) * rowH - range.offset
-        local cardY = y
+        local cardY = listTop + (index - 1) * rowH - scroll.offset
         local cardW = w - pad * 2
-        local selected = hostSelected and
-            task.id == selectedId
-        draw.rect(pad, cardY, cardW, cardH, palette.card,
-            layout.cu(10), selected and 0.105 or 0.055)
+        local rowKey = "task.row." .. task.id
+        local selected = task.id == selectedId
+        local rowHovered = interaction.isHovered(rowKey)
+        draw.rect(pad, cardY, cardW, cardH, palette.card, layout.cu(10),
+            selected and 0.105 or (rowHovered and 0.08 or 0.055))
         if selected then
-            local strokeInset = layout.cu(1.2)
-            draw.strokeRect(
-                pad + strokeInset,
-                cardY + strokeInset,
-                cardW - strokeInset * 2,
-                cardH - strokeInset * 2,
-                accent,
-                math.max(
-                    0, layout.cu(10) -
-                        strokeInset),
-                layout.cu(1), 0.42)
+            local inset = layout.cu(1.2)
+            draw.strokeRect(pad + inset, cardY + inset,
+                cardW - inset * 2, cardH - inset * 2, palette.accent,
+                math.max(0, layout.cu(10) - inset), layout.cu(1), 0.42)
         end
+        registerRegion(rowKey, {
+            type = "roundedRect", x = pad, y = cardY,
+            width = cardW, height = cardH, radius = layout.cu(10),
+        }, "hand", {
+            click = { id = "task.select", value = task.id },
+            doubleClick = { id = "task.edit", value = task.id },
+            contextMenu = { id = "task.menu", value = task.id },
+        }, { role = "listitem", label = task.text })
 
         local checkboxSize = math.min(layout.cu(22), cardH - layout.cu(10))
         local checkboxX = pad + layout.cu(11)
         local checkboxY = cardY + (cardH - checkboxSize) / 2
-        local deleteSize = layout.cu(16)
-        local deleteX = w - pad - deleteSize - layout.cu(11)
-        local textX = checkboxX + checkboxSize + layout.cu(10)
-        local textW = math.max(1,
-            deleteX - textX - (selected and layout.cu(8) or 0))
-
+        local checkboxKey = "task.toggle." .. task.id
+        local checkboxHovered = interaction.isHovered(checkboxKey)
+        draw.strokeRect(checkboxX, checkboxY, checkboxSize, checkboxSize,
+            palette.accent, checkboxSize / 2, layout.cu(1.5),
+            checkboxHovered and 1.0 or (task.done and 1.0 or 0.62))
         if task.done then
-            draw.strokeRect(checkboxX, checkboxY, checkboxSize, checkboxSize,
-                accent, checkboxSize / 2, layout.cu(1.5), 1.0)
             local cx = checkboxX + checkboxSize / 2
             local cy = checkboxY + checkboxSize / 2
             draw.line(cx - checkboxSize * 0.24, cy,
                 cx - checkboxSize * 0.06, cy + checkboxSize * 0.20,
-                layout.cu(1.5), accent, 1.0)
+                layout.cu(1.5), palette.accent, 1.0)
             draw.line(cx - checkboxSize * 0.06, cy + checkboxSize * 0.20,
                 cx + checkboxSize * 0.28, cy - checkboxSize * 0.22,
-                layout.cu(1.5), accent, 1.0)
-        else
-            draw.strokeRect(checkboxX, checkboxY, checkboxSize, checkboxSize,
-                accent, checkboxSize / 2, layout.cu(1.5), 0.62)
+                layout.cu(1.5), palette.accent, 1.0)
         end
+        registerRegion(checkboxKey, {
+            type = "circle", x = checkboxX + checkboxSize / 2,
+            y = checkboxY + checkboxSize / 2,
+            radius = checkboxSize / 2 + layout.cu(4),
+        }, "hand", { click = { id = "task.toggle", value = task.id } }, {
+            role = "checkbox", label = task.text,
+        })
 
-        local displayText = task.text ~= ""
-            and task.text or l10n.tr("lua_widget.reminders.untitled")
-        local textColor = task.done and
-            palette.completed or palette.text
-        local measured = draw.measureText(
-            displayText, fontSize, 0, false)
-        local textY = cardY +
-            math.max(0, (cardH - measured.height) / 2)
-        local editing = selected and
-            editingTaskId == task.id
+        local deleteSize = layout.cu(16)
+        local deleteX = w - pad - deleteSize - layout.cu(11)
+        local textX = checkboxX + checkboxSize + layout.cu(10)
+        local textW = math.max(1, deleteX - textX - layout.cu(8))
+        local displayText = task.text ~= "" and task.text or
+            l10n.tr("lua_widget.reminders.untitled")
+        local measured = draw.measureText(displayText, fontSize, 0, false)
+        local textY = cardY + math.max(0, (cardH - measured.height) / 2)
+        local editing = selected and model.editingTaskId == task.id
         if editing then
-            local editId = "edit-task-" .. task.id
-            ui.textInput(editId, taskTextKey(task.id),
-                textX, cardY + layout.cu(4), textW,
-                cardH - layout.cu(8), {
-                    fontSize = fontSize,
-                    textColor = palette.inputText,
-                    placeholderColor = palette.placeholder,
-                    backgroundColor = palette.inputBg,
-                    borderColor = palette.inputBorder,
-                    focusedBorderColor = palette.inputFocus,
-                    backgroundAlpha = 0.0,
-                    focusedBackgroundAlpha = 0.08,
-                    borderAlpha = 0.0,
-                    focusedBorderAlpha = 0.50,
-                    radius = layout.cu(6),
-                    padding = layout.cu(5),
-                    borderThickness = layout.cu(1),
-                    selectAll = true,
-                    liveUpdate = true,
-                })
-            if focusEditingTaskId == task.id then
-                ui.focusInput(editId)
-                focusEditingTaskId = nil
-            end
+            control.textInput({
+                key = "edit-task-" .. task.id,
+                storageKey = taskTextKey(task.id),
+                shape = { type = "rect", x = textX,
+                    y = cardY, width = textW, height = cardH },
+                fontSize = fontSize,
+                textColor = palette.inputText,
+                placeholder = l10n.tr("lua_widget.reminders.untitled"),
+                placeholderColor = palette.placeholder,
+                backgroundColor = palette.inputBg,
+                borderColor = palette.inputBorder,
+                focusedBorderColor = palette.inputFocus,
+                backgroundAlpha = 0.0,
+                focusedBackgroundAlpha = 0.0,
+                borderAlpha = 0.0,
+                focusedBorderAlpha = 0.0,
+                radius = 0,
+                padding = 0,
+                borderThickness = layout.cu(1),
+                selectAll = true,
+                liveUpdate = true,
+                maxBytes = 4096,
+            })
         else
             draw.text(textX, textY, displayText, fontSize,
-                textColor, textW, false, true)
-        end
-        if task.done and not editing then
-            local lineW = math.min(textW, measured.width)
-            draw.line(textX, cardY + cardH / 2,
-                textX + lineW, cardY + cardH / 2,
-                layout.cu(1), palette.completed, 0.72)
+                task.done and palette.completed or palette.text,
+                textW, false, true)
+            if task.done then
+                draw.line(textX, cardY + cardH / 2,
+                    textX + math.min(textW, measured.width),
+                    cardY + cardH / 2, layout.cu(1),
+                    palette.completed, 0.72)
+            end
         end
 
-        local deleteRect = nil
         if selected then
-            draw.fa("", deleteX, cardY + (cardH - deleteSize) / 2,
+            local deleteKey = "task.delete." .. task.id
+            local deleteHovered = interaction.isHovered(deleteKey)
+            if deleteHovered then
+                draw.circle(deleteX + deleteSize / 2,
+                    cardY + cardH / 2, deleteSize * 0.85,
+                    palette.delete, 0.09)
+            end
+            draw.fluent(fluent.delete, deleteX,
+                cardY + (cardH - deleteSize) / 2,
                 deleteSize, palette.delete)
-            deleteRect = {
-                x = deleteX - layout.cu(5),
-                y = cardY,
-                w = deleteSize + layout.cu(10),
-                h = cardH,
-            }
+            registerRegion(deleteKey, {
+                type = "rect", x = deleteX - layout.cu(5), y = cardY,
+                width = deleteSize + layout.cu(10), height = cardH,
+            }, "hand", {
+                click = { id = "task.delete", value = task.id },
+            }, { role = "button",
+                label = l10n.tr("lua_widget.reminders.delete_selected") })
         end
-
-        rowHits[#rowHits + 1] = {
-            id = task.id,
-            row = { x = pad, y = cardY, w = cardW, h = cardH },
-            checkbox = {
-                x = checkboxX - layout.cu(4),
-                y = checkboxY - layout.cu(4),
-                w = checkboxSize + layout.cu(8),
-                h = checkboxSize + layout.cu(8),
-            },
-            delete = deleteRect,
-            edit = {
-                x = textX,
-                y = cardY + layout.cu(2),
-                w = textW,
-                h = cardH - layout.cu(4),
-            },
-        }
     end
     draw.popClip()
 end
 
-function onClick(x, y)
-    if addHit and pointIn(addHit, x, y) then
-        if addHit.enabled then addDraft() end
+local function event(_context, model, value)
+    if value.kind == "environment" then
+        widget.setTitle(l10n.tr("lua_widget.reminders.name"))
         return
     end
-
-    local hit = findRowHit(x, y)
-    if not hit then
-        editingTaskId = nil
-        focusEditingTaskId = nil
-        storage.remove("selectedId")
-        return
-    end
-
-    if hit.delete and pointIn(hit.delete, x, y) then
-        deleteTask(hit.id)
-    elseif pointIn(hit.checkbox, x, y) then
-        editingTaskId = nil
-        focusEditingTaskId = nil
-        toggleTask(hit.id)
-    elseif storage.get("selectedId") ~= hit.id then
-        editingTaskId = nil
-        focusEditingTaskId = nil
-        storage.set("selectedId", hit.id)
+    if value.kind ~= "action" then return end
+    local id = value.value and tostring(value.value) or nil
+    if value.id == "task.add" then
+        if addDraft() then
+            model.selectedId = nil
+            model.editingTaskId = nil
+        end
+    elseif value.id == "task.clearSelection" then
+        model.selectedId = nil
+        model.editingTaskId = nil
+    elseif value.id == "task.select" and id then
+        model.selectedId = id
+        model.editingTaskId = nil
+    elseif value.id == "task.edit" and id then
+        model.selectedId = id
+        model.editingTaskId = id
+        control.focus("edit-task-" .. id)
+    elseif value.id == "task.toggle" and id then
+        model.editingTaskId = nil
+        toggleTask(id)
+    elseif value.id == "task.delete" and id then
+        model.selectedId = nil
+        model.editingTaskId = nil
+        deleteTask(id)
+    elseif value.id == "task.focusAdd" then
+        control.focus("new-task")
+    elseif value.id == "task.clearCompleted" then
+        model.selectedId = nil
+        model.editingTaskId = nil
+        clearCompleted()
+    elseif value.id == "task.setAll" then
+        model.editingTaskId = nil
+        local total, completed = taskCounts()
+        if total > 0 then setAllCompleted(completed < total) end
     end
 end
 
-function onDoubleClick(x, y)
-    local hit = findRowHit(x, y)
-    if not hit or not pointIn(hit.edit, x, y) then return end
-    editingTaskId = hit.id
-    focusEditingTaskId = hit.id
-    storage.set("selectedId", hit.id)
-    widget.invalidate()
-end
-
-function getContextMenu()
+local function menu(_context, _model, request)
+    if request.id ~= "task.menu" then return nil end
     local total, completed = taskCounts()
-    local selectedId = storage.get("selectedId")
-    return {
+    local taskId = request.value and tostring(request.value) or nil
+    if taskId and storage.get(taskTextKey(taskId)) ~= nil then
+        return ui.menu({
+            {
+                id = "task.edit",
+                label = l10n.tr("lua_widget.reminders.edit_selected"),
+                icon = fluent.edit,
+                iconFont = "fluent",
+            },
+            {
+                id = "task.delete",
+                label = l10n.tr("lua_widget.reminders.delete_selected"),
+                icon = fluent.delete,
+                iconFont = "fluent",
+            },
+        })
+    end
+    local items = {
         {
-            id = 1,
+            id = "task.focusAdd",
             label = l10n.tr("lua_widget.reminders.add_task"),
             icon = fluent.addTask,
             iconFont = "fluent",
         },
-        {
-            id = 4,
-            label = l10n.tr("lua_widget.reminders.delete_selected"),
-            icon = fluent.delete,
-            iconFont = "fluent",
-            enabled = selectedId ~= nil
-                and storage.get(taskTextKey(selectedId)) ~= nil,
-        },
-        { separator = true },
-        {
-            id = 2,
-            label = l10n.tr("lua_widget.reminders.clear_completed"),
-            icon = fluent.clear,
-            iconFont = "fluent",
-            enabled = completed > 0,
-        },
-        {
-            id = 3,
-            label = completed < total
-                and l10n.tr("lua_widget.reminders.complete_all")
-                or l10n.tr("lua_widget.reminders.reopen_all"),
-            icon = completed < total and fluent.complete or fluent.reset,
-            iconFont = "fluent",
-            enabled = total > 0,
-        },
     }
+    items[#items + 1] = { type = "separator" }
+    items[#items + 1] = {
+        id = "task.clearCompleted",
+        label = l10n.tr("lua_widget.reminders.clear_completed"),
+        icon = fluent.clear,
+        iconFont = "fluent",
+        enabled = completed > 0,
+    }
+    items[#items + 1] = {
+        id = "task.setAll",
+        label = completed < total and
+            l10n.tr("lua_widget.reminders.complete_all") or
+            l10n.tr("lua_widget.reminders.reopen_all"),
+        icon = completed < total and fluent.complete or fluent.reset,
+        iconFont = "fluent",
+        enabled = total > 0,
+    }
+    return ui.menu(items)
 end
 
-function onMenu(id)
-    if id == 1 then
-        ui.focusInput("new-task")
-    elseif id == 2 then
-        clearCompleted()
-    elseif id == 3 then
-        local total, completed = taskCounts()
-        if total > 0 then setAllCompleted(completed < total) end
-    elseif id == 4 then
-        local selectedId = storage.get("selectedId")
-        if selectedId then deleteTask(selectedId) end
-    end
-end
+descriptor = {
+    name = l10n.tr("lua_widget.reminders.name"),
+    useCustomStyle = true,
+    followPersonalizationDefault = true,
+    showTitle = false,
+    bottomBarHover = false,
+    bg = 0x151A21,
+    border = 0xFFFFFF,
+    alpha = 0.42,
+    borderAlpha = 0.18,
+    gradientEndA = 0.28,
+    settings = settings,
+    setup = setup,
+    render = render,
+    event = event,
+    menu = menu,
+    migrateStorage = migrateStorage,
+}
 
-function onLanguageChanged()
-    widget.setTitle(l10n.tr("lua_widget.reminders.name"))
-end
+return widget.define(descriptor)

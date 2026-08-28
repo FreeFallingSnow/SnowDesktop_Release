@@ -7,6 +7,8 @@
 
 [![从 Microsoft 获取](https://get.microsoft.com/images/zh-cn%20dark.svg)](https://apps.microsoft.com/detail/9PLLGJVL4LC3)
 
+[Steam 商店（即将推出，可加入愿望单）](https://store.steampowered.com/app/5080330/SnowDesktop/)
+
 [源码仓库](https://github.com/FreeFallingSnow/SnowDesktop)
 
 [发行版仓库](https://github.com/FreeFallingSnow/SnowDesktop_Release)
@@ -30,11 +32,14 @@
   - **组件管理**：支持组件包的安装、启停、更新、回滚和离线目录。
   - **内置组件**：提供模拟与数字时钟、月历、日程、提醒、系统监控、媒体控制、便签、番茄钟、RSS 阅读器和快速启动等实用组件。
 - 🎨 **外观个性化**：提供深浅色主题、毛玻璃与亚克力背景、组件样式、Dock 外观以及动态任务栏等设置。
-- 💾 **备份与数据迁移**：可完整备份和恢复布局、设置、组件包及组件数据，并在安装版、携带版或其他数据目录之间迁移。
+- 💾 **备份与数据迁移**：可完整备份和恢复布局、设置、组件包及组件数据，并在不同发布渠道或数据目录之间迁移。
 
 ## 🛠️ 构建
 
-依赖：CMake 3.24+、Visual Studio 2022、Windows 10 SDK（0x0A00）
+依赖：CMake 3.24+、Visual Studio 2022（“使用 C++ 的桌面开发”工作负载）、
+Windows 10/11 SDK 10.0.19041.0 或更高版本。NuGet 会按项目固定版本还原
+Microsoft Windows App SDK 2.4.0 和 Microsoft.Windows.CppWinRT 3.0.260818.1，
+无需在开发机或目标机器预装 Windows App SDK Runtime。
 
 ```bat
 .\scripts\build.bat
@@ -47,8 +52,9 @@
 ## 🧱 技术栈
 
 - C++20 / MSVC
+- WinUI 3 / Windows App SDK 2.4.0（设置中心，Win32 XAML Island）
 - Direct2D + Direct3D 11 + DirectComposition
-- Dear ImGui（设置窗口）
+- Dear ImGui（仅创意工坊管理器）
 - Lua 5.4（脚本引擎）
 - Fluent System Icons Regular（现代右键菜单与组件菜单图标）
 - Font Awesome 6 Free（组件兼容图标）
@@ -59,6 +65,7 @@
 SnowDesktop 核心代码采用 GNU General Public License v3.0，详见 [LICENSE](./LICENSE)。
 仓库中包含的第三方组件及其版权和许可信息，统一记录在
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
+发行包会在 `licenses/` 目录中随附所分发第三方组件的完整许可证与声明文件。
 
 独立的 `steam_bridge/` 创意工坊桥接程序采用 MIT 许可证，详见
 [steam_bridge/LICENSE](./steam_bridge/LICENSE)。Steamworks SDK 本身不包含在本仓库内，
